@@ -20,7 +20,8 @@
   "type": "module",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "shared/*"
   ],
   "dependencies": {
     "nanoid": "^5.1.6"
