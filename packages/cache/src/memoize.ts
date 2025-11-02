@@ -4,7 +4,7 @@ import {
   Singleflight,
   type Entry,
   type Sizer,
-} from "./cache.js";
+} from "./cache.ts";
 
 const defer =
   typeof queueMicrotask === "function"

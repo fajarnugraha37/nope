@@ -6,12 +6,12 @@ import {
   now as cacheNow,
   sleep as cacheSleep,
   Singleflight,
-} from "../src/cache/cache";
-import { IdempotencyCache } from "../src/cache/idempotency";
-import { KeyedLock } from "../src/cache/keyed-lock";
-import { LoadingCache } from "../src/cache/loading-cache";
-import { memoize } from "../src/cache/memoize";
-import { createReadThrough } from "../src/cache/write-through";
+} from "../src/index.ts";
+import { IdempotencyCache } from "../src/index.ts";
+import { KeyedLock } from "../src/index.ts";
+import { LoadingCache } from "../src/index.ts";
+import { memoize } from "../src/index.ts";
+import { createReadThrough } from "../src/index.ts";
 
 describe("cache primitives", () => {
   test("jsonSizer computes string length", () => {

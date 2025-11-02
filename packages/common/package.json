@@ -1,5 +1,5 @@
 {
-  "name": "@nope-utils",
+  "name": "@nope-common",
   "private": true,
   "version": "0.1.0",
   "description": "A collection of TypeScript utility functions and classes for various tasks.",

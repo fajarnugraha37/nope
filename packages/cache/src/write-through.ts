@@ -1,5 +1,5 @@
-import { LruTtlCache } from "./cache.js";
-import { LoadingCache, type LoaderOpts } from "./loading-cache.js";
+import { LruTtlCache } from "./cache.ts";
+import { LoadingCache, type LoaderOpts } from "./loading-cache.ts";
 
 /* ---------- write-through helpers ---------- */
 export interface ReadThrough<K, V> {

@@ -3,7 +3,7 @@ import {
   now,
   Singleflight,
   type Entry,
-} from "./cache.js";
+} from "./cache.ts";
 
 /* ---------- read-through loader with SWR ---------- */
 export type LoaderOpts = {
