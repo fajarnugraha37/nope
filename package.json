@@ -1,0 +1,40 @@
+{
+  "name": "nope",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "author": {
+    "name": "fajar",
+    "email": "nugrahafajar37@gmail.com",
+    "url": "https://github.com/fajarnugraha37"
+  },
+  "homepage": "https://github.com/fajarnugraha37/nope",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fajarnugraha37/nope.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fajarnugraha37/nope/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "glob": "^11.0.3",
+    "husky": "^9.1.7",
+    "tsup": "^8.5.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "bun": ">=1.1.0",
+    "node": ">=v18.18.0"
+  },
+  "module": "index.ts"
+}

@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2023",
+      "ES2022",
+      "ESNext",
+      "DOM"
+    ],
+    "strict": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "target": "ES2022",
+    "noEmit": true,
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+		"allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "removeComments": true,
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+  },
+  "include": [
+    "src/**/*",
+    "src/bin/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}
