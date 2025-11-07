@@ -23,6 +23,10 @@
     "packages/*",
     "shareds/*"
   ],
+  "scripts": {
+    "action:validate": "act --action-offline-mode --workflows ./.github/workflows/validate.yml",
+    "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
+  },
   "dependencies": {
     "nanoid": "^5.1.6",
     "ajv": "^8.17.1",
