@@ -1,5 +1,7 @@
 # nope
 
+_Normalized Ops & Predicate Ecosystem_
+
 > Bun-first toolchain for building, validating, and executing portable expressions with a supporting set of async, caching, and reactive utilities.
 
 ## Highlights
@@ -78,3 +80,7 @@ CI workflows live in `.github/workflows` and can be executed locally with the `a
 - Tests live next to the package under `tests/*.test.ts` and use Bun's `bun:test` runner.
 - Keep README files in sync with the code (this document summarizes the whole workspace; each package ships its own README for deep dives).
 - Prefer the shared helpers in `@nope/common`, `@nope/cache`, and `@nope/async` instead of re-implementing them inside feature packages.
+
+
+
+
