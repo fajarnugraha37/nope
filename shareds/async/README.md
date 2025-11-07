@@ -1,6 +1,27 @@
 # @fajarnugraha37/async
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async)
+
 > Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/async
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/async
+
+# Node.js with yarn
+yarn add @fajarnugraha37/async
+
+# Bun
+bun add @fajarnugraha37/async
+
+# Deno
+deno add npm:@fajarnugraha37/async
+```
 
 ## Modules
 - **`concurrency/`**

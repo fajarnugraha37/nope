@@ -1,6 +1,27 @@
 # @fajarnugraha37/cache
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache)
+
 > Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/cache
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/cache
+
+# Node.js with yarn
+yarn add @fajarnugraha37/cache
+
+# Bun
+bun add @fajarnugraha37/cache
+
+# Deno
+deno add npm:@fajarnugraha37/cache
+```
 
 ## Components
 

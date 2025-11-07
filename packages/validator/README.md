@@ -1,6 +1,27 @@
 # @fajarnugraha37/validator
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/validator.svg)](https://www.npmjs.com/package/@fajarnugraha37/validator)
+
 > A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/validator
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/validator
+
+# Node.js with yarn
+yarn add @fajarnugraha37/validator
+
+# Bun
+bun add @fajarnugraha37/validator
+
+# Deno
+deno add npm:@fajarnugraha37/validator
+```
 
 ## Features
 - **Fluent builder:** `Validator.builder()` wires together AJV options, schema maps, schema loaders, and LRU caches in one chain.

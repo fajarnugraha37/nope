@@ -1,6 +1,27 @@
 # @fajarnugraha37/common
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/common.svg)](https://www.npmjs.com/package/@fajarnugraha37/common)
+
 > Shared TypeScript helpers that underpin every package in the `nope` workspace: typed errors, guards, ULID utilities, regex/string helpers, object proxies, and time/file helpers.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/common
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/common
+
+# Node.js with yarn
+yarn add @fajarnugraha37/common
+
+# Bun
+bun add @fajarnugraha37/common
+
+# Deno
+deno add npm:@fajarnugraha37/common
+```
 
 ## Modules at a glance
 

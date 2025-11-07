@@ -1,6 +1,27 @@
 # @fajarnugraha37/expression
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/expression.svg)](https://www.npmjs.com/package/@fajarnugraha37/expression)
+
 > Strongly typed expression schemas, fluent builders, analyzers, validators, and a cache-aware evaluator powered by `json-logic-engine`.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/expression
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/expression
+
+# Node.js with yarn
+yarn add @fajarnugraha37/expression
+
+# Bun
+bun add @fajarnugraha37/expression
+
+# Deno
+deno add npm:@fajarnugraha37/expression
+```
 
 ## Why this exists
 - Author composable JSON-like expressions with full metadata (id, description, tags, categories, version) via `ExpressionBuilder`.

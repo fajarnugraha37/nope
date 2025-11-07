@@ -1,6 +1,27 @@
 # @fajarnugraha37/reactive
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/reactive.svg)](https://www.npmjs.com/package/@fajarnugraha37/reactive)
+
 > A promise-aware observable + stream implementation with a plugin system, immutable state helpers, and a suite of operators for composing async flows.
+
+## Installation
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/reactive
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/reactive
+
+# Node.js with yarn
+yarn add @fajarnugraha37/reactive
+
+# Bun
+bun add @fajarnugraha37/reactive
+
+# Deno
+deno add npm:@fajarnugraha37/reactive
+```
 
 ## Concepts
 

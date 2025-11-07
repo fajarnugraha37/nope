@@ -11,15 +11,15 @@ _Normalized Ops & Predicate Ecosystem_
 - Shared utilities avoid duplication: `@fajarnugraha37/validator` uses the caching primitives, the expression builder reuses the validator, and the reactive helpers lean on `@fajarnugraha37/common`.
 
 ## Packages
-| Name | Folder | Purpose |
-| --- | --- | --- |
-| `@fajarnugraha37/expression` | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
-| `@fajarnugraha37/validator` | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
-| `@fajarnugraha37/common` | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
-| `@fajarnugraha37/cache` | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
-| `@fajarnugraha37/async` | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
-| `@fajarnugraha37/reactive` | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
-| `apps/*` | `apps` | Reserved for demo or integration apps that consume the workspace packages. |
+| Name | npm | Folder | Purpose |
+| --- | --- | --- | --- |
+| `@fajarnugraha37/expression` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/expression.svg)](https://www.npmjs.com/package/@fajarnugraha37/expression) | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
+| `@fajarnugraha37/validator` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/validator.svg)](https://www.npmjs.com/package/@fajarnugraha37/validator) | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
+| `@fajarnugraha37/common` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/common.svg)](https://www.npmjs.com/package/@fajarnugraha37/common) | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
+| `@fajarnugraha37/cache` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache) | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
+| `@fajarnugraha37/async` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async) | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
+| `@fajarnugraha37/reactive` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/reactive.svg)](https://www.npmjs.com/package/@fajarnugraha37/reactive) | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
+| `apps/*` | — | `apps` | Reserved for demo or integration apps that consume the workspace packages. |
 
 ## Repository layout
 | Path | Notes |
@@ -31,7 +31,35 @@ _Normalized Ops & Predicate Ecosystem_
 | `.github/` | Actions workflows for validation/publish (mirrors the `action:*` scripts). |
 | `tsconfig.json`, `tsup.config.ts`, `bunfig.toml` | Shared TypeScript + build configuration. |
 
-## Quick start
+## Installation
+
+Each package is published to npm and can be installed individually:
+
+```bash
+# Node.js with npm
+npm install @fajarnugraha37/expression
+npm install @fajarnugraha37/validator
+npm install @fajarnugraha37/common
+npm install @fajarnugraha37/cache
+npm install @fajarnugraha37/async
+npm install @fajarnugraha37/reactive
+
+# Node.js with pnpm
+pnpm add @fajarnugraha37/expression
+
+# Node.js with yarn
+yarn add @fajarnugraha37/expression
+
+# Bun
+bun add @fajarnugraha37/expression
+
+# Deno
+deno add npm:@fajarnugraha37/expression
+```
+
+See individual package READMEs for detailed usage instructions.
+
+## Quick start (for contributors)
 1. Install [Bun ≥ 1.1](https://bun.sh) and Node ≥ 18 (Node is only required for some tooling).
 2. Install dependencies once from the repo root:
 
