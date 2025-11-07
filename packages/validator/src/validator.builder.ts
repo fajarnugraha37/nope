@@ -6,6 +6,7 @@ import type {
   SchemaJsonInput,
 } from "./validator.js";
 import { Validator } from "./validator.js";
+import type { SchemaBuilder } from "./schema-builder.js";
 
 /**
  * Fluent builder to compose validators with schemas, loaders, and caching
@@ -38,11 +39,29 @@ export class ValidatorBuilder<
     return this;
   }
 
+  withSchemaBuilder<K extends keyof TSchemas>(
+    type: K,
+    builder: SchemaBuilder
+  ): this {
+    return this.withSchema(type, builder.build() as TSchemas[K]);
+  }
+
   withSchemas(schemas: Partial<TSchemas>): this {
     this.schemas = {
       ...this.schemas,
       ...schemas,
     };
+    return this;
+  }
+
+  withSchemaBuilders(
+    builders: Partial<Record<keyof TSchemas, SchemaBuilder>>
+  ): this {
+    for (const [type, builder] of Object.entries(builders)) {
+      if (builder) {
+        this.withSchemaBuilder(type as keyof TSchemas, builder);
+      }
+    }
     return this;
   }
 

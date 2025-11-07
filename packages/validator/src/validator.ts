@@ -9,6 +9,7 @@ import {
 } from "@nope/common";
 import { LruTtlCache, type LruTtlOpts } from "@nope/cache";
 import { ValidatorBuilder } from "./validator.builder.js";
+import type { SchemaBuilder } from "./schema-builder.js";
 
 /**
  * Schema registry for different entity types
@@ -146,6 +147,30 @@ export class Validator<TSchemas extends SchemaRegistry = SchemaRegistry> {
   registerSchemas(schemas: Partial<TSchemas>): this {
     for (const [type, schema] of Object.entries(schemas)) {
       this.registerSchema(type as keyof TSchemas, schema);
+    }
+    return this;
+  }
+
+  /**
+   * Register a schema produced via the fluent SchemaBuilder
+   */
+  registerSchemaBuilder<K extends keyof TSchemas>(
+    type: K,
+    builder: SchemaBuilder
+  ): this {
+    return this.registerSchema(type, builder.build() as TSchemas[K]);
+  }
+
+  /**
+   * Register multiple SchemaBuilder instances at once
+   */
+  registerSchemaBuilders(
+    builders: Partial<Record<keyof TSchemas, SchemaBuilder>>
+  ): this {
+    for (const [type, builder] of Object.entries(builders)) {
+      if (builder) {
+        this.registerSchemaBuilder(type as keyof TSchemas, builder);
+      }
     }
     return this;
   }

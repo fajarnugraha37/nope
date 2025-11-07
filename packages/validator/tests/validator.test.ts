@@ -1,9 +1,14 @@
 import { describe, it, expect } from "bun:test";
 import { Validator } from "../src/validator.ts";
 import {
+  buildSchemaMap,
+  createTypeValidatorFromBuilders,
   createTypeValidatorFromJSON,
+  createValidatorFromBuilders,
+  defineSchemas,
   validatorBuilder
 } from "../src/short-hand.ts";
+import { SchemaBuilder } from "../src/schema-builder.ts";
 
 const expressionSchema = {
   type: "object",
@@ -119,5 +124,94 @@ describe("Validator enhancements", () => {
 
     await validator.validateStrictAsync("cached-schema", payload);
     expect(loadCount).toBe(1);
+  });
+
+  it("supports SchemaBuilder DSL and helper conversions", () => {
+    const expressionBuilder = SchemaBuilder.object()
+      .title("Expression")
+      .description("Simple expression schema")
+      .property("type", SchemaBuilder.string().enum(["literal", "ref"]), {
+        required: true
+      })
+      .property(
+        "value",
+        SchemaBuilder.create().anyOf(
+          SchemaBuilder.string(),
+          SchemaBuilder.number(),
+          SchemaBuilder.boolean(),
+          SchemaBuilder.object().property("path", SchemaBuilder.string(), {
+            required: true
+          })
+        ),
+        { required: true }
+      )
+      .additionalProperties(false);
+
+    const schemas = defineSchemas({
+      "expression-schema": expressionBuilder,
+      "form-schema": SchemaBuilder.object()
+        .property("id", SchemaBuilder.string(), { required: true })
+        .property(
+          "steps",
+          SchemaBuilder.array()
+            .items(
+              SchemaBuilder.object().property("title", SchemaBuilder.string(), {
+                required: true
+              })
+            )
+            .minItems(1),
+          { required: true }
+        )
+        .additionalProperties(false)
+    });
+
+    const plainMap = buildSchemaMap(schemas);
+    expect(plainMap["expression-schema"]).toMatchObject({
+      type: "object",
+      required: ["type", "value"],
+      additionalProperties: false
+    });
+
+    const manualValidator = new Validator();
+    manualValidator.registerSchemaBuilder("expression-schema", expressionBuilder.clone());
+
+    expect(
+      manualValidator.validateStrict("expression-schema", {
+        type: "literal",
+        value: "active"
+      })
+    ).toEqual({ type: "literal", value: "active" });
+
+    const builderBacked = validatorBuilder()
+      .withSchemaBuilder("expression-schema", expressionBuilder.clone())
+      .build();
+
+    expect(
+      builderBacked.validateStrict("expression-schema", {
+        type: "ref",
+        value: { path: "profile.age" }
+      })
+    ).toEqual({
+      type: "ref",
+      value: { path: "profile.age" }
+    });
+
+    const validatorFromBuilders = createValidatorFromBuilders(schemas);
+    expect(
+      validatorFromBuilders.validate("form-schema", {
+        id: "signup",
+        steps: [{ title: "Start" }]
+      }).valid
+    ).toBeTrue();
+
+    const typeValidator = createTypeValidatorFromBuilders(
+      "expression-schema",
+      schemas
+    );
+    expect(() =>
+      typeValidator.validateStrict({
+        type: "literal"
+      })
+    ).toThrow();
   });
 });

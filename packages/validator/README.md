@@ -52,6 +52,7 @@ The validator package graduated from "AJV wrapper" to a full schema orchestratio
 
 ### Feature highlights
 - Fluent builder (`Validator.builder()` / `validatorBuilder()`) with chainable options, schema registration, JSON ingestion, caching, and lazy loaders.
+- Fluent JSON Schema builder (`SchemaBuilder`) plus helpers like `defineSchemas`/`buildSchemaMap` for crafting schemas in code.
 - JSON import/export (`importSchemasFromJSON`, `exportSchemas`, `exportSchemasToJSON`) for piping schemas in/out of storage or migrations.
 - Async validation APIs (`validateAsync`, `validateStrictAsync`, `validateManyAsync`) that automatically pull schemas via a user-provided loader.
 - Built-in LRU caching so dynamic schemas fetched from a DB or config service only pay the compilation cost once.
@@ -95,7 +96,11 @@ validator.importSchemasFromJSON(jsonDump); // load it back later
 import {
   createValidatorFromJSON,
   createTypeValidatorFromJSON,
-  validatorBuilder
+  createValidatorFromBuilders,
+  createTypeValidatorFromBuilders,
+  defineSchemas,
+  validatorBuilder,
+  SchemaBuilder
 } from "@nope/validator";
 
 // Loader-driven validator with caching baked in
@@ -115,6 +120,47 @@ const adHocValidator = createValidatorFromJSON(schemaDump, {
 const expressionValidator = createTypeValidatorFromJSON(
   "expression-schema",
   schemaDump
+);
+
+// Fluent schema builder DX
+const schemas = defineSchemas({
+  "expression-schema": SchemaBuilder.object()
+    .title("Expression")
+    .description("Composable expression definition")
+    .property("type", SchemaBuilder.string().enum(["literal", "ref"]), {
+      required: true
+    })
+    .property(
+      "value",
+      SchemaBuilder.create().anyOf(
+        SchemaBuilder.string(),
+        SchemaBuilder.number(),
+        SchemaBuilder.boolean(),
+        SchemaBuilder.object().property("path", SchemaBuilder.string(), {
+          required: true
+        })
+      )
+    )
+    .additionalProperties(false),
+  "form-schema": SchemaBuilder.object()
+    .property("id", SchemaBuilder.string(), { required: true })
+    .property(
+      "steps",
+      SchemaBuilder.array()
+        .items(SchemaBuilder.object().property("title", SchemaBuilder.string()))
+        .minItems(1),
+      { required: true }
+    )
+    .additionalProperties(false)
+});
+
+const validator = createValidatorFromBuilders(schemas, {
+  cache: { maxEntries: 250, ttlMs: 30_000 }
+});
+
+const formValidator = createTypeValidatorFromBuilders(
+  "form-schema",
+  schemas
 );
 ```
 
