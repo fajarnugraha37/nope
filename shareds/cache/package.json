@@ -1,5 +1,5 @@
 {
-  "name": "@nope-cache",
+  "name": "@nope/cache",
   "private": true,
   "version": "0.1.0",
   "description": "A collection of TypeScript utility functions and classes for various tasks.",
@@ -64,7 +64,6 @@
     "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
   },
   "dependencies": {
-    "nanoid": "^5.1.6"
   },
   "devDependencies": {
     "@types/bun": "latest",

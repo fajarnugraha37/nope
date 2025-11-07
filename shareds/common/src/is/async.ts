@@ -1,3 +1,5 @@
+import { isMap, isObject, isSet } from "limu/lib/support/util.js";
+
 /** element-wise guard: every(item) satisfies pred */
 export const isArrayOf =
   <T>(pred: (x: unknown) => x is T) =>
@@ -66,3 +68,30 @@ export const asyncEvery =
 <T>(preds: Array<(x: unknown) => x is T>) =>
   async (x: unknown) =>
     (await Promise.all(preds.map((p) => p(x)))).some(Boolean) as boolean;
+
+export const isObjectLike = (value: any): value is object => {
+  return (
+    Array.isArray(value) || isObject(value) || isMap(value) || isSet(value)
+  );
+};
+
+export const isPromiseLike = <T>(
+  payload: T | PromiseLike<T>
+): payload is PromiseLike<T> => {
+  return (
+    payload &&
+    typeof payload === "object" &&
+    "then" in payload &&
+    typeof payload.then === "function"
+  );
+};
+
+export const isAsyncFunction = (
+  fn: any
+): fn is (...args: any[]) => PromiseLike<any> => {
+  return (
+    typeof fn === "function" &&
+    (Object.prototype.toString.call(fn) === "[object AsyncFunction]" ||
+      isPromiseLike(fn))
+  );
+};
