@@ -1,6 +1,6 @@
 # @nope/cache
 
-> Modern caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@nope/validator` and `@nope/expression`.
+> Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@nope/validator` and `@nope/expression`.
 
 ## Components
 

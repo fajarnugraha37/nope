@@ -1,6 +1,6 @@
 # @nope/async
 
-> Blazing-fast async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
+> Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
 
 ## Modules
 - **`concurrency/`**

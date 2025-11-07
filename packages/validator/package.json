@@ -2,7 +2,7 @@
   "name": "@nope/validator",
   "private": true,
   "version": "0.1.0",
-  "description": "A collection of TypeScript utility functions and classes for various tasks.",
+  "description": "A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace",
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {
