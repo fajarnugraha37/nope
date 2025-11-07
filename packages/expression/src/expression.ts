@@ -1,4 +1,4 @@
-import type { ValidationResult } from "./error/index.js";
+import type { ValidationResult } from "@nope/common";
 
 export type ValidatorFn = (data: unknown) => boolean;
 export type validateExpressionFn = <T>(data: T) => ValidationResult<T>;

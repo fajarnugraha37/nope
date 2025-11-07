@@ -31,6 +31,7 @@
         "@nope/cache": "workspace:*",
         "@nope/common": "workspace:*",
         "@nope/reactive": "workspace:*",
+        "json-logic-engine": "^5.0.3",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -708,6 +709,8 @@
     "js-yaml": ["js-yaml@4.1.0", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA=="],
 
     "json-buffer": ["json-buffer@3.0.1", "", {}, "sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ=="],
+
+    "json-logic-engine": ["json-logic-engine@5.0.3", "", {}, "sha512-s8XHAfE39uuBtsCcFJz82j77xbHZX70dkNBkkDpzOUQVeMBQ53dcxtmhro2w7JzzPzF3SF0a+o01aWAS0ZvF5Q=="],
 
     "json-parse-even-better-errors": ["json-parse-even-better-errors@2.3.1", "", {}, "sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w=="],
 
