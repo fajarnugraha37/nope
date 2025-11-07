@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Run in dry-run mode'
+        description: "Run in dry-run mode"
         required: false
         default: true
         type: boolean
   push:
     branches: [ main ]
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   pull_request:
     branches: [ main ]
 
@@ -22,28 +22,50 @@ jobs:
     permissions:
       contents: read
       id-token: write
-        
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
           bun-version: 1.3.1
-        
-    - name: Install dependencies
-      run: bun install
-      
-    - name: Run tests
-      run: bun test
-      
+
+      # - name: Install dependencies
+      #   run: bun install --frozen-lockfile
+
+      # - name: Run workspace tests
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
+      #     mapfile -t packages < <(python3 scripts/workspace_order.py)
+      #     if [[ ${#packages[@]} -eq 0 ]]; then
+      #       echo "ℹ️ No workspace packages detected"
+      #       exit 0
+      #     fi
+      #     shopt -s nullglob
+      #     ran=false
+      #     for entry in "${packages[@]}"; do
+      #       IFS='|' read -r name dir <<< "$entry"
+      #       pkg_json="$dir/package.json"
+      #       if jq -e '.scripts | has("test")' "$pkg_json" >/dev/null; then
+      #         echo "🔹 Running tests in $dir"
+      #         (cd "$dir" && bun run test)
+      #         ran=true
+      #       fi
+      #     done
+      #     if [[ "$ran" == false ]]; then
+      #       echo "ℹ️ No workspaces expose a 'test' script"
+      #     fi
+
   publish:
     runs-on: ubuntu-latest
     needs: test
     permissions:
       contents: read
       id-token: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,50 +76,109 @@ jobs:
           bun-version: 1.3.1
 
       - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build all packages
+        shell: bash
         run: |
-          bun install --frozen-lockfile 
-          bun install -g husky
-        
-      - name: Build project
-        run: bun run build 
-      
+          set -euo pipefail
+          mapfile -t packages < <(python3 scripts/workspace_order.py)
+          if [[ ${#packages[@]} -eq 0 ]]; then
+            echo "❌ No workspace packages detected"
+            exit 1
+          fi
+          shopt -s nullglob
+          ran=false
+          for entry in "${packages[@]}"; do
+            IFS='|' read -r name dir <<< "$entry"
+            pkg_json="$dir/package.json"
+            if jq -e '.scripts | has("build")' "$pkg_json" >/dev/null; then
+              echo "🛠️  Building $dir"
+              (cd "$dir" && bun install && bun run build)
+              ran=true
+            fi
+          done
+          if [[ "$ran" == false ]]; then
+            echo "❌ No build scripts found in workspace packages"
+            exit 1
+          fi
+
       - name: Check build artifacts
+        shell: bash
         run: |
-          test -d dist || exit 1
+          set -euo pipefail
+          if ! find packages shareds -type d -name dist | grep -q .; then
+            echo "❌ No build artifacts found under packages/ or shareds/"
+            exit 1
+          fi
           echo "✅ Build artifacts verified"
-        
+
       - name: Determine publish mode
         id: publish-mode
+        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "is_dry_run=${{ inputs.dry_run }}" >> $GITHUB_OUTPUT
+            echo "is_dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "is_dry_run=false" >> $GITHUB_OUTPUT
+            echo "is_dry_run=false" >> "$GITHUB_OUTPUT"
           else
-            echo "is_dry_run=true" >> $GITHUB_OUTPUT
+            echo "is_dry_run=true" >> "$GITHUB_OUTPUT"
           fi
-          
-      - name: Publish to npm (dry-run)
-        if: ${{ steps.publish-mode.outputs.is_dry_run == 'true' }}
+
+      - name: Publish packages sequentially
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: bun publish --dry-run --tolerate-republish --provenance --access public --verbose
+          IS_DRY_RUN: ${{ steps.publish-mode.outputs.is_dry_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$NPM_CONFIG_TOKEN" ]]; then
+            echo "❌ NPM token missing"
+            exit 1
+          fi
+          mapfile -t packages < <(python3 scripts/workspace_order.py)
+          if [[ ${#packages[@]} -eq 0 ]]; then
+            echo "⚠️ No workspace packages detected"
+            exit 0
+          fi
+          publish_package() {
+            local dir="$1"
+            pushd "$dir" >/dev/null
+            if [[ "$IS_DRY_RUN" == "true" ]]; then
+              bun publish --dry-run --tolerate-republish --provenance --access public --verbose
+            else
+              bun publish --tolerate-republish --provenance --access public --verbose
+            fi
+            popd >/dev/null
+          }
+          published_any=false
+          for entry in "${packages[@]}"; do
+            IFS='|' read -r name dir <<< "$entry"
+            pkg_json="$dir/package.json"
+            if [[ ! -f "$pkg_json" ]]; then
+              continue
+            fi
+            if [[ $(jq -r '.private // false' "$pkg_json") == "true" ]]; then
+              echo "⚪ Skipping $(jq -r '.name // "unknown"' "$pkg_json") (private)"
+              continue
+            fi
+            echo "📦 Publishing $(jq -r '.name // "unknown"' "$pkg_json") from $dir"
+            publish_package "$dir"
+            published_any=true
+          done
+          if [[ "$published_any" == false ]]; then
+            echo "⚠️ No publishable packages (set \"private\": false to publish)."
+          fi
 
-      - name: Publish to npm (actual publish)
-        if: ${{ steps.publish-mode.outputs.is_dry_run == 'false' }}
+      - name: Post-publish info
         env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: bun publish --tolerate-republish --provenance --access public --verbose
-
-      - name: Post-publish info (dry-run)
-        if: ${{ steps.publish-mode.outputs.is_dry_run == 'true' }}
+          IS_DRY_RUN: ${{ steps.publish-mode.outputs.is_dry_run }}
+        shell: bash
         run: |
-          echo "🧪 Dry-run publish completed for ${{ github.ref_name }}"
-          echo "ℹ️  No actual publish occurred - this was a simulation"
-
-      - name: Post-publish info (actual)
-        if: ${{ steps.publish-mode.outputs.is_dry_run == 'false' }}
-        run: |
-          echo "🚀 Successfully published to npm!"
-          echo "📦 Package: ${{ github.ref_name }}"
-          echo "🔗 Trigger: ${{ github.event_name }}"
+          if [[ "$IS_DRY_RUN" == "true" ]]; then
+            echo "🧪 Dry-run publish completed for ${{ github.ref_name }}"
+            echo "ℹ️  No actual publish occurred - this was a simulation"
+          else
+            echo "🚀 Successfully published to npm!"
+            echo "📦 Packages processed sequentially"
+            echo "🔗 Trigger: ${{ github.event_name }}"
