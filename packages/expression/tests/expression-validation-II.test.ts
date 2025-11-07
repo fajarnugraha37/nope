@@ -1,5 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { validateExpression, validateExpressionStrict } from "@nope/validator";
+import { defaultValidator } from "../src/builder/expression-builder";
+
 
 describe("Comprehensive Expression Schema Validation", () => {
   test("should validate complex nested expressions", () => {
@@ -37,7 +38,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(complexExpression);
+    const result = defaultValidator.validate(complexExpression);
     expect(result.valid).toBe(true);
     expect(result.data).toEqual(complexExpression);
   });
@@ -67,7 +68,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(mathExpression);
+    const result = defaultValidator.validate(mathExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -96,7 +97,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(stringExpression);
+    const result = defaultValidator.validate(stringExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -119,7 +120,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(arrayExpression);
+    const result = defaultValidator.validate(arrayExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -152,7 +153,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(conditionalExpression);
+    const result = defaultValidator.validate(conditionalExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -179,7 +180,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(logicalExpression);
+    const result = defaultValidator.validate(logicalExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -208,7 +209,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(objectExpression);
+    const result = defaultValidator.validate(objectExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -246,7 +247,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(mixedOperandsExpression);
+    const result = defaultValidator.validate(mixedOperandsExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -264,7 +265,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(invalidExpression);
+    const result = defaultValidator.validate(invalidExpression);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
     expect(result.errors!.length).toBeGreaterThan(0);
@@ -276,7 +277,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       // Missing: name, description, multipleOperations, operations
     };
 
-    const result = validateExpression(incompleteExpression);
+    const result = defaultValidator.validate(incompleteExpression);
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
     expect(result.errors!.some((e) => e.keyword === "required")).toBe(true);
@@ -295,7 +296,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(invalidOperandExpression);
+    const result = defaultValidator.validate(invalidOperandExpression);
     expect(result.valid).toBe(false);
   });
 
@@ -345,7 +346,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(deeplyNestedExpression);
+    const result = defaultValidator.validate(deeplyNestedExpression);
     expect(result.valid).toBe(true);
   });
 
@@ -423,7 +424,7 @@ describe("Comprehensive Expression Schema Validation", () => {
       ],
     };
 
-    const result = validateExpression(allOperatorsExpression);
+    const result = defaultValidator.validate(allOperatorsExpression);
     expect(result.valid).toBe(true);
   });
 });

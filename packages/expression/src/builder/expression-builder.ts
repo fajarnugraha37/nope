@@ -14,7 +14,7 @@ import { Ops } from "./ops.js";
 import { createValidator } from "@nope/validator";
 import expressionSchema from "../schema/expression.schema.json" with { type: "json" };
 
-const defaultValidator = createValidator(
+export const defaultValidator = createValidator(
   "expression-schema",
   expressionSchema
 );
