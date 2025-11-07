@@ -1,0 +1,771 @@
+{
+    "$id": "expression-schema",
+    "title": "ExpressionSchema",
+    "description": "Enhanced JSON schema for expression validation following new implementation",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique identifier for the expression"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable name for the expression"
+        },
+        "description": {
+            "type": "string",
+            "description": "Detailed description of what the expression does"
+        },
+        "multipleOperations": {
+            "type": "string",
+            "enum": [
+                "and",
+                "or"
+            ],
+            "description": "How multiple operations should be combined"
+        },
+        "operations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/operation"
+            },
+            "description": "Array of operations that make up the expression"
+        },
+        "metadata": {
+            "$ref": "#/$defs/expressionMetadata",
+            "description": "Optional metadata about the expression"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of the expression schema"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "description",
+        "multipleOperations",
+        "operations"
+    ],
+    "$defs": {
+        "expressionMetadata": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "author": {
+                    "type": "string",
+                    "description": "Author of the expression"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Creation timestamp"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Last update timestamp"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Tags for categorization"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Expression category"
+                },
+                "priority": {
+                    "type": "number",
+                    "description": "Execution priority"
+                }
+            }
+        },
+        "valueOperand": {
+            "description": "ValueOperand: primitives, arrays, or objects",
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                },
+                {
+                    "type": "array"
+                },
+                {
+                    "type": "object"
+                },
+                {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            ]
+        },
+        "varOperand": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "var": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Variable name to reference"
+                },
+                "defaultValue": {
+                    "description": "Default value if variable is not found"
+                }
+            },
+            "required": [
+                "var"
+            ]
+        },
+        "valOperand": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "val": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Array of string values"
+                }
+            },
+            "required": [
+                "val"
+            ]
+        },
+        "refOperand": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Reference to another expression"
+                }
+            },
+            "required": [
+                "ref"
+            ]
+        },
+        "literalOperand": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "literal": {
+                    "description": "Literal value to use"
+                }
+            },
+            "required": [
+                "literal"
+            ]
+        },
+        "operandOption": {
+            "description": "Any valid operand type",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/varOperand"
+                },
+                {
+                    "$ref": "#/$defs/valOperand"
+                },
+                {
+                    "$ref": "#/$defs/refOperand"
+                },
+                {
+                    "$ref": "#/$defs/literalOperand"
+                },
+                {
+                    "$ref": "#/$defs/valueOperand"
+                }
+            ]
+        },
+        "operationOperand": {
+            "description": "Either a nested Operation object or any operand option",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/operation"
+                },
+                {
+                    "$ref": "#/$defs/operandOption"
+                }
+            ]
+        },
+        "operation": {
+            "title": "Operation",
+            "type": "object",
+            "additionalProperties": false,
+            "description": "A single operation with one or more operators",
+            "properties": {
+                "+": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "-": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "*": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "/": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "%": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "**": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "min": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "max": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "abs": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "round": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "floor": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "ceil": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "sqrt": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "log": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "sin": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "cos": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "tan": {
+                    "$ref": "#/$defs/opBody"
+                },
+                ">": {
+                    "$ref": "#/$defs/opBody"
+                },
+                ">=": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "<": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "<=": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "not": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "!": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "!!": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "and": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "or": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "xor": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "??": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "==": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "===": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "!=": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "!==": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "if": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "ifElse": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "unless": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "when": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "?:": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "switch": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "case": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "default": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "cat": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "concat": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "join": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "in": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "contains": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "includes": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "startsWith": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "endsWith": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "substr": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "substring": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "slice": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "length": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "count": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "size": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "trim": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "toLowerCase": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "toUpperCase": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "replace": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "replaceAll": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "split": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "match": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "test": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "pad": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "padStart": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "padEnd": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "merge": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "get": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "set": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "has": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "delete": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "at": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "first": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "last": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "push": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "pop": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "shift": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "unshift": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "splice": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "reverse": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "sort": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "unique": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "flatten": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "groupBy": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "partition": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "keys": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "values": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "entries": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "assign": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "pick": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "omit": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "clone": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "deepClone": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "preserve": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "val": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "exists": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "var": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "ref": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "literal": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "missing": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "missing_some": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "context": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "scope": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "env": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "cache": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "memo": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "now": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "today": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "date": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "year": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "month": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "day": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "hour": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "minute": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "second": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "addYears": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "addMonths": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "addDays": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "addHours": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "format": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "parse": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isValid": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isBefore": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isAfter": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isSame": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "diff": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "duration": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isNull": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isUndefined": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isDefined": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isEmpty": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isString": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isNumber": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isBoolean": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isArray": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isObject": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isEmail": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isUrl": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isUuid": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "isJson": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "matches": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "validate": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "assert": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "map": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "filter": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "reduce": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "find": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "findIndex": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "every": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "all": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "some": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "none": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "forEach": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "eachKey": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "eachValue": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "pipe": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "compose": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "curry": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "debounce": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "throttle": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "try": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "catch": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "finally": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "loop": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "while": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "until": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "for": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "break": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "continue": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "return": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "await": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "promise": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "resolve": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "reject": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "timeout": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "delay": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "race": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "allSettled": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "retry": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "fallback": {
+                    "$ref": "#/$defs/opBody"
+                },
+                "Filter": {
+                    "$ref": "#/$defs/opBody"
+                }
+            }
+        },
+        "opBody": {
+            "description": "An operator can take a single operand or an array of operands",
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/operationOperand"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/operationOperand"
+                    },
+                    "minItems": 1
+                }
+            ]
+        }
+    }
+}

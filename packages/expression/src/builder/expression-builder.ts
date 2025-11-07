@@ -11,6 +11,13 @@ import type {
 } from "../expression.js";
 import { ExpressionValidationError } from "../error/index.js";
 import { Ops } from "./ops.js";
+import { createValidator } from "@nope/validator";
+import expressionSchema from "../schema/expression.schema.json" with { type: "json" };
+
+const defaultValidator = createValidator(
+  "expression-schema",
+  expressionSchema
+);
 
 export class ExpressionBuilder {
   private _id: string;
@@ -27,7 +34,7 @@ export class ExpressionBuilder {
   private _strictValidation = false;
   private _validateExpression: validateExpressionFn;
 
-  private constructor(id: string, validateExpression: validateExpressionFn = () => ({ valid: true })) {
+  private constructor(id: string, validateExpression: validateExpressionFn) {
     this._id = id;
     this._validateExpression = validateExpression;
   }
@@ -35,15 +42,15 @@ export class ExpressionBuilder {
   /**
    * Create a new expression builder
    */
-  static create(id: string): ExpressionBuilder {
-    return new ExpressionBuilder(id);
+  static create(id: string, validateExpression: validateExpressionFn = defaultValidator.validate): ExpressionBuilder {
+    return new ExpressionBuilder(id, validateExpression);
   }
 
   /**
    * Create from existing schema
    */
-  static fromSchema(schema: ExpressionSchema): ExpressionBuilder {
-    const builder = new ExpressionBuilder(schema.id);
+  static fromSchema(schema: ExpressionSchema, validateExpression: validateExpressionFn = defaultValidator.validate): ExpressionBuilder {
+    const builder = new ExpressionBuilder(schema.id, validateExpression);
     builder._name = schema.name;
     builder._description = schema.description;
     builder._multipleOperations = schema.multipleOperations;
@@ -323,7 +330,7 @@ export class ExpressionBuilder {
    * Clone the builder
    */
   clone(): ExpressionBuilder {
-    const cloned = new ExpressionBuilder(this._id + "_copy");
+    const cloned = new ExpressionBuilder(this._id + "_copy", this._validateExpression);
     cloned._name = this._name;
     cloned._description = this._description;
     cloned._multipleOperations = this._multipleOperations;

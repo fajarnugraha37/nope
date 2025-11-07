@@ -64,10 +64,8 @@
     "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
   },
   "dependencies": {
-    "@nope/async": "workspace:*",
-    "@nope/cache": "workspace:*",
     "@nope/common": "workspace:*",
-    "@nope/reactive": "workspace:*",
+    "@nope/validator": "workspace:*",
     "json-logic-engine": "^5.0.3"
   },
   "devDependencies": {
