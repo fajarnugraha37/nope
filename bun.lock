@@ -23,6 +23,38 @@
         "validate-conventional-commit": "^1.0.4",
       },
     },
+    "packages/expression": {
+      "name": "@nope/expression",
+      "version": "0.1.0",
+      "dependencies": {
+        "@nope/async": "workspace:*",
+        "@nope/cache": "workspace:*",
+        "@nope/common": "workspace:*",
+        "@nope/reactive": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "glob": "^11.0.3",
+        "tsup": "^8.5.0",
+        "typescript": "^5",
+      },
+    },
+    "packages/validation": {
+      "name": "@nope/validation",
+      "version": "0.1.0",
+      "dependencies": {
+        "@nope/async": "workspace:*",
+        "@nope/cache": "workspace:*",
+        "@nope/common": "workspace:*",
+        "@nope/reactive": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "glob": "^11.0.3",
+        "tsup": "^8.5.0",
+        "typescript": "^5",
+      },
+    },
     "shareds/async": {
       "name": "@nope/async",
       "version": "0.1.0",
@@ -229,7 +261,11 @@
 
     "@nope/common": ["@nope/common@workspace:shareds/common"],
 
+    "@nope/expression": ["@nope/expression@workspace:packages/expression"],
+
     "@nope/reactive": ["@nope/reactive@workspace:shareds/reactive"],
+
+    "@nope/validation": ["@nope/validation@workspace:packages/validation"],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
