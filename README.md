@@ -1,15 +1,80 @@
 # nope
 
-To install dependencies:
+> Bun-first toolchain for building, validating, and executing portable expressions with a supporting set of async, caching, and reactive utilities.
+
+## Highlights
+- Multi-package Bun workspace where `@nope/expression` sits on top of reusable validators, caches, and shared helpers.
+- Batteries-included developer UX: Bun test runner, tsup builds, Changesets for releases, and workspace linking by default.
+- Every package ships typed source, ESM/CJS bundles, and `bun test` coverage so you can embed pieces individually or wire them together.
+- Shared utilities avoid duplication: `@nope/validator` uses the caching primitives, the expression builder reuses the validator, and the reactive helpers lean on `@nope/common`.
+
+## Packages
+| Name | Folder | Purpose |
+| --- | --- | --- |
+| `@nope/expression` | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
+| `@nope/validator` | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
+| `@nope/common` | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
+| `@nope/cache` | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
+| `@nope/async` | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
+| `@nope/reactive` | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
+| `apps/*` | `apps` | Reserved for demo or integration apps that consume the workspace packages. |
+
+## Repository layout
+| Path | Notes |
+| --- | --- |
+| `packages/` | Feature-facing packages (currently `expression` and `validator`). |
+| `shareds/` | Foundational libraries that are versioned just like packages but grouped under a single folder. |
+| `apps/` | Example/front-end consumers (empty today). |
+| `scripts/` | Reusable automation (CI, release, validation). |
+| `.github/` | Actions workflows for validation/publish (mirrors the `action:*` scripts). |
+| `tsconfig.json`, `tsup.config.ts`, `bunfig.toml` | Shared TypeScript + build configuration. |
+
+## Quick start
+1. Install [Bun ≥ 1.1](https://bun.sh) and Node ≥ 18 (Node is only required for some tooling).
+2. Install dependencies once from the repo root:
+
+   ```bash
+   bun install
+   ```
+
+3. Pick a package, then run its scripts either with `bun run --filter` or by `cd`-ing into the folder.
+
+   ```bash
+   # Build and test the expression engine
+   bun run --filter @nope/expression build
+   bun run --filter @nope/expression test
+
+   # Same idea for the validator
+   cd packages/validator && bun run test
+   ```
+
+## Developing packages
+- **Build:** `bun run --filter <package> build` runs `tsc` + `tsup` for that workspace (each package publishes ESM, CJS, and `.d.ts` files).
+- **Test:** `bun run --filter <package> test` executes the Bun test suite under `tests/`. Use `bun run --filter <package> test:watch` for focused runs.
+- **Coverage:** open the HTML report with `bun run --filter <package> coverage:view` after a test run.
+- **Cross-package links:** Bun automatically links workspace dependencies (for example `@nope/expression` depends on `@nope/validator`, which in turn depends on `@nope/cache` and `@nope/common`).
+
+When making sweeping changes it is handy to run every test suite:
 
 ```bash
-bun install
+bun workspaces run test        # Bun ≥ 1.1
+# or manually iterate
+for pkg in packages/* shareds/*; do (cd "$pkg" && bun test); done
 ```
 
-To run:
+## Release & publishing
+This repo uses [Changesets](https://github.com/changesets/changesets):
 
 ```bash
-bun run index.ts
+bunx changeset          # choose the packages to bump
+bun run version         # applies the version + changelog updates
+bun run release         # publishes (CI uses the same action)
 ```
 
-This project was created using `bun init` in bun v1.3.1. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+CI workflows live in `.github/workflows` and can be executed locally with the `action:*` scripts via [`act`](https://github.com/nektos/act).
+
+## Conventions
+- All source is TypeScript (`"type": "module"` everywhere) and compiled through `tsup`.
+- Tests live next to the package under `tests/*.test.ts` and use Bun's `bun:test` runner.
+- Keep README files in sync with the code (this document summarizes the whole workspace; each package ships its own README for deep dives).
+- Prefer the shared helpers in `@nope/common`, `@nope/cache`, and `@nope/async` instead of re-implementing them inside feature packages.
