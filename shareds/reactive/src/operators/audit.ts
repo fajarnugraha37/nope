@@ -1,0 +1,66 @@
+import { Observable } from "../observable.js";
+import { Stream } from "../stream.js";
+import { PromiseStatus } from "../reactive.js";
+import { getGlobalFluthFactory } from "../global.js";
+
+/**
+ * A function that audits the data stream and triggers certain actions based on completion.
+ * only emit recently resolved value, if the value is rejected, it will not be emitted
+ * @param {Stream | Observable} trigger$ - The trigger observable to collect values.
+ * @param {boolean} shouldAwait - Whether to await when then observable status is pending.
+ * @param {Observable<T>} observable$ - The observable to collect values from.
+ * @return {Observable<T[]>} A new observable containing arrays of collected values.
+ */
+export const audit =
+  <T>(trigger$: Stream | Observable, shouldAwait = true) =>
+  (observable$: Observable<T>): Observable<T> => {
+    let finished = false;
+    let currentValue: T | undefined = observable$._getProtectedProperty(
+      "_v"
+    ) as T | undefined;
+    let pendingObservable$: Observable | undefined;
+    let plugin = {
+      executeAll: observable$._getRootPlugin()?.executeAll || [],
+    };
+    const stream$ = (getGlobalFluthFactory()?.() || new Stream<T>()).use(
+      plugin
+    ) as Stream<T>;
+
+    // Only track resolved values, ignore rejected ones
+    const dataObservable$ = observable$.then((value) => {
+      currentValue = value;
+      return undefined;
+    });
+
+    const triggerNext = () => {
+      if (shouldAwait && observable$.status === PromiseStatus.PENDING) {
+        if (!pendingObservable$) {
+          pendingObservable$ = observable$.thenOnce(triggerNext);
+        }
+        return;
+      } else {
+        const curRootExecutePlugin =
+          observable$._getRootPlugin()?.executeAll || [];
+        if (curRootExecutePlugin !== plugin.executeAll) {
+          stream$.remove(plugin);
+          plugin.executeAll = curRootExecutePlugin;
+          stream$.use(plugin);
+        }
+        stream$.next(currentValue as T, finished);
+        pendingObservable$ = undefined; // Clear after resolution
+      }
+    };
+
+    trigger$.then(triggerNext);
+
+    trigger$.afterComplete(() => {
+      finished = true;
+      dataObservable$.unsubscribe();
+      stream$.remove(plugin);
+      setTimeout(() => {
+        stream$.complete();
+      });
+    });
+
+    return stream$.then() as Observable<T>;
+  };
