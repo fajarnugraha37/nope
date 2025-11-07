@@ -21,7 +21,7 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "shared/*"
+    "shareds/*"
   ],
   "dependencies": {
     "nanoid": "^5.1.6"
