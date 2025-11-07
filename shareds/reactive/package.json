@@ -1,6 +1,6 @@
 {
   "name": "@nope/reactive",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "A promise-aware observable + stream implementation with a plugin system, immutable state helpers, and a suite of operators for composing async flows",
   "module": "index.ts",

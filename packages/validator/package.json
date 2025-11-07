@@ -1,6 +1,6 @@
 {
   "name": "@nope/validator",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace",
   "module": "index.ts",

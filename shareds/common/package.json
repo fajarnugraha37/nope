@@ -1,6 +1,6 @@
 {
   "name": "@nope/common",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "Shared TypeScript helpers that underpin every package in the `nope` workspace: typed errors, guards, ULID utilities, regex/string helpers, object proxies, and time/file helpers",
   "module": "index.ts",

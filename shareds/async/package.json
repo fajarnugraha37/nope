@@ -1,6 +1,6 @@
 {
   "name": "@nope/async",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers",
   "module": "index.ts",

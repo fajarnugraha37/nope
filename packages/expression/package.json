@@ -1,6 +1,6 @@
 {
   "name": "@nope/expression",
-  "private": true,
+  "private": false,
   "version": "0.1.0",
   "description": "Strongly typed expression schemas, fluent builders, analyzers, validators, and a cache-aware evaluator powered by `json-logic-engine`",
   "module": "index.ts",
@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "@nope/common": "workspace:*",
+    "@nope/cache": "workspace:*",
     "@nope/validator": "workspace:*",
     "json-logic-engine": "^5.0.3"
   },
