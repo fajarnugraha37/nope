@@ -29,11 +29,12 @@
       },
     },
     "packages/expression": {
-      "name": "@nope/expression",
+      "name": "@fajarnugraha37/expression",
       "version": "0.1.0",
       "dependencies": {
-        "@nope/common": "workspace:*",
-        "@nope/validator": "workspace:*",
+        "@fajarnugraha37/cache": "workspace:*",
+        "@fajarnugraha37/common": "workspace:*",
+        "@fajarnugraha37/validator": "workspace:*",
         "json-logic-engine": "^5.0.3",
       },
       "devDependencies": {
@@ -44,11 +45,11 @@
       },
     },
     "packages/validator": {
-      "name": "@nope/validator",
+      "name": "@fajarnugraha37/validator",
       "version": "0.1.0",
       "dependencies": {
-        "@nope/cache": "workspace:*",
-        "@nope/common": "workspace:*",
+        "@fajarnugraha37/cache": "workspace:*",
+        "@fajarnugraha37/common": "workspace:*",
         "ajv": "^8.17.1",
         "ajv-errors": "^3.0.0",
         "ajv-formats": "^3.0.1",
@@ -62,7 +63,7 @@
       },
     },
     "shareds/async": {
-      "name": "@nope/async",
+      "name": "@fajarnugraha37/async",
       "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
@@ -72,7 +73,7 @@
       },
     },
     "shareds/cache": {
-      "name": "@nope/cache",
+      "name": "@fajarnugraha37/cache",
       "version": "0.1.0",
       "devDependencies": {
         "@types/bun": "latest",
@@ -82,7 +83,7 @@
       },
     },
     "shareds/common": {
-      "name": "@nope/common",
+      "name": "@fajarnugraha37/common",
       "version": "0.1.0",
       "dependencies": {
         "limu": "^4.1.1",
@@ -96,10 +97,10 @@
       },
     },
     "shareds/reactive": {
-      "name": "@nope/reactive",
+      "name": "@fajarnugraha37/reactive",
       "version": "0.1.0",
       "dependencies": {
-        "@nope/common": "workspace:*",
+        "@fajarnugraha37/common": "workspace:*",
         "limu": "^4.1.1",
       },
       "devDependencies": {
@@ -225,6 +226,18 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.4.1", "", { "dependencies": { "@eslint/core": "^0.17.0", "levn": "^0.4.1" } }, "sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA=="],
 
+    "@fajarnugraha37/async": ["@fajarnugraha37/async@workspace:shareds/async"],
+
+    "@fajarnugraha37/cache": ["@fajarnugraha37/cache@workspace:shareds/cache"],
+
+    "@fajarnugraha37/common": ["@fajarnugraha37/common@workspace:shareds/common"],
+
+    "@fajarnugraha37/expression": ["@fajarnugraha37/expression@workspace:packages/expression"],
+
+    "@fajarnugraha37/reactive": ["@fajarnugraha37/reactive@workspace:shareds/reactive"],
+
+    "@fajarnugraha37/validator": ["@fajarnugraha37/validator@workspace:packages/validator"],
+
     "@humanfs/core": ["@humanfs/core@0.19.1", "", {}, "sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA=="],
 
     "@humanfs/node": ["@humanfs/node@0.16.7", "", { "dependencies": { "@humanfs/core": "^0.19.1", "@humanwhocodes/retry": "^0.4.0" } }, "sha512-/zUx+yOsIrG4Y43Eh2peDeKCxlRt/gET6aHfaKpuq267qXdYDFViVHfMaLyygZOnl0kGWxFIgsBy8QFuTLUXEQ=="],
@@ -260,18 +273,6 @@
     "@nodelib/fs.stat": ["@nodelib/fs.stat@2.0.5", "", {}, "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A=="],
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
-
-    "@nope/async": ["@nope/async@workspace:shareds/async"],
-
-    "@nope/cache": ["@nope/cache@workspace:shareds/cache"],
-
-    "@nope/common": ["@nope/common@workspace:shareds/common"],
-
-    "@nope/expression": ["@nope/expression@workspace:packages/expression"],
-
-    "@nope/reactive": ["@nope/reactive@workspace:shareds/reactive"],
-
-    "@nope/validator": ["@nope/validator@workspace:packages/validator"],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 

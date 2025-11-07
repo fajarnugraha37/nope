@@ -1,8 +1,8 @@
 {
-  "name": "@nope/cache",
+  "name": "@fajarnugraha37/cache",
   "private": false,
   "version": "0.1.0",
-  "description": "Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@nope/validator` and `@nope/expression`",
+  "description": "Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`",
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {

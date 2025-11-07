@@ -1,4 +1,4 @@
-# @nope/async
+# @fajarnugraha37/async
 
 > Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
 
@@ -18,7 +18,7 @@
 Every export is re-exported from `src/index.ts` so you can do:
 
 ```ts
-import { Channel, select, withDefer, EventBus, retryWith } from "@nope/async";
+import { Channel, select, withDefer, EventBus, retryWith } from "@fajarnugraha37/async";
 ```
 
 ## Examples
@@ -26,7 +26,7 @@ import { Channel, select, withDefer, EventBus, retryWith } from "@nope/async";
 ### Channels & `select`
 
 ```ts
-import { Channel, select } from "@nope/async";
+import { Channel, select } from "@fajarnugraha37/async";
 
 const input = new Channel<number>(1);
 
@@ -56,7 +56,7 @@ console.log(first.index, first.value);
 ### Resource-safe scopes
 
 ```ts
-import { withDefer, timedAbort } from "@nope/async";
+import { withDefer, timedAbort } from "@fajarnugraha37/async";
 
 await withDefer(async (scope) => {
   const abortController = timedAbort(scope, 1_000);
@@ -70,7 +70,7 @@ await withDefer(async (scope) => {
 ### Event bus
 
 ```ts
-import { EventBus } from "@nope/async";
+import { EventBus } from "@fajarnugraha37/async";
 
 type Events = {
   "user:created": { id: string };
@@ -90,7 +90,7 @@ stop();
 ### Retry helpers
 
 ```ts
-import { retryWith } from "@nope/async";
+import { retryWith } from "@fajarnugraha37/async";
 
 const result = await retryWith(
   async (signal) => {
@@ -113,4 +113,4 @@ if (!result.ok) throw result.error;
 | `bun run test:watch` | Watch mode. |
 | `bun run coverage:view` | Inspect coverage output. |
 
-`@nope/expression` and other packages treat this module as their standard async toolbox—prefer it over ad-hoc helpers so behavior stays consistent throughout the repo.
+`@fajarnugraha37/expression` and other packages treat this module as their standard async toolbox—prefer it over ad-hoc helpers so behavior stays consistent throughout the repo.

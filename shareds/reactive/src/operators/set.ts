@@ -1,5 +1,5 @@
 import { produce } from "limu";
-import { isObjectLike } from "@nope/common/is";
+import { isObjectLike } from "@fajarnugraha37/common/is";
 import { Observable } from "../observable.js";
 
 /**

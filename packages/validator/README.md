@@ -1,4 +1,4 @@
-# @nope/validator
+# @fajarnugraha37/validator
 
 > A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace.
 
@@ -7,15 +7,15 @@
 - **SchemaBuilder DSL:** Compose JSON Schema objects programmatically (`SchemaBuilder.object().property("id", SchemaBuilder.string(), { required: true })`).
 - **JSON import/export:** Register schemas from literal JSON/objects, then export them for persistence or tooling via `exportSchemas*`.
 - **Type-specific validators:** `createTypeValidator` returns a narrowed API with strict/async variants plus batched validation (`validateMany`).
-- **Cache-aware loaders:** Plug a loader (sync or async) that resolves schemas on demand while `@nope/cache` keeps compiled copies warm.
+- **Cache-aware loaders:** Plug a loader (sync or async) that resolves schemas on demand while `@fajarnugraha37/cache` keeps compiled copies warm.
 - **Shortcuts:** Helpers in `short-hand.ts` (`defineSchemas`, `buildSchemaMap`, `createValidatorFromBuilders`, …) bridge JSON, builders, and runtime validators.
 
 ## Installation
 
 ```bash
-bun add @nope/validator
+bun add @fajarnugraha37/validator
 # or
-pnpm add @nope/validator
+pnpm add @fajarnugraha37/validator
 ```
 
 The package exports both ESM and CJS builds from `dist/`.
@@ -30,13 +30,13 @@ import {
   defineSchemas,
   buildSchemaMap,
   createValidatorFromBuilders,
-} from "@nope/validator";
+} from "@fajarnugraha37/validator";
 
 // 1) Describe schemas with the DSL
 const schemas = defineSchemas({
   "expression-schema": SchemaBuilder.object()
     .title("Expression")
-    .description("Minimal expression schema used by @nope/expression")
+    .description("Minimal expression schema used by @fajarnugraha37/expression")
     .property("id", SchemaBuilder.string(), { required: true })
     .property("name", SchemaBuilder.string(), { required: true })
     .property(
@@ -131,7 +131,7 @@ typeValidator.validateStrict({ slug: "checkout", steps: [{ title: "Start" }] });
 - `defineSchemas`, `buildSchemaMap`, `createValidatorFromJSON`, `createValidatorFromBuilders`, `createTypeValidatorFromJSON`, `createTypeValidatorFromBuilders`, `validatorBuilder` – ergonomic helpers defined in `src/short-hand.ts`.
 - `defaultValidator` – a ready-to-use validator with a small cache for lightweight scenarios.
 
-Internally the package uses `@nope/cache`'s `LruTtlCache` to store raw schemas and compiled AJV validators, and surfaces failures through `ValidationError` from `@nope/common`.
+Internally the package uses `@fajarnugraha37/cache`'s `LruTtlCache` to store raw schemas and compiled AJV validators, and surfaces failures through `ValidationError` from `@fajarnugraha37/common`.
 
 ## Scripts
 
@@ -142,4 +142,4 @@ Internally the package uses `@nope/cache`'s `LruTtlCache` to store raw schemas a
 | `bun run test:watch` | Watch mode. |
 | `bun run coverage:view` | Open the HTML coverage report (after running tests). |
 
-When consumed from other packages (for example `@nope/expression`) import the builder/short-hand helpers instead of talking to AJV directly to keep schemas consistent across the workspace.
+When consumed from other packages (for example `@fajarnugraha37/expression`) import the builder/short-hand helpers instead of talking to AJV directly to keep schemas consistent across the workspace.

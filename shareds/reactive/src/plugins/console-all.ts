@@ -1,6 +1,6 @@
 import type { OnFulfilled, OnRejected } from "../reactive.js";
 import { PromiseStatus } from "../reactive.js";
-import { isPromiseLike } from "@nope/common/is";
+import { isPromiseLike } from "@fajarnugraha37/common/is";
 /**
  * @description console node executeAll plugin
  * @param resolvePrefix prefix for resolve console prefix

@@ -4,7 +4,7 @@ import {
   isObjectLike,
   isAsyncFunction,
   isPromiseLike,
-} from "@nope/common/is";
+} from "@fajarnugraha37/common/is";
 import type { Stream } from "./stream.js";
 import type {
   OnFulfilled,

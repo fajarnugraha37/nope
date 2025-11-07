@@ -6,8 +6,8 @@ import {
   ValidationError,
   type ValidationErrorInfo,
   type ValidationResult,
-} from "@nope/common";
-import { LruTtlCache, type LruTtlOpts } from "@nope/cache";
+} from "@fajarnugraha37/common";
+import { LruTtlCache, type LruTtlOpts } from "@fajarnugraha37/cache";
 import { ValidatorBuilder } from "./validator.builder.js";
 import type { SchemaBuilder } from "./schema-builder.js";
 
@@ -46,7 +46,7 @@ export type SchemaLoader<TSchemas extends SchemaRegistry = SchemaRegistry> = <
 ) => Promise<TSchemas[K] | undefined> | TSchemas[K] | undefined;
 
 /**
- * Options for the schema cache (built on top of @nope/cache LRU implementation)
+ * Options for the schema cache (built on top of @fajarnugraha37/cache LRU implementation)
  */
 export type SchemaCacheOptions<
   TSchemas extends SchemaRegistry = SchemaRegistry

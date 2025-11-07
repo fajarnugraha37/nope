@@ -1,4 +1,4 @@
-# @nope/common
+# @fajarnugraha37/common
 
 > Shared TypeScript helpers that underpin every package in the `nope` workspace: typed errors, guards, ULID utilities, regex/string helpers, object proxies, and time/file helpers.
 
@@ -6,7 +6,7 @@
 
 - **Errors (`src/error`)**
   - `HttpError`, `NotFoundError`, `ConflictError`, `InvalidDataError`, `ValidationError`.
-  - `ValidationResult` + `ValidationErrorInfo` interfaces consumed by `@nope/validator` and `@nope/expression`.
+  - `ValidationResult` + `ValidationErrorInfo` interfaces consumed by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`.
 
 - **Guard helpers (`src/guard`)**
   - `ensure*` functions that throw friendly errors when values are missing/malformed (`ensureNotNil`, `ensureArrayNonEmpty`, `ensureShape`, `coalesce*`, `unwrap`).
@@ -45,17 +45,17 @@ import {
   wordFinder,
   ulidToUUID,
   sleep
-} from "@nope/common";
+} from "@fajarnugraha37/common";
 ```
 
 ## Example
 
 ```ts
-import { ULID, factory as ulidFactory, ulidToUUID } from "@nope/common/id/ulid";
-import { ensureShape } from "@nope/common/guard/ensure";
-import { matchAll, rx } from "@nope/common/regex";
-import { observeProxy } from "@nope/common/object/proxy";
-import { ValidationError } from "@nope/common/error";
+import { ULID, factory as ulidFactory, ulidToUUID } from "@fajarnugraha37/common/id/ulid";
+import { ensureShape } from "@fajarnugraha37/common/guard/ensure";
+import { matchAll, rx } from "@fajarnugraha37/common/regex";
+import { observeProxy } from "@fajarnugraha37/common/object/proxy";
+import { ValidationError } from "@fajarnugraha37/common/error";
 
 const ulid: ULID = ulidFactory();
 const id = ulid();

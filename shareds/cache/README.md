@@ -1,6 +1,6 @@
-# @nope/cache
+# @fajarnugraha37/cache
 
-> Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@nope/validator` and `@nope/expression`.
+> Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`.
 
 ## Components
 
@@ -26,7 +26,7 @@ import {
   KeyedLock,
   Singleflight,
   sleep,
-} from "@nope/cache";
+} from "@fajarnugraha37/cache";
 
 // LRU + TTL cache
 const cache = new LruTtlCache<string, number>({
@@ -79,7 +79,7 @@ async function compute(key: string) {
 }
 ```
 
-`@nope/validator` uses these primitives to memoize AJV validators, while `@nope/expression` caches compiled json-logic functions.
+`@fajarnugraha37/validator` uses these primitives to memoize AJV validators, while `@fajarnugraha37/expression` caches compiled json-logic functions.
 
 ## Scripts
 

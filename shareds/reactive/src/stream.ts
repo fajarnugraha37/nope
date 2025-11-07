@@ -1,5 +1,5 @@
 import { produce, createDraft, finishDraft } from "limu";
-import { isObjectLike, isPromiseLike, isAsyncFunction } from "@nope/common/is";
+import { isObjectLike, isPromiseLike, isAsyncFunction } from "@fajarnugraha37/common/is";
 import { Observable } from "./observable.js";
 import { PromiseStatus } from "./reactive.js";
 

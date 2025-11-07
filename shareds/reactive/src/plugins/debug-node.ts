@@ -1,4 +1,4 @@
-import { isPromiseLike } from "@nope/common/is";
+import { isPromiseLike } from "@fajarnugraha37/common/is";
 
 /**
  * @param condition condition function, if return true will debug resolve

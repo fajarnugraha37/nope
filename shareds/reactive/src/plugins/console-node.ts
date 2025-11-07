@@ -1,4 +1,4 @@
-import { isPromiseLike } from "@nope/common/is";
+import { isPromiseLike } from "@fajarnugraha37/common/is";
 /**
  * @description console node execute plugin
  * @param resolvePrefix prefix for resolve console prefix

@@ -5,20 +5,20 @@ _Normalized Ops & Predicate Ecosystem_
 > Bun-first toolchain for building, validating, and executing portable expressions with a supporting set of async, caching, and reactive utilities.
 
 ## Highlights
-- Multi-package Bun workspace where `@nope/expression` sits on top of reusable validators, caches, and shared helpers.
+- Multi-package Bun workspace where `@fajarnugraha37/expression` sits on top of reusable validators, caches, and shared helpers.
 - Batteries-included developer UX: Bun test runner, tsup builds, Changesets for releases, and workspace linking by default.
 - Every package ships typed source, ESM/CJS bundles, and `bun test` coverage so you can embed pieces individually or wire them together.
-- Shared utilities avoid duplication: `@nope/validator` uses the caching primitives, the expression builder reuses the validator, and the reactive helpers lean on `@nope/common`.
+- Shared utilities avoid duplication: `@fajarnugraha37/validator` uses the caching primitives, the expression builder reuses the validator, and the reactive helpers lean on `@fajarnugraha37/common`.
 
 ## Packages
 | Name | Folder | Purpose |
 | --- | --- | --- |
-| `@nope/expression` | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
-| `@nope/validator` | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
-| `@nope/common` | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
-| `@nope/cache` | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
-| `@nope/async` | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
-| `@nope/reactive` | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
+| `@fajarnugraha37/expression` | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
+| `@fajarnugraha37/validator` | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
+| `@fajarnugraha37/common` | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
+| `@fajarnugraha37/cache` | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
+| `@fajarnugraha37/async` | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
+| `@fajarnugraha37/reactive` | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
 | `apps/*` | `apps` | Reserved for demo or integration apps that consume the workspace packages. |
 
 ## Repository layout
@@ -43,8 +43,8 @@ _Normalized Ops & Predicate Ecosystem_
 
    ```bash
    # Build and test the expression engine
-   bun run --filter @nope/expression build
-   bun run --filter @nope/expression test
+   bun run --filter @fajarnugraha37/expression build
+   bun run --filter @fajarnugraha37/expression test
 
    # Same idea for the validator
    cd packages/validator && bun run test
@@ -54,7 +54,7 @@ _Normalized Ops & Predicate Ecosystem_
 - **Build:** `bun run --filter <package> build` runs `tsc` + `tsup` for that workspace (each package publishes ESM, CJS, and `.d.ts` files).
 - **Test:** `bun run --filter <package> test` executes the Bun test suite under `tests/`. Use `bun run --filter <package> test:watch` for focused runs.
 - **Coverage:** open the HTML report with `bun run --filter <package> coverage:view` after a test run.
-- **Cross-package links:** Bun automatically links workspace dependencies (for example `@nope/expression` depends on `@nope/validator`, which in turn depends on `@nope/cache` and `@nope/common`).
+- **Cross-package links:** Bun automatically links workspace dependencies (for example `@fajarnugraha37/expression` depends on `@fajarnugraha37/validator`, which in turn depends on `@fajarnugraha37/cache` and `@fajarnugraha37/common`).
 
 When making sweeping changes it is handy to run every test suite:
 
@@ -79,7 +79,7 @@ CI workflows live in `.github/workflows` and can be executed locally with the `a
 - All source is TypeScript (`"type": "module"` everywhere) and compiled through `tsup`.
 - Tests live next to the package under `tests/*.test.ts` and use Bun's `bun:test` runner.
 - Keep README files in sync with the code (this document summarizes the whole workspace; each package ships its own README for deep dives).
-- Prefer the shared helpers in `@nope/common`, `@nope/cache`, and `@nope/async` instead of re-implementing them inside feature packages.
+- Prefer the shared helpers in `@fajarnugraha37/common`, `@fajarnugraha37/cache`, and `@fajarnugraha37/async` instead of re-implementing them inside feature packages.
 
 
 

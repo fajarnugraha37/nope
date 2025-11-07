@@ -1,5 +1,5 @@
 {
-  "name": "@nope/reactive",
+  "name": "@fajarnugraha37/reactive",
   "private": false,
   "version": "0.1.0",
   "description": "A promise-aware observable + stream implementation with a plugin system, immutable state helpers, and a suite of operators for composing async flows",
@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "limu": "^4.1.1",
-    "@nope/common": "workspace:*"
+    "@fajarnugraha37/common": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -1,4 +1,4 @@
-import { LruTtlCache } from "@nope/cache";
+import { LruTtlCache } from "@fajarnugraha37/cache";
 import { AsyncLogicEngine } from "json-logic-engine";
 import type {
   ExpressionSchema,

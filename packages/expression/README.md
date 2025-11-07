@@ -1,4 +1,4 @@
-# @nope/expression
+# @fajarnugraha37/expression
 
 > Strongly typed expression schemas, fluent builders, analyzers, validators, and a cache-aware evaluator powered by `json-logic-engine`.
 
@@ -6,15 +6,15 @@
 - Author composable JSON-like expressions with full metadata (id, description, tags, categories, version) via `ExpressionBuilder`.
 - Inspect expressions before you run them: extract variables/literals, detect recursion, summarize complexity, and validate the structure.
 - Execute expressions against arbitrary data using the asynchronous `ExpressionEvaluator` which compiles rules once, caches the compiled functions, and enforces depth/time limits.
-- Debug, optimize, and serialize rules with utilities such as `ExpressionDebugger`, `ExpressionOptimizer`, builder short-hands (`Compare`, `Logic`, `Str`, `Arr`, `$`, `BuilderFactory`, …), and tight integration with `@nope/validator`.
+- Debug, optimize, and serialize rules with utilities such as `ExpressionDebugger`, `ExpressionOptimizer`, builder short-hands (`Compare`, `Logic`, `Str`, `Arr`, `$`, `BuilderFactory`, …), and tight integration with `@fajarnugraha37/validator`.
 
 ## Installation
 Inside this monorepo the package is already linked. In another workspace:
 
 ```bash
-bun add @nope/expression
+bun add @fajarnugraha37/expression
 # or
-pnpm add @nope/expression
+pnpm add @fajarnugraha37/expression
 ```
 
 > The package publishes ESM and CJS bundles plus `.d.ts` files via `tsup`.
@@ -35,7 +35,7 @@ import {
   Arr,
   when,
   $
-} from "@nope/expression";
+} from "@fajarnugraha37/expression";
 
 const rule = ExpressionBuilder.create("eligibility-rule")
   .name("Loan eligibility")
@@ -103,7 +103,7 @@ if (!validation.valid) {
 - `ExpressionBuilder` enforces required metadata (`id`, `name`, `description`, combination operator, operations) and exposes helpers to manipulate metadata, tags, category, priority, author, and version.
 - `add`, `addMany`, `if`, `switch`, `all`, `any`, `and`, `or`, `not` decide how the root logical operator behaves.
 - Short-hands in `src/builder/short-hand.ts` (`Ops`, `Compare`, `MathOps`, `Logic`, `Str`, `Arr`, `Is`, `Obj`, `DateTime`, `bin`, `iff`, `when`, `$`, `BuilderFactory`) keep schemas readable without touching raw JSON.
-- Builders can be cloned (`clone()`), loaded from existing schemas (`fromSchema`), validated strictly via the bundled `@nope/validator` schema, and serialized (`toJSON`, `summary`).
+- Builders can be cloned (`clone()`), loaded from existing schemas (`fromSchema`), validated strictly via the bundled `@fajarnugraha37/validator` schema, and serialized (`toJSON`, `summary`).
 
 ## Analyzer, validator, and debugger
 
@@ -116,7 +116,7 @@ if (!validation.valid) {
 
 The evaluator sits on top of [`json-logic-engine`](https://github.com/CacheControl/json-logic-engine) and exposes:
 
-- LRU+TTL caching for compiled functions (`@nope/cache`), with per-expression cache keys that include version plus a hash of the schema payload.
+- LRU+TTL caching for compiled functions (`@fajarnugraha37/cache`), with per-expression cache keys that include version plus a hash of the schema payload.
 - Timeouts, recursion depth limits, async/sync mode, debug logging, and metadata (execution time, operation count, cache hits/misses).
 - Module and keyword injection: `addKeyword`, `addSyncModule`, and `addAsyncModule` let you expose custom helpers to expressions without recompiling everything.
 
@@ -124,7 +124,7 @@ The evaluator sits on top of [`json-logic-engine`](https://github.com/CacheContr
 
 ## Errors
 
-Custom errors live in `src/error` and extend `@nope/common`'s `HttpError`:
+Custom errors live in `src/error` and extend `@fajarnugraha37/common`'s `HttpError`:
 
 - `ExpressionValidationError` – builder/validator feedback.
 - `EvaluationError` – runtime issues surfaced by the evaluator.
@@ -139,4 +139,4 @@ Custom errors live in `src/error` and extend `@nope/common`'s `HttpError`:
 | `bun run test:watch` | Watch mode for rapid iteration. |
 | `bun run coverage:view` | Open the Bun coverage report (ensure a test run has generated `coverage/`). |
 
-This package depends on `@nope/common`, `@nope/validator`, `@nope/cache`, and `json-logic-engine`. When hacking on it inside the monorepo, change those dependencies first and re-run the expression tests to verify the full pipeline.
+This package depends on `@fajarnugraha37/common`, `@fajarnugraha37/validator`, `@fajarnugraha37/cache`, and `json-logic-engine`. When hacking on it inside the monorepo, change those dependencies first and re-run the expression tests to verify the full pipeline.

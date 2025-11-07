@@ -1,5 +1,5 @@
 {
-  "name": "@nope/expression",
+  "name": "@fajarnugraha37/expression",
   "private": false,
   "version": "0.1.0",
   "description": "Strongly typed expression schemas, fluent builders, analyzers, validators, and a cache-aware evaluator powered by `json-logic-engine`",
@@ -64,9 +64,9 @@
     "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
   },
   "dependencies": {
-    "@nope/common": "workspace:*",
-    "@nope/cache": "workspace:*",
-    "@nope/validator": "workspace:*",
+    "@fajarnugraha37/common": "workspace:*",
+    "@fajarnugraha37/cache": "workspace:*",
+    "@fajarnugraha37/validator": "workspace:*",
     "json-logic-engine": "^5.0.3"
   },
   "devDependencies": {

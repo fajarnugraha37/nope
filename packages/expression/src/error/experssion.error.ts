@@ -1,4 +1,4 @@
-import { HttpError } from "@nope/common";
+import { HttpError } from "@fajarnugraha37/common";
 
 // Error types
 export class ExpressionError extends HttpError {

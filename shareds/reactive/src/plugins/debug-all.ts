@@ -1,6 +1,6 @@
 import type { OnFulfilled, OnRejected } from "../reactive.js";
 import { PromiseStatus } from "../reactive.js";
-import { isPromiseLike } from "@nope/common/is";
+import { isPromiseLike } from "@fajarnugraha37/common/is";
 /**
  * @param condition condition function, if return true will debug resolve
  * @param conditionError condition function, if return true will debug error

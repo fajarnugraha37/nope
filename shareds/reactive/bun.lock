@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "@nope/reactive",
+      "name": "@fajarnugraha37/reactive",
       "dependencies": {
         "limu": "^4.1.1",
       },

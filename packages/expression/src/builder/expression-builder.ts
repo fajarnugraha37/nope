@@ -11,7 +11,7 @@ import type {
 } from "../expression.js";
 import { ExpressionValidationError } from "../error/index.js";
 import { Ops } from "./ops.js";
-import { createValidator } from "@nope/validator";
+import { createValidator } from "@fajarnugraha37/validator";
 import expressionSchema from "../schema/expression.schema.json" with { type: "json" };
 
 export const defaultValidator = createValidator(

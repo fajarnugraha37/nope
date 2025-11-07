@@ -1,4 +1,4 @@
-# @nope/reactive
+# @fajarnugraha37/reactive
 
 > A promise-aware observable + stream implementation with a plugin system, immutable state helpers, and a suite of operators for composing async flows.
 
@@ -13,8 +13,8 @@
 ## Example
 
 ```ts
-import { $, combine, map, filter, throttle } from "@nope/reactive";
-import { consoleAll } from "@nope/reactive/plugins";
+import { $, combine, map, filter, throttle } from "@fajarnugraha37/reactive";
+import { consoleAll } from "@fajarnugraha37/reactive/plugins";
 
 // Create stateful streams
 const clicks$ = $(0);
@@ -77,4 +77,4 @@ form$.set((draft) => {
 | `bun run test:watch` | Watch mode. |
 | `bun run coverage:view` | Open the coverage report (when generated). |
 
-This package depends on `limu` for structural sharing and `@nope/common` for type guards, so updates to those libraries immediately benefit the reactive layer as well.
+This package depends on `limu` for structural sharing and `@fajarnugraha37/common` for type guards, so updates to those libraries immediately benefit the reactive layer as well.
