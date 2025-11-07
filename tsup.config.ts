@@ -4,7 +4,7 @@ export const tsupConfig = {
   // outDir: "dist/",
   format: ["cjs", "esm"],
   dts: true,
-  minify: false,
+  minify: true,
   clean: true,
   sourcemap: false,
   bundle: true,

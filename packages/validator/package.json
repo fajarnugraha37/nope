@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/validator",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace",
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
@@ -48,7 +48,6 @@
   },
   "files": [
     "dist",
-    "src",
     "bin",
     "README.md",
     "LICENSE"
