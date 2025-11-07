@@ -1,6 +1,7 @@
 export * from "./error/index.js";
 export * from "./file/index.js";
 export * from "./guard/index.js";
+export * from "./id/index.js";
 export * from "./is/index.js";
 export * from "./object/index.js";
 export * from "./regex/index.js";
