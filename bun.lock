@@ -4,6 +4,11 @@
     "": {
       "name": "nope",
       "dependencies": {
+        "ajv": "^8.17.1",
+        "ajv-errors": "^3.0.0",
+        "ajv-formats": "^3.0.1",
+        "ajv-keywords": "^5.1.0",
+        "json-logic-engine": "^5.0.3",
         "nanoid": "^5.1.6",
       },
       "devDependencies": {
@@ -42,6 +47,7 @@
       "name": "@nope/validator",
       "version": "0.1.0",
       "dependencies": {
+        "@nope/cache": "workspace:*",
         "@nope/common": "workspace:*",
         "ajv": "^8.17.1",
         "ajv-errors": "^3.0.0",
