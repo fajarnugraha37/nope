@@ -1,0 +1,23 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Humanizer Registry Snapshot Tests produces consistent humanized output for eq operator 1`] = `"age must equal 25 (got 30)"`;
+
+exports[`Humanizer Registry Snapshot Tests produces consistent humanized tree for complex spec 1`] = `
+"✗ All conditions must be met
+  ✗ age must be at least 18 (got 16)
+  ✗ At least one condition must be met
+    ✗ role must equal "admin" (got "user")
+    ✗ role must equal "moderator" (got "user")
+  ✓ email must exist and not be null"
+`;
+
+exports[`Humanizer Registry Snapshot Tests produces consistent output for all comparison operators 1`] = `
+{
+  "eq": "age must equal 25 (got 30)",
+  "gt": "age must be greater than 65 (got 30)",
+  "gte": "age must be at least 21 (got 30)",
+  "lt": "age must be less than 18 (got 30)",
+  "lte": "age must be at most 21 (got 30)",
+  "ne": "age must not equal 30",
+}
+`;

@@ -2,7 +2,16 @@ export * from "./core/types.js";
 export { BaseSpec, withMeta } from "./core/base-spec.js";
 export { createRegistry } from "./core/registry.js";
 export { spec, createSpecDSL } from "./dsl/spec-builder.js";
-export { defaultHumanizer, Humanizer } from "./dsl/humanizer.js";
+export { 
+  defaultHumanizer, 
+  createHumanizer,
+  HumanizerRegistry,
+  builtInTemplates,
+  type HumanizerContext,
+  type HumanizerTemplate,
+  type LocalizationFunction,
+  type HumanizerOptions 
+} from "./dsl/humanizer.js";
 export { builtInOperators } from "./ops/index.js";
 export { all, any, none, xor, implies, not } from "./core/combinators.js";
 export { evaluateSpec as evaluate } from "./core/evaluate.js";
