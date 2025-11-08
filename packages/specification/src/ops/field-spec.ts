@@ -45,13 +45,19 @@ export class FieldSpec<T, Ctx extends SpecContext> extends BaseSpec<T, Ctx> {
     return this.predicate(actual, value, ctx);
   }
 
-  protected override describe(): ExplainNode {
+  protected override describe(value: T, ctx?: Ctx): ExplainNode {
+    const actual = getPath(value as Record<string, unknown>, this.path);
+    const expected = this.input?.value ?? this.input?.values ?? this.input?.pattern ?? this.input?.min ?? this.input?.max;
+    
     return {
       id: this.id,
       name: this.name,
       pass: "unknown",
       path: this.path,
       reason: this.reason,
+      operator: this.kind,
+      actualValue: actual,
+      expectedValue: expected,
       meta: {
         kind: this.kind,
         ...this.input,

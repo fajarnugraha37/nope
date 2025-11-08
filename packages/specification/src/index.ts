@@ -14,3 +14,4 @@ export { geoPlugin } from "./plugins/geo.js";
 export { timePlugin } from "./plugins/time.js";
 export { stringPlugin } from "./plugins/string.js";
 export type { Adapter } from "./adapters/adapter.js";
+export { generateFailureReason, enhanceExplainTree, formatExplainTree } from "./utils/explain.js";

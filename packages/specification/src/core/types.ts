@@ -15,6 +15,11 @@ export interface ExplainNode {
   meta?: Record<string, unknown>;
   children?: ExplainNode[];
   durationMs?: number;
+  // Enhanced failure context
+  operator?: string; // e.g., "gte", "eq", "contains"
+  expectedValue?: unknown;
+  actualValue?: unknown;
+  parentPath?: string; // Full path from root for nested objects
 }
 
 export interface Specification<T, Ctx extends SpecContext = SpecContext> {
@@ -23,6 +28,7 @@ export interface Specification<T, Ctx extends SpecContext = SpecContext> {
   isSatisfiedBy(value: T, ctx?: Ctx): boolean;
   isSatisfiedByAsync?(value: T, ctx?: Ctx): Promise<boolean>;
   explain(value: T, ctx?: Ctx): ExplainNode;
+  explainAsync?(value: T, ctx?: Ctx): Promise<ExplainNode>;
   and(other: Specification<T, Ctx>): Specification<T, Ctx>;
   or(other: Specification<T, Ctx>): Specification<T, Ctx>;
   not(): Specification<T, Ctx>;

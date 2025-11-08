@@ -356,25 +356,70 @@ await collection.find(mongoQuery);
 
 ### 3. Explanation & Debugging
 
-Get detailed evaluation results:
+Get detailed evaluation results with rich failure context:
 
 ```ts
+import { all, spec, enhanceExplainTree, formatExplainTree } from "@fajarnugraha37/specification";
+
 const rule = all<User>(
   spec.field<User>("age").gte(18),
-  spec.field<User>("role").eq("admin"),
+  spec.field<User>("email").contains("@"),
 );
 
-const explanation = rule.explain({ age: 16, role: "admin" });
+// Sync explain
+const explanation = rule.explain({ age: 16, email: "user@test.com" });
 console.log(explanation);
 // {
 //   id: "spec_123",
 //   pass: false,
+//   operator: "and",
 //   children: [
-//     { id: "spec_124", pass: false, path: "age" },
-//     { id: "spec_125", pass: true, path: "role" }
+//     {
+//       id: "spec_124",
+//       pass: false,
+//       path: "age",
+//       operator: "gte",
+//       actualValue: 16,
+//       expectedValue: 18,
+//       reason: "{age} must be greater than or equal to 18"
+//     },
+//     {
+//       id: "spec_125",
+//       pass: true,
+//       path: "email",
+//       operator: "contains",
+//       actualValue: "user@test.com",
+//       expectedValue: "@"
+//     }
 //   ]
 // }
+
+// Async explain for precise timing
+const asyncExplanation = await rule.explainAsync!({ age: 16, email: "user@test.com" });
+console.log(`Took ${asyncExplanation.durationMs}ms`);
+
+// Enhanced explanation with generated failure reasons
+const enhanced = enhanceExplainTree(explanation);
+console.log(enhanced.children![0]!.reason);
+// "Field 'age': Expected >= 18, but got 16"
+
+// Pretty-printed tree view
+const formatted = formatExplainTree(enhanced);
+console.log(formatted);
+// ✗ spec_123
+//   → Value: Not all conditions met
+//   ✗ spec_124 (0.05ms)
+//     → {age} must be greater than or equal to 18
+//   ✓ spec_125 (0.03ms)
 ```
+
+**Explain Features:**
+- **actualValue/expectedValue**: See what was compared
+- **operator**: Operation type (eq, gte, contains, and, or, not)
+- **path**: Field path in objects
+- **reason**: Human-readable failure message
+- **durationMs**: Execution timing
+- **children**: Nested specs in combinators
 
 ### 4. Hooks & Lifecycle
 
@@ -632,12 +677,34 @@ none<User>(spec1, spec2)
 
 ### Specification Methods
 
-- `isSatisfiedBy(candidate)` - Evaluate synchronously
-- `isSatisfiedByAsync(candidate)` - Evaluate asynchronously
-- `and(other)` - Logical AND
-- `or(other)` - Logical OR
-- `not()` - Logical NOT
-- `explain(candidate)` - Get detailed evaluation result
+- `isSatisfiedBy(candidate)` - Evaluate synchronously (returns boolean)
+- `isSatisfiedByAsync(candidate)` - Evaluate asynchronously (returns Promise<boolean>)
+- `and(other)` - Logical AND combinator
+- `or(other)` - Logical OR combinator
+- `not()` - Logical NOT combinator
+- `explain(candidate)` - Get detailed evaluation tree (sync)
+- `explainAsync(candidate)` - Get detailed evaluation tree with accurate timing (async)
+
+### Explain Utilities
+
+#### `enhanceExplainTree(node: ExplainNode): ExplainNode`
+Enhances explain tree with auto-generated failure reasons.
+
+#### `formatExplainTree(node: ExplainNode, indent?: number): string`
+Formats explain tree as readable text report with status icons (✓/✗).
+
+#### `generateFailureReason(node: ExplainNode): string | undefined`
+Generates human-readable failure reason for a single node.
+
+**ExplainNode Structure:**
+- `pass`: true/false/"unknown" - evaluation status
+- `operator`: Operation type (eq, gte, contains, and, or, not)
+- `actualValue`: The value that was tested
+- `expectedValue`: The value it was compared against
+- `path`: Field path for nested objects
+- `reason`: Human-readable failure message
+- `durationMs`: Execution time in milliseconds
+- `children`: Nested specifications (for combinators)
 
 ### AST Functions
 
@@ -742,12 +809,42 @@ const rebuilt = fromAst(ast, registryWithCustomOps);
 
 ### Q: How do I debug failing specifications?
 
-Use the `explain` method:
+Use the enhanced `explain` methods with rich failure context:
 
 ```ts
+import { spec, enhanceExplainTree, formatExplainTree } from "@fajarnugraha37/specification";
+
+// Basic explain shows structure
 const explanation = spec.explain(candidate);
 console.log(JSON.stringify(explanation, null, 2));
+
+// Enhanced explain adds failure reasons
+const enhanced = enhanceExplainTree(explanation);
+console.log(enhanced.children![0]!.reason);
+// "Field 'age': Expected >= 18, but got 16"
+
+// Pretty-print for readable debugging
+const formatted = formatExplainTree(enhanced);
+console.log(formatted);
+// ✗ age-check (0.12ms)
+//   → Value: Not all conditions met
+//   ✗ age-spec (0.05ms)
+//     → Field 'age': Expected >= 18, but got 16
+
+// Use explainAsync for accurate timing
+const asyncExplanation = await spec.explainAsync!(candidate);
+console.log(`Took ${asyncExplanation.durationMs}ms`);
 ```
+
+**Explain output includes:**
+- `pass`: true/false/"unknown"
+- `operator`: Which operation was performed (eq, gte, contains, etc.)
+- `actualValue`: The value that was tested
+- `expectedValue`: The value it was compared against
+- `path`: Field path for nested objects
+- `reason`: Human-readable failure message
+- `durationMs`: Execution time in milliseconds
+- `children`: Nested specifications for combinators
 
 ### Q: What's the performance impact of memoization?
 

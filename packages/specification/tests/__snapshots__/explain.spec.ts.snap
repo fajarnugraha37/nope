@@ -1,0 +1,58 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Enhanced Explain Functionality Snapshot tests for deterministic output eq operator snapshot 1`] = `
+{
+  "actualValue": "Jane",
+  "expectedValue": "John",
+  "operator": "eq",
+  "pass": false,
+  "path": "name",
+}
+`;
+
+exports[`Enhanced Explain Functionality Snapshot tests for deterministic output nested AND snapshot 1`] = `
+{
+  "children": [
+    {
+      "actualValue": undefined,
+      "expectedValue": undefined,
+      "operator": "and",
+      "pass": false,
+      "path": undefined,
+    },
+    {
+      "actualValue": false,
+      "expectedValue": true,
+      "operator": "eq",
+      "pass": false,
+      "path": "verified",
+    },
+  ],
+  "operator": "and",
+  "pass": false,
+}
+`;
+
+exports[`Enhanced Explain Functionality Snapshot tests for deterministic output OR with all failures snapshot 1`] = `
+{
+  "children": [
+    {
+      "actualValue": "user",
+      "operator": "in",
+      "pass": false,
+      "path": "role",
+    },
+    {
+      "actualValue": [
+        "read",
+        "write",
+      ],
+      "operator": "contains",
+      "pass": false,
+      "path": "permissions",
+    },
+  ],
+  "operator": "or",
+  "pass": false,
+}
+`;

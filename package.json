@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/nope",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Bun-first toolchain for building, validating, and executing portable expressions with a supporting set of async, caching, and reactive utilities",
   "author": {
     "name": "fajar",

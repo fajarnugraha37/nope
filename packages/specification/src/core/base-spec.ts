@@ -64,6 +64,18 @@ export abstract class BaseSpec<TValue, Ctx extends SpecContext = SpecContext>
     };
   }
 
+  async explainAsync(value: TValue, ctx?: Ctx): Promise<ExplainNode> {
+    const node = this.describe(value, ctx);
+    const start = performance.now();
+    const result = await Promise.resolve(this.run(value, ctx));
+    const durationMs = performance.now() - start;
+    return {
+      ...node,
+      pass: result,
+      durationMs,
+    };
+  }
+
   isSatisfiedBy(value: TValue, ctx?: Ctx): boolean {
     const node = this.describe(value, ctx);
     this.hooks?.onEvaluateStart?.(node, value, ctx);
@@ -141,15 +153,50 @@ export class CompositeSpec<TValue, Ctx extends SpecContext> extends BaseSpec<TVa
   }
 
   override explain(value: TValue, ctx?: Ctx): ExplainNode {
-    const children = this.specs.map((spec) => spec.explain(value, ctx));
+    const children = this.specs.map((spec) => {
+      const childNode = spec.explain(value, ctx);
+      // Propagate parent path if this is a nested composite
+      if (childNode.path && !childNode.parentPath) {
+        return { ...childNode, parentPath: childNode.path };
+      }
+      return childNode;
+    });
     const node = {
       id: this.id,
       name: this.name,
       pass: computeCompositeVerdict(this.mode, children),
       children,
-      meta: this.meta,
+      meta: this.meta as Record<string, unknown> | undefined,
+      operator: this.mode,
     } as ExplainNode;
     return node;
+  }
+
+  override async explainAsync(value: TValue, ctx?: Ctx): Promise<ExplainNode> {
+    const start = performance.now();
+    const children = await Promise.all(
+      this.specs.map(async (spec) => {
+        const childNode = spec.explainAsync 
+          ? await spec.explainAsync(value, ctx) 
+          : spec.explain(value, ctx);
+        // Propagate parent path if this is a nested composite
+        if (childNode.path && !childNode.parentPath) {
+          return { ...childNode, parentPath: childNode.path };
+        }
+        return childNode;
+      })
+    );
+    const durationMs = performance.now() - start;
+    
+    return {
+      id: this.id,
+      name: this.name,
+      pass: computeCompositeVerdict(this.mode, children),
+      children,
+      meta: this.meta as Record<string, unknown> | undefined,
+      operator: this.mode,
+      durationMs,
+    };
   }
 
   protected evaluate(value: TValue, ctx?: Ctx): MaybePromise<boolean> {
