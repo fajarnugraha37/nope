@@ -2,7 +2,7 @@
   "name": "@fajarnugraha37/pattern-matching",
   "private": false,
   "version": "0.1.1",
-  "description": "",
+  "description": "Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers.",
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {
