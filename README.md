@@ -15,6 +15,7 @@ _Normalized Ops & Predicate Ecosystem_
 | --- | --- | --- | --- |
 | `@fajarnugraha37/expression` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/expression.svg)](https://www.npmjs.com/package/@fajarnugraha37/expression) | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
 | `@fajarnugraha37/validator` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/validator.svg)](https://www.npmjs.com/package/@fajarnugraha37/validator) | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
+| `@fajarnugraha37/pattern-matching` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/pattern-matching.svg)](https://www.npmjs.com/package/@fajarnugraha37/pattern-matching) | `packages/pattern-matching` | Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers. |
 | `@fajarnugraha37/common` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/common.svg)](https://www.npmjs.com/package/@fajarnugraha37/common) | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
 | `@fajarnugraha37/cache` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache) | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
 | `@fajarnugraha37/async` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async) | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
@@ -39,6 +40,7 @@ Each package is published to npm and can be installed individually:
 # Node.js with npm
 npm install @fajarnugraha37/expression
 npm install @fajarnugraha37/validator
+npm install @fajarnugraha37/pattern-matching
 npm install @fajarnugraha37/common
 npm install @fajarnugraha37/cache
 npm install @fajarnugraha37/async
