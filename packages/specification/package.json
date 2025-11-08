@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/specification",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An extensible specification-pattern toolkit for TypeScript with strong typing, fluent builders, JSON AST, adapters, and plugin hooks.",
   "keywords": [
     "specification",
