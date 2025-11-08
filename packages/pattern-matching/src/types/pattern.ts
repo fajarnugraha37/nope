@@ -15,6 +15,7 @@ export type MatcherType =
   | "set"
   | "select"
   | "default"
+  | "lazy"
   | "custom";
 
 // We use a separate MatcherProtocol type to preserves
@@ -104,6 +105,17 @@ export type OptionalP<input, p> = Matcher<input, p, "optional">;
 export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], "map">;
 
 export type SetP<input, p> = Matcher<input, p, "set">;
+
+export type LazyP<input, p> = Matcher<input, unknown, "lazy"> & {
+  readonly [symbols.lazyPattern]?: p;
+};
+
+export type LazyValue<matcher> =
+  matcher extends Record<symbols.lazyPattern, infer pattern>
+    ? pattern
+    : matcher extends { readonly [symbols.lazyPattern]?: infer pattern }
+    ? pattern
+    : never;
 
 export type AndP<input, ps> = Matcher<input, ps, "and">;
 
@@ -618,6 +630,123 @@ export type ArrayChainable<
       select<input, k extends string>(
         key: k
       ): ArrayChainable<SelectP<k, input, pattern>, omitted | "select">;
+      /**
+       * `P.array(...).length(len)` ensures the matched array has exactly `len` items.
+       */
+      length<input, const len extends number>(
+        len: len
+      ): ArrayChainable<pattern, omitted | "length" | "minLength" | "maxLength">;
+      /**
+       * `P.array(...).minLength(min)` ensures the matched array has at least `min` items.
+       */
+      minLength<input, const min extends number>(
+        min: min
+      ): ArrayChainable<pattern, omitted | "minLength">;
+      /**
+       * `P.array(...).maxLength(max)` ensures the matched array has at most `max` items.
+       */
+      maxLength<input, const max extends number>(
+        max: max
+      ): ArrayChainable<pattern, omitted | "maxLength">;
+      /**
+       * `P.array(...).nonEmpty()` ensures the matched array has at least one element.
+       */
+      nonEmpty<input>(): ArrayChainable<
+        pattern,
+        omitted | "nonEmpty" | "minLength"
+      >;
     },
     omitted
   >;
+
+type BaseChainableOverride<
+  p,
+  omitted extends string,
+  next
+> = Omit<Chainable<p, omitted>, "optional" | "and" | "or" | "select"> & next;
+
+export type SetChainable<p, omitted extends string = never> =
+  BaseChainableOverride<
+    p,
+    omitted,
+    {
+      optional<input>(): SetChainable<
+        OptionalP<input, p>,
+        omitted | "optional"
+      >;
+      and<input, const p2 extends Pattern<input>>(
+        pattern: p2
+      ): SetChainable<AndP<input, [p, p2]>, omitted>;
+      or<input, const p2 extends Pattern<input>>(
+        pattern: p2
+      ): SetChainable<OrP<input, [p, p2]>, omitted>;
+      select<input>(): SetChainable<
+        SelectP<symbols.anonymousSelectKey, input, p>,
+        omitted | "select" | "or" | "and"
+      >;
+      select<input, k extends string>(
+        key: k
+      ): SetChainable<SelectP<k, input, p>, omitted | "select" | "or" | "and">;
+    }
+  > &
+    Omit<
+      {
+        size<input, const expected extends number>(
+          size: expected
+        ): SetChainable<p, omitted | "size">;
+        minSize<input, const min extends number>(
+          min: min
+        ): SetChainable<p, omitted | "minSize">;
+        maxSize<input, const max extends number>(
+          max: max
+        ): SetChainable<p, omitted | "maxSize">;
+        nonEmpty<input>(): SetChainable<
+          p,
+          omitted | "nonEmpty" | "minSize"
+        >;
+      },
+      omitted
+    >;
+
+export type MapChainable<p, omitted extends string = never> =
+  BaseChainableOverride<
+    p,
+    omitted,
+    {
+      optional<input>(): MapChainable<
+        OptionalP<input, p>,
+        omitted | "optional"
+      >;
+      and<input, const p2 extends Pattern<input>>(
+        pattern: p2
+      ): MapChainable<AndP<input, [p, p2]>, omitted>;
+      or<input, const p2 extends Pattern<input>>(
+        pattern: p2
+      ): MapChainable<OrP<input, [p, p2]>, omitted>;
+      select<input>(): MapChainable<
+        SelectP<symbols.anonymousSelectKey, input, p>,
+        omitted | "select" | "or" | "and"
+      >;
+      select<input, k extends string>(
+        key: k
+      ): MapChainable<SelectP<k, input, p>, omitted | "select" | "or" | "and">;
+    }
+  > &
+    Omit<
+      {
+        size<input, const expected extends number>(
+          size: expected
+        ): MapChainable<p, omitted | "size">;
+        minSize<input, const min extends number>(
+          min: min
+        ): MapChainable<p, omitted | "minSize">;
+        maxSize<input, const max extends number>(
+          max: max
+        ): MapChainable<p, omitted | "maxSize">;
+        nonEmpty<input>(): MapChainable<
+          p,
+          omitted | "nonEmpty" | "minSize"
+        >;
+      },
+      omitted
+    >;

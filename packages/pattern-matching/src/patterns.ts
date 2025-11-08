@@ -14,7 +14,7 @@ import * as symbols from "./internals/symbols.js";
 import { matcher } from "./internals/symbols.js";
 import { isMatching } from "./is-matching.js";
 import type { ExtractPreciseValue } from "./types/extract-precise-value.js";
-import type { Fn } from "./types/helpers.js";
+import type { Fn, NoInfer } from "./types/helpers.js";
 import type { InvertPattern } from "./types/invert-pattern.js";
 import type {
   Pattern,
@@ -47,6 +47,9 @@ import type {
   Variadic,
   NonNullablePattern,
   RecordP,
+  SetChainable,
+  MapChainable,
+  LazyP,
 } from "./types/pattern.js";
 
 export type {
@@ -162,6 +165,24 @@ const variadic = <pattern extends {}>(pattern: pattern): Variadic<pattern> =>
     },
   });
 
+function arrayLengthGuard<input>(
+  predicate: (value: readonly unknown[]) => boolean
+): GuardExcludeP<input, readonly unknown[], never> {
+  return when((value: input): value is Extract<input, readonly unknown[]> => {
+    if (!Array.isArray(value)) return false;
+    return predicate(value);
+  });
+}
+
+const arrayExactLength = <input>(len: number) =>
+  arrayLengthGuard<input>((value) => value.length === len);
+
+const arrayMinLength = <input>(min: number) =>
+  arrayLengthGuard<input>((value) => value.length >= min);
+
+const arrayMaxLength = <input>(max: number) =>
+  arrayLengthGuard<input>((value) => value.length <= max);
+
 function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
   pattern: pattern
 ): ArrayChainable<pattern> {
@@ -171,6 +192,14 @@ function arrayChainable<pattern extends Matcher<any, any, any, any, any>>(
       arrayChainable(
         key === undefined ? select(pattern) : select(key, pattern)
       ),
+    length: (len: number) =>
+      arrayChainable(intersection(pattern, arrayExactLength(len))),
+    minLength: (min: number) =>
+      arrayChainable(intersection(pattern, arrayMinLength(min))),
+    maxLength: (max: number) =>
+      arrayChainable(intersection(pattern, arrayMaxLength(max))),
+    nonEmpty: () =>
+      arrayChainable(intersection(pattern, arrayMinLength(1))),
   }) as any;
 }
 
@@ -277,6 +306,88 @@ export function array(
   });
 }
 
+function setChainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): SetChainable<pattern> {
+  const base = chainable(pattern) as any;
+  base.optional = () => setChainable(optional(pattern));
+  base.and = (p2: Pattern<any>) => setChainable(intersection(pattern, p2));
+  base.or = (p2: Pattern<any>) => setChainable(union(pattern, p2));
+  base.select = (key?: string) =>
+    setChainable(
+      key === undefined ? select(pattern) : select(key, pattern)
+    );
+
+  return Object.assign(base, {
+    size: (size: number) =>
+      setChainable(intersection(pattern, setExactSize(size))),
+    minSize: (min: number) =>
+      setChainable(intersection(pattern, setMinSize(min))),
+    maxSize: (max: number) =>
+      setChainable(intersection(pattern, setMaxSize(max))),
+    nonEmpty: () => setChainable(intersection(pattern, setMinSize(1))),
+  }) as SetChainable<pattern>;
+}
+
+function mapChainable<pattern extends Matcher<any, any, any, any, any>>(
+  pattern: pattern
+): MapChainable<pattern> {
+  const base = chainable(pattern) as any;
+  base.optional = () => mapChainable(optional(pattern));
+  base.and = (p2: Pattern<any>) => mapChainable(intersection(pattern, p2));
+  base.or = (p2: Pattern<any>) => mapChainable(union(pattern, p2));
+  base.select = (key?: string) =>
+    mapChainable(
+      key === undefined ? select(pattern) : select(key, pattern)
+    );
+
+  return Object.assign(base, {
+    size: (size: number) =>
+      mapChainable(intersection(pattern, mapExactSize(size))),
+    minSize: (min: number) =>
+      mapChainable(intersection(pattern, mapMinSize(min))),
+    maxSize: (max: number) =>
+      mapChainable(intersection(pattern, mapMaxSize(max))),
+    nonEmpty: () => mapChainable(intersection(pattern, mapMinSize(1))),
+  }) as MapChainable<pattern>;
+}
+
+function setSizeGuard<input>(
+  predicate: (value: Set<unknown>) => boolean
+): GuardExcludeP<input, Set<unknown>, never> {
+  return when((value: input): value is Extract<input, Set<unknown>> => {
+    if (!(value instanceof Set)) return false;
+    return predicate(value);
+  });
+}
+
+const setExactSize = <input>(size: number) =>
+  setSizeGuard<input>((value) => value.size === size);
+
+const setMinSize = <input>(size: number) =>
+  setSizeGuard<input>((value) => value.size >= size);
+
+const setMaxSize = <input>(size: number) =>
+  setSizeGuard<input>((value) => value.size <= size);
+
+function mapSizeGuard<input>(
+  predicate: (value: Map<unknown, unknown>) => boolean
+): GuardExcludeP<input, Map<unknown, unknown>, never> {
+  return when((value: input): value is Extract<input, Map<unknown, unknown>> => {
+    if (!(value instanceof Map)) return false;
+    return predicate(value);
+  });
+}
+
+const mapExactSize = <input>(size: number) =>
+  mapSizeGuard<input>((value) => value.size === size);
+
+const mapMinSize = <input>(size: number) =>
+  mapSizeGuard<input>((value) => value.size >= size);
+
+const mapMaxSize = <input>(size: number) =>
+  mapSizeGuard<input>((value) => value.size <= size);
+
 /**
  * `P.set(subpattern)` takes a sub pattern and returns a pattern that matches
  * sets if all their elements match the sub pattern.
@@ -285,16 +396,16 @@ export function array(
  *  match(value)
  *   .with({ users: P.set(P.string) }, () => 'will match Set<string>')
  */
-export function set<input>(): Chainable<SetP<input, unknown>>;
+export function set<input>(): SetChainable<SetP<input, unknown>>;
 export function set<
   input,
   const pattern extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
->(pattern: pattern): Chainable<SetP<input, pattern>>;
+>(pattern: pattern): SetChainable<SetP<input, pattern>>;
 export function set<
   input,
   const pattern extends Pattern<WithDefault<UnwrapSet<input>, unknown>>
->(...args: [pattern?: pattern]): Chainable<SetP<input, pattern>> {
-  return chainable({
+>(...args: [pattern?: pattern]): SetChainable<SetP<input, pattern>> {
+  return setChainable({
     [matcher]() {
       return {
         match: <UnknownInput>(value: UnknownInput | input) => {
@@ -345,20 +456,20 @@ const setEvery = <T>(set: Set<T>, predicate: (value: T) => boolean) => {
  *  match(value)
  *   .with({ users: P.map(P.map(P.string, P.number)) }, (map) => `map's type is Map<string, number>`)
  */
-export function map<input>(): Chainable<MapP<input, unknown, unknown>>;
+export function map<input>(): MapChainable<MapP<input, unknown, unknown>>;
 export function map<
   input,
   const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
   const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
->(patternKey: pkey, patternValue: pvalue): Chainable<MapP<input, pkey, pvalue>>;
+>(patternKey: pkey, patternValue: pvalue): MapChainable<MapP<input, pkey, pvalue>>;
 export function map<
   input,
   const pkey extends Pattern<WithDefault<UnwrapMapKey<input>, unknown>>,
   const pvalue extends Pattern<WithDefault<UnwrapMapValue<input>, unknown>>
 >(
   ...args: [patternKey?: pkey, patternValue?: pvalue]
-): Chainable<MapP<input, pkey, pvalue>> {
-  return chainable({
+): MapChainable<MapP<input, pkey, pvalue>> {
+  return mapChainable({
     [matcher]() {
       return {
         match: <UnknownInput>(value: UnknownInput | input) => {
@@ -1183,4 +1294,58 @@ export function shape<input, const pattern extends Pattern<input>>(
 ): Chainable<GuardP<input, InvertPattern<pattern, input>>>;
 export function shape(pattern: UnknownValuePattern) {
   return chainable(when(isMatching(pattern)));
+}
+
+/**
+ * `P.lazy(() => pattern)` allows defining self-referential patterns without
+ * eagerly evaluating the inner pattern.
+ *
+ * @example
+ *  const tree = P.lazy(() => ({
+ *    value: P.number,
+ *    children: P.array(tree).optional()
+ *  }));
+ */
+export function lazy<
+  input = unknown,
+  const pattern extends Pattern<input> = Pattern<input>
+>(factory: () => pattern): Chainable<LazyP<input, pattern>> {
+  let resolved: pattern | undefined;
+  let cachedSelectionKeys: string[] | undefined;
+  let collectingSelectionKeys = false;
+
+
+  const getResolved = (): pattern => {
+    if (!resolved) {
+      resolved = factory();
+    }
+    return resolved;
+  };
+
+  const ensureSelectionKeys = (): string[] => {
+    if (cachedSelectionKeys) return cachedSelectionKeys;
+    if (collectingSelectionKeys) return [];
+    collectingSelectionKeys = true;
+    const keys = getSelectionKeys(getResolved());
+    cachedSelectionKeys = keys;
+    collectingSelectionKeys = false;
+    return keys;
+  };
+
+  return chainable({
+    [matcher]() {
+      return {
+        match: (value: unknown) => {
+          let selections: Record<string, unknown> = {};
+          const selector = (key: string, selection: unknown) => {
+            selections[key] = selection;
+          };
+          const matched = matchPattern(getResolved(), value, selector);
+          return { matched, selections };
+        },
+        getSelectionKeys: () => ensureSelectionKeys(),
+        matcherType: "lazy",
+      };
+    },
+  }) as Chainable<LazyP<input, pattern>>;
 }

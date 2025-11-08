@@ -24,7 +24,7 @@ import type {
   RecordKey,
   RecordValue,
 } from "./helpers.js";
-import type { Matcher, Pattern, Override, AnyMatcher } from "./pattern.js";
+import type { Matcher, Pattern, Override, AnyMatcher, LazyValue } from "./pattern.js";
 
 type OptionalKeys<p> = ValueOf<{
   [k in keyof p]: 0 extends 1 & p[k] // inlining IsAny for perf
@@ -135,6 +135,7 @@ type InvertPatternInternal<p, input> = 0 extends 1 & p
       set: Set<
         InvertPatternInternal<subpattern, SetValue<Extract<input, Set<any>>>>
       >;
+      lazy: InvertPatternInternal<LazyValue<p>, input>;
       optional:
         | InvertPatternInternal<subpattern, Exclude<input, undefined>>
         | undefined;
@@ -351,6 +352,7 @@ type InvertPatternForExcludeInternal<p, i, empty = never> =
         set: i extends Set<infer iv>
           ? Set<InvertPatternForExcludeInternal<subpattern, iv, empty>>
           : empty;
+        lazy: InvertPatternForExcludeInternal<LazyValue<p>, i, empty>;
         optional:
           | InvertPatternForExcludeInternal<subpattern, i, empty>
           | undefined;

@@ -1,3 +1,5 @@
+export type NoInfer<a> = [a][a extends any ? 0 : never];
+
 export type ValueOf<a> = a extends readonly any[] ? a[number] : a[keyof a];
 
 export type Values<a extends object> = UnionToTuple<ValueOf<a>>;

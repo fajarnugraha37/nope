@@ -1,5 +1,5 @@
 import type * as symbols from "../internals/symbols.js";
-import type { AnyMatcher, Matcher, Pattern } from "./pattern.js";
+import type { AnyMatcher, Matcher, Pattern, LazyValue } from "./pattern.js";
 import type {
   Equal,
   Primitives,
@@ -135,6 +135,7 @@ export type FindSelectionUnion<
       set: i extends Set<infer v>
         ? MapList<FindSelectionUnion<v, pattern, path>>
         : never;
+      lazy: FindSelectionUnion<i, LazyValue<p>, path>;
       optional: MapOptional<FindSelectionUnion<i, pattern>>;
       or: MapOptional<
         ReduceFindSelectionUnion<i, Extract<pattern, readonly any[]>>

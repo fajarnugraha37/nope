@@ -18,3 +18,6 @@ export type anonymousSelectKey = typeof anonymousSelectKey;
 
 export const override = Symbol.for("@pattern-matching/override");
 export type override = typeof override;
+
+export const lazyPattern = Symbol.for("@pattern-matching/lazy-pattern");
+export type lazyPattern = typeof lazyPattern;
