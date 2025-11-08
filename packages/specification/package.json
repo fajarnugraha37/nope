@@ -6,6 +6,10 @@
   "keywords": [
     "specification",
     "specification-pattern",
+    "validation",
+    "business-rules",
+    "domain-logic",
+    "fluent-api",
     "type-safe",
     "typescript",
     "ast",

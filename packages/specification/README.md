@@ -1,11 +1,26 @@
-## @fajarnugraha37/specification
+# @fajarnugraha37/specification
 
-An extensible specification-pattern toolkit for TypeScript with strong typing, fluent builders, JSON AST, adapters, and plugin hooks.
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/specification.svg)](https://www.npmjs.com/package/@fajarnugraha37/specification)
 
-### Install
+> An extensible specification-pattern toolkit for TypeScript with strong typing, fluent builders, JSON AST, adapters, and plugin hooks.
+
+## Installation
 
 ```bash
+# Node.js with npm
+npm install @fajarnugraha37/specification
+
+# Node.js with pnpm
 pnpm add @fajarnugraha37/specification
+
+# Node.js with yarn
+yarn add @fajarnugraha37/specification
+
+# Bun
+bun add @fajarnugraha37/specification
+
+# Deno
+deno add npm:@fajarnugraha37/specification
 ```
 
 ### Quickstart
