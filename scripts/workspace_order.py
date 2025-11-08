@@ -12,6 +12,7 @@ ORDERED_PATHS = [
     "shareds/reactive",
     "packages/validator",
     "packages/expression",
+    "packages/pattern-matching",
 ]
 
 def main() -> None:
