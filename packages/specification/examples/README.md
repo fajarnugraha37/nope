@@ -67,6 +67,70 @@ bun run examples/abac.ts
 
 ---
 
+### 3. **Multi-Tenant Data Isolation** - `multi-tenant.ts`
+
+Tenant-scoped data access patterns with query compilation for database filtering.
+
+**Key Features:**
+- Tenant isolation and data scoping
+- Cross-tenant resource sharing
+- Plan-based feature restrictions (free, pro, enterprise)
+- Query compilation to Prisma/MongoDB WHERE clauses
+- Row-level security patterns
+- User ownership and public/private resources
+
+**Use Cases:**
+- SaaS applications with multiple tenants
+- B2B platforms with organization boundaries
+- Database query optimization with specification compilation
+- Shared schema multi-tenancy
+
+**Run Example:**
+```bash
+bun run examples/multi-tenant.ts
+```
+
+**Example Scenarios:**
+- Tenant resources: Only visible to tenant members
+- Shared resources: Cross-tenant sharing with explicit permissions
+- Plan restrictions: Free plans limited to documents only
+- Query compilation: Convert specifications to database WHERE clauses
+
+---
+
+### 4. **Feature Flags & A/B Testing** - `feature-flags.ts`
+
+Feature flag system with user targeting, gradual rollouts, and variant assignment.
+
+**Key Features:**
+- Percentage-based rollouts with consistent hashing
+- User targeting (IDs, email domains, roles, attributes)
+- Environment gating (dev, staging, production)
+- A/B test variant assignment with weights
+- Feature dependencies
+- Sticky variant assignments for consistency
+
+**Use Cases:**
+- Gradual feature rollouts
+- A/B testing and experimentation
+- Beta program management
+- Environment-specific features
+- Premium feature gating
+
+**Run Example:**
+```bash
+bun run examples/feature-flags.ts
+```
+
+**Example Features:**
+- 50% rollout: Half of users get new UI
+- Role-based: Beta testers get early access
+- Plan-based: Premium features for paying users
+- Environment: Experimental features in staging only
+- Dependencies: Features that require other features enabled
+
+---
+
 ## Running Examples
 
 All examples can be run directly with Bun:
@@ -78,6 +142,8 @@ cd packages/specification
 # Run any example
 bun run examples/rbac.ts
 bun run examples/abac.ts
+bun run examples/multi-tenant.ts
+bun run examples/feature-flags.ts
 ```
 
 ## Example Structure
