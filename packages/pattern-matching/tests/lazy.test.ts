@@ -5,9 +5,9 @@ describe("P.lazy", () => {
   test("matches recursive tree structures", () => {
     type Node = { value: number; children?: Node[] };
 
-    const tree = P.lazy(() => ({
+    const tree = P.lazy((self) => ({
       value: P.number,
-      children: P.array(tree).optional(),
+      children: P.array(self()).optional(),
     }));
 
     const sample: Node = {
@@ -39,10 +39,10 @@ describe("P.lazy", () => {
       | { type: "leaf"; value: number }
       | { type: "node"; children: Expr[] };
 
-    const expr = P.lazy(() =>
+    const expr = P.lazy((self) =>
       P.union(
         { type: "leaf", value: P.select("leafValue", P.number) },
-        { type: "node", children: P.array(expr) }
+        { type: "node", children: P.array(self()) }
       )
     );
 

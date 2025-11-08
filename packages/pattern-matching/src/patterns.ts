@@ -1296,6 +1296,29 @@ export function shape(pattern: UnknownValuePattern) {
   return chainable(when(isMatching(pattern)));
 }
 
+type LazyFactory<input> =
+  | (() => Pattern<input>)
+  | ((self: () => Chainable<LazyP<input, Pattern<input>>>) => Pattern<input>);
+
+type StripChainable<pattern> =
+  pattern extends Matcher<
+    infer input,
+    infer innerPattern,
+    infer matcherType,
+    infer selections,
+    infer excluded
+  >
+    ? Matcher<input, innerPattern, matcherType, selections, excluded>
+    : pattern;
+
+type LazyFactoryPattern<input, factory> = factory extends (
+  self: () => Chainable<LazyP<input, infer pattern>>
+) => infer pattern
+  ? StripChainable<pattern>
+  : factory extends () => infer pattern
+  ? StripChainable<pattern>
+  : Pattern<input>;
+
 /**
  * `P.lazy(() => pattern)` allows defining self-referential patterns without
  * eagerly evaluating the inner pattern.
@@ -1306,18 +1329,27 @@ export function shape(pattern: UnknownValuePattern) {
  *    children: P.array(tree).optional()
  *  }));
  */
-export function lazy<
-  input = unknown,
-  const pattern extends Pattern<input> = Pattern<input>
->(factory: () => pattern): Chainable<LazyP<input, pattern>> {
-  let resolved: pattern | undefined;
+export function lazy<input = unknown>(
+  factory: LazyFactory<input>
+): Chainable<LazyP<input, LazyFactoryPattern<input, typeof factory>>> {
+  type PatternFromFactory = LazyFactoryPattern<input, typeof factory>;
+  let resolved: PatternFromFactory | undefined;
   let cachedSelectionKeys: string[] | undefined;
   let collectingSelectionKeys = false;
+  let lazyPattern!: Chainable<LazyP<input, PatternFromFactory>>;
 
+  const callFactory = (): PatternFromFactory => {
+    if (factory.length === 0) {
+      return (factory as () => PatternFromFactory)();
+    }
+    return (factory as (
+      self: () => Chainable<LazyP<input, PatternFromFactory>>
+    ) => PatternFromFactory)(() => lazyPattern);
+  };
 
-  const getResolved = (): pattern => {
+  const getResolved = (): PatternFromFactory => {
     if (!resolved) {
-      resolved = factory();
+      resolved = callFactory();
     }
     return resolved;
   };
@@ -1332,7 +1364,7 @@ export function lazy<
     return keys;
   };
 
-  return chainable({
+  lazyPattern = chainable({
     [matcher]() {
       return {
         match: (value: unknown) => {
@@ -1347,5 +1379,14 @@ export function lazy<
         matcherType: "lazy",
       };
     },
-  }) as Chainable<LazyP<input, pattern>>;
+  }) as Chainable<LazyP<input, PatternFromFactory>>;
+
+  Object.defineProperty(lazyPattern, symbols.lazyPattern, {
+    value: undefined as unknown as PatternFromFactory,
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  });
+
+  return lazyPattern;
 }

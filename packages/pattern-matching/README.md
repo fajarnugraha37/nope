@@ -47,7 +47,7 @@ const message = (state: Result) =>
 | --- | --- |
 | `P.array(...).length / minLength / maxLength / nonEmpty` | Expressive size constraints without custom guards. |
 | `P.set(...)` & `P.map(...)` `.size / minSize / maxSize / nonEmpty` | Capture “at least one entry” semantics directly in your pattern. |
-| `P.lazy(() => pattern)` | Model recursive data (trees, ASTs, menus) without fragile manual narrowing while keeping selections. |
+| `P.lazy((self) => pattern)` | Model recursive data (trees, ASTs, menus) without fragile manual narrowing while keeping selections. |
 
 Example – recursive expression evaluator:
 
@@ -56,10 +56,10 @@ type Expr =
   | { type: "leaf"; value: number }
   | { type: "node"; children: Expr[] };
 
-const expr = P.lazy(() =>
+const expr = P.lazy((self) =>
   P.union(
     { type: "leaf", value: P.select("leafValue", P.number) },
-    { type: "node", children: P.array(expr).nonEmpty() }
+    { type: "node", children: P.array(self()).nonEmpty() }
   )
 );
 

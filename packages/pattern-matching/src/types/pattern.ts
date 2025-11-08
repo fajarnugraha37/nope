@@ -106,7 +106,7 @@ export type MapP<input, pkey, pvalue> = Matcher<input, [pkey, pvalue], "map">;
 
 export type SetP<input, p> = Matcher<input, p, "set">;
 
-export type LazyP<input, p> = Matcher<input, unknown, "lazy"> & {
+export type LazyP<input, p> = Matcher<input, p, "lazy"> & {
   readonly [symbols.lazyPattern]?: p;
 };
 
