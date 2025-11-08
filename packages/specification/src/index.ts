@@ -1,0 +1,16 @@
+export * from "./core/types.js";
+export { BaseSpec, withMeta } from "./core/base-spec.js";
+export { createRegistry } from "./core/registry.js";
+export { spec, createSpecDSL } from "./dsl/spec-builder.js";
+export { defaultHumanizer, Humanizer } from "./dsl/humanizer.js";
+export { builtInOperators } from "./ops/index.js";
+export { all, any, none, xor, implies, not } from "./core/combinators.js";
+export { evaluateSpec as evaluate } from "./core/evaluate.js";
+export { toAst, fromAst } from "./ast/serializer.js";
+export { prismaAdapter } from "./adapters/prisma.js";
+export { mongoAdapter } from "./adapters/mongo.js";
+export { createPlugin } from "./plugins/create-plugin.js";
+export { geoPlugin } from "./plugins/geo.js";
+export { timePlugin } from "./plugins/time.js";
+export { stringPlugin } from "./plugins/string.js";
+export type { Adapter } from "./adapters/adapter.js";

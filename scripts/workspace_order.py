@@ -13,6 +13,7 @@ ORDERED_PATHS = [
     "packages/validator",
     "packages/expression",
     "packages/pattern-matching",
+    "packages/specification",
 ]
 
 def main() -> None:
