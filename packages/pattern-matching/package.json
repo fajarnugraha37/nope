@@ -3,6 +3,16 @@
   "private": false,
   "version": "0.1.1",
   "description": "Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers.",
+    "keywords": [
+    "pattern-matching",
+    "pattern",
+    "conditional",
+    "control-flow",
+    "match",
+    "whin",
+    "switch",
+    "expression"
+  ],
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {
