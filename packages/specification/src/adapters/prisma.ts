@@ -3,10 +3,32 @@ import type { AstNode } from "../ast/schema.js";
 import { toAst } from "../ast/serializer.js";
 import { type Adapter } from "./adapter.js";
 
+/**
+ * Prisma query filter structure.
+ * 
+ * Represents WHERE clause conditions compatible with Prisma Client.
+ * Supports nested AND/OR/NOT logic and field-level comparisons.
+ * 
+ * @example
+ * ```typescript
+ * const query: PrismaQuery = {
+ *   AND: [
+ *     { age: { gte: 18 } },
+ *     { status: "active" }
+ *   ]
+ * };
+ * 
+ * const users = await prisma.user.findMany({ where: query });
+ * ```
+ */
 export interface PrismaQuery {
+  /** Logical AND conditions */
   AND?: PrismaQuery[];
+  /** Logical OR conditions */
   OR?: PrismaQuery[];
+  /** Logical NOT conditions */
   NOT?: PrismaQuery[];
+  /** Field-level filters */
   [field: string]: unknown;
 }
 
@@ -83,6 +105,58 @@ const compileAst = (node: AstNode): PrismaQuery => {
   }
 };
 
+/**
+ * Prisma adapter for compiling specifications to Prisma queries.
+ * 
+ * Translates specification ASTs into Prisma Client WHERE clause filters.
+ * Supports all built-in operators and nested boolean logic.
+ * 
+ * **Supported Operators:**
+ * - Comparison: eq, ne, lt, lte, gt, gte
+ * - Collection: in, notIn
+ * - String: regex, startsWith, endsWith, contains
+ * - Existence: exists, missing
+ * - Boolean: and, or, not
+ * 
+ * **Limitations:**
+ * - Registered spec references (`ref`) are passed through as-is
+ * - Unsupported operators fall back to `{ raw: { kind, input } }`
+ * 
+ * @example
+ * ```typescript
+ * import { spec, prismaAdapter } from "@fajarnugraha37/specification";
+ * 
+ * const ageSpec = spec.field<User>("age").gte(18);
+ * const query = prismaAdapter.compile(ageSpec);
+ * 
+ * // query => { age: { gte: 18 } }
+ * 
+ * const users = await prisma.user.findMany({ where: query });
+ * ```
+ * 
+ * @example
+ * ```typescript
+ * // Complex query
+ * const spec = all(
+ *   spec.field<User>("age").gte(18),
+ *   any(
+ *     spec.field<User>("role").eq("admin"),
+ *     spec.field<User>("permissions").contains("manage_users")
+ *   )
+ * );
+ * 
+ * const query = prismaAdapter.compile(spec);
+ * // query => {
+ * //   AND: [
+ * //     { age: { gte: 18 } },
+ * //     { OR: [
+ * //       { role: "admin" },
+ * //       { permissions: { contains: "manage_users" } }
+ * //     ]}
+ * //   ]
+ * // }
+ * ```
+ */
 export const prismaAdapter: Adapter<PrismaQuery> = {
   compile<T>(spec: Specification<T>) {
     const ast = toAst(spec);
