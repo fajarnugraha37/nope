@@ -131,6 +131,50 @@ bun run examples/feature-flags.ts
 
 ---
 
+### 5. **Interactive Playground** - `playground/`
+
+A web-based interactive playground for building, testing, and visualizing specifications in real-time.
+
+**Key Features:**
+- Live specification editing with pre-loaded examples
+- JSON test data input and formatting
+- AST serialization (load/save JSON representations)
+- Visual explain tree rendering
+- Database adapter preview (Prisma/MongoDB queries)
+- Real-time evaluation feedback
+- Copy/download AST for sharing
+
+**Use Cases:**
+- Learning the specification pattern interactively
+- Prototyping complex policies before implementation
+- Visualizing evaluation logic with explain trees
+- Sharing specifications via JSON AST
+- Testing specifications with different data
+
+**Run Playground:**
+```bash
+# Option 1: Simple HTTP server
+cd examples/playground
+python -m http.server 8080
+# Open http://localhost:8080
+
+# Option 2: Using npx
+npx serve examples/playground
+
+# Option 3: Direct file opening
+# Open examples/playground/index.html in your browser
+```
+
+**Features:**
+- 📝 Code editor with syntax highlighting
+- 🧪 Live test data input and validation
+- 🔄 AST serialization and deserialization
+- 💡 Visual explain tree with pass/fail indicators
+- 🗄️ Adapter preview for Prisma and MongoDB
+- 📋 Copy and download functionality
+
+---
+
 ## Running Examples
 
 All examples can be run directly with Bun:
@@ -139,12 +183,15 @@ All examples can be run directly with Bun:
 # From the specification package directory
 cd packages/specification
 
-# Run any example
-bun run examples/simple.ts
+# Run TypeScript examples
 bun run examples/rbac.ts
 bun run examples/abac.ts
 bun run examples/multi-tenant.ts
 bun run examples/feature-flags.ts
+
+# Run interactive playground
+cd examples/playground
+python -m http.server 8080
 ```
 
 ## Example Structure

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Specification Pattern Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        textarea, pre {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            padding: 10px;
+            font-size: 13px;
+            text-align: left;
+            background: white;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            color: #684141;
+        }
+
+        .example-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            color: #000;
+        }
+
+        .output {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            min-height: 150px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .success {
+            color: #98c379;
+        }
+
+        .error {
+            color: #e06c75;
+        }
+
+        .info {
+            color: #61afef;
+        }
+
+        .warning {
+            color: #e5c07b;
+        }
+
+        .tree-node {
+            margin-left: 20px;
+            font-family: monospace;
+        }
+
+        .tree-pass {
+            color: #98c379;
+        }
+
+        .tree-fail {
+            color: #e06c75;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            box-shadow: none;
+        }
+
+        .tab:hover {
+            color: #667eea;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Specification Pattern Playground</h1>
+            <p>Interactive demo for building, testing, and compiling specifications</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Column: Input -->
+            <div class="panel">
+                <h2>📝 Specification Code</h2>
+                <div class="examples">
+                    <button class="example-btn" onclick="loadExample('simple')">Simple Field</button>
+                    <button class="example-btn" onclick="loadExample('composite')">Composite (AND/OR)</button>
+                    <button class="example-btn" onclick="loadExample('rbac')">RBAC Example</button>
+                    <button class="example-btn" onclick="loadExample('abac')">ABAC Example</button>
+                </div>
+                <label for="specCode">TypeScript Specification Code:</label>
+                <textarea id="specCode" placeholder="// Enter your specification code here..."></textarea>
+                <div class="button-group">
+                    <button onclick="evaluateSpec()">▶️ Evaluate</button>
+                    <button onclick="toAst()" class="secondary">🔄 To AST</button>
+                    <button onclick="explainSpec()" class="secondary">💡 Explain</button>
+                </div>
+            </div>
+
+            <!-- Right Column: Test Data -->
+            <div class="panel">
+                <h2>🧪 Test Data</h2>
+                <label for="testData">JSON Test Data:</label>
+                <textarea id="testData" placeholder='{ "user": { "age": 25, "role": "admin" } }'></textarea>
+                <div class="button-group">
+                    <button onclick="formatJson()">✨ Format JSON</button>
+                    <button onclick="clearData()" class="secondary">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <!-- Full Width: Results -->
+            <div class="panel full-width">
+                <h2>📊 Results</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('output')">Evaluation</button>
+                    <button class="tab" onclick="switchTab('ast')">AST</button>
+                    <button class="tab" onclick="switchTab('explain')">Explain Tree</button>
+                    <button class="tab" onclick="switchTab('adapters')">Adapters</button>
+                </div>
+                
+                <div id="output-tab" class="tab-content active">
+                    <div id="output" class="output">Results will appear here...</div>
+                </div>
+                
+                <div id="ast-tab" class="tab-content">
+                    <pre id="astOutput">AST JSON will appear here...</pre>
+                    <div class="button-group">
+                        <button onclick="fromAst()">⬆️ Load from AST</button>
+                        <button onclick="copyAst()" class="secondary">📋 Copy</button>
+                        <button onclick="downloadAst()" class="secondary">💾 Download</button>
+                    </div>
+                </div>
+                
+                <div id="explain-tab" class="tab-content">
+                    <div id="explainOutput" class="output">Explain tree will appear here...</div>
+                </div>
+                
+                <div id="adapters-tab" class="tab-content">
+                    <h3 style="margin-bottom: 10px;">Prisma WHERE Clause</h3>
+                    <pre id="prismaOutput">Prisma query will appear here...</pre>
+                    <h3 style="margin: 20px 0 10px;">MongoDB Query</h3>
+                    <pre id="mongoOutput">MongoDB query will appear here...</pre>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with ❤️ using <a href="https://github.com/fajarnugraha37/nope" target="_blank">@fajarnugraha37/specification</a></p>
+        </footer>
+    </div>
+
+    <script src="playground.js"></script>
+</body>
+</html>
