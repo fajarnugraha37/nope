@@ -26,7 +26,6 @@ _Type-safe pattern matching for modern TypeScript, with Kotlin-inspired sealed u
 7. [Cookbook](#cookbook)
 8. [API reference](#api-reference)
 9. [FAQ & troubleshooting](#faq--troubleshooting)
-10. [Contributing & testing](#contributing--testing)
 
 ---
 
