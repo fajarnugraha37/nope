@@ -140,6 +140,7 @@ All examples can be run directly with Bun:
 cd packages/specification
 
 # Run any example
+bun run examples/simple.ts
 bun run examples/rbac.ts
 bun run examples/abac.ts
 bun run examples/multi-tenant.ts
