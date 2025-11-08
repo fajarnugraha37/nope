@@ -131,7 +131,41 @@ bun run examples/feature-flags.ts
 
 ---
 
-### 5. **Interactive Playground** - `playground/`
+### 5. **Database Persistence** - `persistence.ts`
+
+Simple Example of storing and loading specifications from a database using JSON AST serialization.
+
+**Scope:**
+- Convert specifications to JSON AST
+- Store AST in database
+- Load and reconstruct specifications from AST
+- Policy versioning and updates
+- Behavior preservation guarantees
+- Mock database with full CRUD operations
+
+**Use Cases:**
+- User-defined business rules stored in database
+- Dynamic policy systems that change at runtime
+- Multi-tenant policy isolation per customer
+- Policy versioning and audit trails
+- A/B testing configurations
+- Feature flag definitions
+- Compliance and regulatory rule storage
+
+**Run Example:**
+```bash
+bun run examples/persistence.ts
+```
+
+**Key Patterns:**
+- `toAst()` - Convert specification to JSON
+- `fromAst()` - Reconstruct specification from JSON
+- Round-trip preservation - Original and reconstructed specs behave identically
+- Database integration patterns for PostgreSQL, MongoDB, Redis
+
+---
+
+### 6. **Interactive Playground** - `playground/`
 
 A web-based interactive playground for building, testing, and visualizing specifications in real-time.
 
@@ -188,6 +222,7 @@ bun run examples/rbac.ts
 bun run examples/abac.ts
 bun run examples/multi-tenant.ts
 bun run examples/feature-flags.ts
+bun run examples/persistence.ts
 
 # Run interactive playground
 cd examples/playground
