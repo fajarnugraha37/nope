@@ -1,8 +1,20 @@
 {
   "name": "@fajarnugraha37/reactive",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A promise-aware observable + stream implementation with a plugin system, immutable state helpers, and a suite of operators for composing async flows",
+  "keywords": [
+    "reactive",
+    "observable",
+    "stream",
+    "rxjs",
+    "operators",
+    "reactive-programming",
+    "promise",
+    "async",
+    "state-management",
+    "typescript"
+  ],
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {

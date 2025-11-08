@@ -1,8 +1,22 @@
 {
   "name": "@fajarnugraha37/common",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared TypeScript helpers that underpin every package in the `nope` workspace: typed errors, guards, ULID utilities, regex/string helpers, object proxies, and time/file helpers",
+  "keywords": [
+    "utilities",
+    "helpers",
+    "typescript",
+    "ulid",
+    "type-guards",
+    "guards",
+    "error-handling",
+    "proxy",
+    "regex",
+    "string-utils",
+    "object-utils",
+    "common"
+  ],
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {

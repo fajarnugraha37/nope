@@ -1,8 +1,20 @@
 {
   "name": "@fajarnugraha37/validator",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace",
+  "keywords": [
+    "validator",
+    "validation",
+    "ajv",
+    "json-schema",
+    "schema-builder",
+    "schema-validation",
+    "type-safe",
+    "typescript",
+    "cache",
+    "fluent-api"
+  ],
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {

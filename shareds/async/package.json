@@ -1,8 +1,25 @@
 {
   "name": "@fajarnugraha37/async",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers",
+  "keywords": [
+    "async",
+    "concurrency",
+    "channel",
+    "go-channel",
+    "event-bus",
+    "event-emitter",
+    "retry",
+    "promise",
+    "error-handling",
+    "scope",
+    "defer",
+    "generator",
+    "semaphore",
+    "mutex",
+    "typescript"
+  ],
   "module": "index.ts",
   "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
   "repository": {
