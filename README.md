@@ -15,6 +15,7 @@ _Normalized Ops & Predicate Ecosystem_
 | --- | --- | --- | --- |
 | `@fajarnugraha37/expression` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/expression.svg)](https://www.npmjs.com/package/@fajarnugraha37/expression) | `packages/expression` | Expression schema types, fluent builders, analyzers, and the json-logic powered evaluator with caching plus debugging helpers. |
 | `@fajarnugraha37/validator` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/validator.svg)](https://www.npmjs.com/package/@fajarnugraha37/validator) | `packages/validator` | AJV-based schema registry with a fluent builder DSL, JSON import/export helpers, cache-aware schema loading, and shortcuts for type-specific validators. |
+| `@fajarnugraha37/specification` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/specification.svg)](https://www.npmjs.com/package/@fajarnugraha37/specification) | `packages/specification` | Extensible specification-pattern toolkit with strong typing, fluent builders, JSON AST serialization, database adapters (Prisma/MongoDB), and plugin system for composable business rules. |
 | `@fajarnugraha37/pattern-matching` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/pattern-matching.svg)](https://www.npmjs.com/package/@fajarnugraha37/pattern-matching) | `packages/pattern-matching` | Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers. |
 | `@fajarnugraha37/common` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/common.svg)](https://www.npmjs.com/package/@fajarnugraha37/common) | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
 | `@fajarnugraha37/cache` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache) | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
@@ -25,7 +26,7 @@ _Normalized Ops & Predicate Ecosystem_
 ## Repository layout
 | Path | Notes |
 | --- | --- |
-| `packages/` | Feature-facing packages (currently `expression` and `validator`). |
+| `packages/` | Feature-facing packages (currently `expression`, `validator`, `specification`, and `pattern-matching`). |
 | `shareds/` | Foundational libraries that are versioned just like packages but grouped under a single folder. |
 | `apps/` | Example/front-end consumers (empty today). |
 | `scripts/` | Reusable automation (CI, release, validation). |
@@ -40,6 +41,7 @@ Each package is published to npm and can be installed individually:
 # Node.js with npm
 npm install @fajarnugraha37/expression
 npm install @fajarnugraha37/validator
+npm install @fajarnugraha37/specification
 npm install @fajarnugraha37/pattern-matching
 npm install @fajarnugraha37/common
 npm install @fajarnugraha37/cache

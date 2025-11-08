@@ -61,10 +61,6 @@
       "name": "@fajarnugraha37/specification",
       "version": "0.1.0",
       "dependencies": {
-        "@fajarnugraha37/async": "workspace:*",
-        "@fajarnugraha37/cache": "workspace:*",
-        "@fajarnugraha37/common": "workspace:*",
-        "@fajarnugraha37/reactive": "workspace:*",
         "@fajarnugraha37/validator": "workspace:*",
       },
       "devDependencies": {

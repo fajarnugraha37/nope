@@ -78,10 +78,6 @@
     "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
   },
   "dependencies": {
-    "@fajarnugraha37/async": "workspace:*",
-    "@fajarnugraha37/cache": "workspace:*",
-    "@fajarnugraha37/common": "workspace:*",
-    "@fajarnugraha37/reactive": "workspace:*",
     "@fajarnugraha37/validator": "workspace:*"
   },
   "devDependencies": {
