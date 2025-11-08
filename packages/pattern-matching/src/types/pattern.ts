@@ -117,6 +117,21 @@ export type LazyValue<matcher> =
     ? pattern
     : never;
 
+export type PatternInput<pattern> =
+  pattern extends Matcher<infer input, any, any, any, any> ? input : never;
+
+export type SealedVariants<sealed> =
+  sealed extends { readonly [symbols.sealedVariants]: infer variants }
+    ? variants
+    : never;
+
+export type SealedP<
+  input,
+  patterns extends readonly [Pattern<input>, ...Pattern<input>[]]
+> = Chainable<OrP<input, patterns>, never> & {
+  readonly [symbols.sealedVariants]: patterns;
+};
+
 export type AndP<input, ps> = Matcher<input, ps, "and">;
 
 export type OrP<input, ps> = Matcher<input, ps, "or">;

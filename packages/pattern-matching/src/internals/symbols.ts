@@ -21,3 +21,6 @@ export type override = typeof override;
 
 export const lazyPattern = Symbol.for("@pattern-matching/lazy-pattern");
 export type lazyPattern = typeof lazyPattern;
+
+export const sealedVariants = Symbol.for("@pattern-matching/sealed-variants");
+export type sealedVariants = typeof sealedVariants;

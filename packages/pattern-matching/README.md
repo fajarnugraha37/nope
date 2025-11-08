@@ -38,6 +38,7 @@ const message = (state: Result) =>
 - 🔒 **Exhaustiveness**: `match(...).exhaustive()` throws at runtime and fails at compile time when not all cases are covered.
 - 🎯 **Structural + wildcard patterns**: Mix object literals, arrays, union helpers, `P.when`, `P.select`, and more.
 - ♻️ **Recursive safety**: Compose self-referential patterns with `P.lazy` and keep type inference intact.
+- 🛡️ **Sealed exhaustiveness**: Declare Kotlin-inspired sealed unions with `P.sealed` + `matchSealed` to guarantee every variant is handled.
 - 🧩 **Collection ergonomics**: `P.array`, `P.set`, and `P.map` now feature chainable guards (`minLength`, `maxSize`, `nonEmpty`, etc.) for declarative constraints.
 - ✅ **Runtime predicates**: `isMatching(pattern, value)` produces reusable type guards.
 
@@ -48,6 +49,7 @@ const message = (state: Result) =>
 | `P.array(...).length / minLength / maxLength / nonEmpty` | Expressive size constraints without custom guards. |
 | `P.set(...)` & `P.map(...)` `.size / minSize / maxSize / nonEmpty` | Capture “at least one entry” semantics directly in your pattern. |
 | `P.lazy((self) => pattern)` | Model recursive data (trees, ASTs, menus) without fragile manual narrowing while keeping selections. |
+| `P.sealed(...) + matchSealed(...)` | Define Kotlin-style sealed hierarchies and build exhaustive match expressions without `otherwise` clauses. |
 
 Example – recursive expression evaluator:
 
@@ -69,6 +71,23 @@ const evaluate = (input: Expr): number =>
       leafValue ?? children.map(evaluate).reduce((sum, value) => sum + value, 0)
     )
     .exhaustive();
+```
+
+### Kotlin-style sealed unions
+
+```ts
+const status = P.sealed(
+  { type: "loading" },
+  { type: "success", data: P.number },
+  { type: "error", message: P.string }
+);
+
+const describe = (value: { type: string }) =>
+  matchSealed(value, status)
+    .with({ type: "loading" }, () => "loading…")
+    .with({ type: "success" }, ({ data }) => `data: ${data}`)
+    .with({ type: "error" }, ({ message }) => `error: ${message}`)
+    .exhaustive(); // no `.otherwise()` escape hatch
 ```
 
 ## Testing & contributing

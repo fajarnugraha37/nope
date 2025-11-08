@@ -50,6 +50,7 @@ import type {
   SetChainable,
   MapChainable,
   LazyP,
+  SealedP,
 } from "./types/pattern.js";
 
 export type {
@@ -691,6 +692,22 @@ export function union<
       matcherType: "or",
     }),
   });
+}
+
+export function sealed<
+  input,
+  const patterns extends readonly [Pattern<input>, ...Pattern<input>[]]
+>(...patterns: patterns): SealedP<input, patterns> {
+  const unionPattern = union<input, patterns>(...patterns);
+
+  Object.defineProperty(unionPattern, symbols.sealedVariants, {
+    value: patterns,
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  });
+
+  return unionPattern as SealedP<input, patterns>;
 }
 
 /**

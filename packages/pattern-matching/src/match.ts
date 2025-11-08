@@ -1,5 +1,5 @@
-import type { Pattern } from "./types/pattern.js";
-import type { Match } from "./types/match.js";
+import type { Pattern, PatternInput } from "./types/pattern.js";
+import type { Match, SealedMatch } from "./types/match.js";
 import * as symbols from "./internals/symbols.js";
 import { matchPattern } from "./internals/helpers.js";
 import { NonExhaustiveError } from "./errors.js";
@@ -31,6 +31,24 @@ export function match<const input, output = symbols.unset>(
   value: input
 ): Match<input, output> {
   return new MatchExpression(value, unmatched) as any;
+}
+
+export function matchSealed<
+  sealedPattern extends { readonly [symbols.sealedVariants]: readonly Pattern<any>[] },
+  output = symbols.unset
+>(
+  value: PatternInput<sealedPattern>,
+  sealed: sealedPattern
+): SealedMatch<PatternInput<sealedPattern>, output> {
+  if (
+    !sealed ||
+    typeof sealed !== "object" ||
+    !(symbols.sealedVariants in sealed)
+  ) {
+    throw new Error("matchSealed expects a pattern created with P.sealed");
+  }
+
+  return match(value) as SealedMatch<PatternInput<sealedPattern>, output>;
 }
 
 /**

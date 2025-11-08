@@ -271,3 +271,7 @@ type Exhaustive<output, inferredOutput> = {
     handler: (unexpectedValue: unknown) => PickReturnValue<output, otherOutput>
   ): PickReturnValue<output, Union<inferredOutput, otherOutput>>;
 };
+
+export type SealedMatch<i, o> = Omit<Match<i, o>, "otherwise"> & {
+  otherwise: never;
+};
