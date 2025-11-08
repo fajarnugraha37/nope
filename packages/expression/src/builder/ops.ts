@@ -8,6 +8,28 @@ import type {
   Operation,
 } from "../expression.js";
 
+export interface OpsBuilder {
+  var(name: string, defaultValue?: unknown): VarOperand;
+  val(list: readonly string[]): ValOperand;
+  ref(id: string): RefOperand;
+  literal(value: unknown): LiteralOperand;
+  add(...operands: OperationOperand[]): Operation;
+  subtract(a: OperationOperand, b: OperationOperand): Operation;
+  multiply(...operands: OperationOperand[]): Operation;
+  divide(a: OperationOperand, b: OperationOperand): Operation;
+  eq(a: OperationOperand, b: OperationOperand): Operation;
+  gt(a: OperationOperand, b: OperationOperand): Operation;
+  lt(a: OperationOperand, b: OperationOperand): Operation;
+  and(...operands: OperationOperand[]): Operation;
+  or(...operands: OperationOperand[]): Operation;
+  not(operand: OperationOperand): Operation;
+  if(
+    condition: OperationOperand,
+    thenValue: OperationOperand,
+    elseValue?: OperationOperand
+  ): Operation;
+}
+
 export class Ops {
   /**
    * Create a variable reference
@@ -433,9 +455,9 @@ export class Ops {
   /**
    * Create a nested operation builder pattern
    */
-  static builder() {
+  static builder(): OpsBuilder {
     return {
-      var: (name: string) => this.v(name),
+      var: (name: string, defaultValue?: unknown) => this.v(name, defaultValue),
       val: (list: readonly string[]) => this.val(list),
       ref: (id: string) => this.ref(id),
       literal: (value: unknown) => this.literal(value),

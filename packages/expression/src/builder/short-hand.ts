@@ -44,144 +44,156 @@ export function when(
  * Comparison helpers
  */
 export const Compare = {
-  eq: (a: OperationOperand, b: OperationOperand) => Ops.eq(a, b),
-  neq: (a: OperationOperand, b: OperationOperand) => Ops.neq(a, b),
-  gt: (a: OperationOperand, b: OperationOperand) => Ops.gt(a, b),
-  gte: (a: OperationOperand, b: OperationOperand) => Ops.gte(a, b),
-  lt: (a: OperationOperand, b: OperationOperand) => Ops.lt(a, b),
-  lte: (a: OperationOperand, b: OperationOperand) => Ops.lte(a, b),
-  strictEq: (a: OperationOperand, b: OperationOperand) => Ops.strictEq(a, b),
-  strictNeq: (a: OperationOperand, b: OperationOperand) => Ops.strictNeq(a, b),
+  eq: (a: OperationOperand, b: OperationOperand): Operation => Ops.eq(a, b),
+  neq: (a: OperationOperand, b: OperationOperand): Operation => Ops.neq(a, b),
+  gt: (a: OperationOperand, b: OperationOperand): Operation => Ops.gt(a, b),
+  gte: (a: OperationOperand, b: OperationOperand): Operation => Ops.gte(a, b),
+  lt: (a: OperationOperand, b: OperationOperand): Operation => Ops.lt(a, b),
+  lte: (a: OperationOperand, b: OperationOperand): Operation => Ops.lte(a, b),
+  strictEq: (a: OperationOperand, b: OperationOperand): Operation =>
+    Ops.strictEq(a, b),
+  strictNeq: (a: OperationOperand, b: OperationOperand): Operation =>
+    Ops.strictNeq(a, b),
 } as const;
 
 /**
  * Math helpers
  */
 export const MathOps = {
-  add: (...operands: OperationOperand[]) => Ops.add(...operands),
-  subtract: (a: OperationOperand, b: OperationOperand) => Ops.subtract(a, b),
-  multiply: (...operands: OperationOperand[]) => Ops.multiply(...operands),
-  divide: (a: OperationOperand, b: OperationOperand) => Ops.divide(a, b),
-  modulo: (a: OperationOperand, b: OperationOperand) => Ops.modulo(a, b),
-  power: (base: OperationOperand, exponent: OperationOperand) =>
+  add: (...operands: OperationOperand[]): Operation => Ops.add(...operands),
+  subtract: (a: OperationOperand, b: OperationOperand): Operation =>
+    Ops.subtract(a, b),
+  multiply: (...operands: OperationOperand[]): Operation =>
+    Ops.multiply(...operands),
+  divide: (a: OperationOperand, b: OperationOperand): Operation =>
+    Ops.divide(a, b),
+  modulo: (a: OperationOperand, b: OperationOperand): Operation =>
+    Ops.modulo(a, b),
+  power: (base: OperationOperand, exponent: OperationOperand): Operation =>
     Ops.power(base, exponent),
-  min: (...operands: OperationOperand[]) => Ops.min(...operands),
-  max: (...operands: OperationOperand[]) => Ops.max(...operands),
-  abs: (operand: OperationOperand) => Ops.abs(operand),
-  round: (operand: OperationOperand) => Ops.round(operand),
-  floor: (operand: OperationOperand) => Ops.floor(operand),
-  ceil: (operand: OperationOperand) => Ops.ceil(operand),
+  min: (...operands: OperationOperand[]): Operation => Ops.min(...operands),
+  max: (...operands: OperationOperand[]): Operation => Ops.max(...operands),
+  abs: (operand: OperationOperand): Operation => Ops.abs(operand),
+  round: (operand: OperationOperand): Operation => Ops.round(operand),
+  floor: (operand: OperationOperand): Operation => Ops.floor(operand),
+  ceil: (operand: OperationOperand): Operation => Ops.ceil(operand),
 } as const;
 
 /**
  * Logic helpers
  */
 export const Logic = {
-  and: (...operands: OperationOperand[]) => Ops.and(...operands),
-  or: (...operands: OperationOperand[]) => Ops.or(...operands),
-  not: (operand: OperationOperand) => Ops.not(operand),
-  xor: (a: OperationOperand, b: OperationOperand) => Ops.xor(a, b),
+  and: (...operands: OperationOperand[]): Operation => Ops.and(...operands),
+  or: (...operands: OperationOperand[]): Operation => Ops.or(...operands),
+  not: (operand: OperationOperand): Operation => Ops.not(operand),
+  xor: (a: OperationOperand, b: OperationOperand): Operation => Ops.xor(a, b),
 } as const;
 
 /**
  * String helpers
  */
 export const Str = {
-  concat: (...operands: OperationOperand[]) => Ops.concat(...operands),
-  length: (str: OperationOperand) => Ops.length(str),
+  concat: (...operands: OperationOperand[]): Operation =>
+    Ops.concat(...operands),
+  length: (str: OperationOperand): Operation => Ops.length(str),
   substring: (
     str: OperationOperand,
     start: OperationOperand,
     end?: OperationOperand
-  ) => Ops.substring(str, start, end),
-  toLowerCase: (str: OperationOperand) => Ops.toLowerCase(str),
-  toUpperCase: (str: OperationOperand) => Ops.toUpperCase(str),
-  trim: (str: OperationOperand) => Ops.trim(str),
-  contains: (str: OperationOperand, substring: OperationOperand) =>
-    Ops.contains(str, substring),
-  startsWith: (str: OperationOperand, prefix: OperationOperand) =>
+  ): Operation => Ops.substring(str, start, end),
+  toLowerCase: (str: OperationOperand): Operation => Ops.toLowerCase(str),
+  toUpperCase: (str: OperationOperand): Operation => Ops.toUpperCase(str),
+  trim: (str: OperationOperand): Operation => Ops.trim(str),
+  contains: (
+    str: OperationOperand,
+    substring: OperationOperand
+  ): Operation => Ops.contains(str, substring),
+  startsWith: (str: OperationOperand, prefix: OperationOperand): Operation =>
     Ops.startsWith(str, prefix),
-  endsWith: (str: OperationOperand, suffix: OperationOperand) =>
+  endsWith: (str: OperationOperand, suffix: OperationOperand): Operation =>
     Ops.endsWith(str, suffix),
   replace: (
     str: OperationOperand,
     search: OperationOperand,
     replacement: OperationOperand
-  ) => Ops.replace(str, search, replacement),
-  split: (str: OperationOperand, separator: OperationOperand) =>
+  ): Operation => Ops.replace(str, search, replacement),
+  split: (str: OperationOperand, separator: OperationOperand): Operation =>
     Ops.split(str, separator),
 } as const;
-
 /**
  * Array helpers
  */
 export const Arr = {
-  map: (array: OperationOperand, callback: OperationOperand) =>
+  map: (array: OperationOperand, callback: OperationOperand): Operation =>
     Ops.map(array, callback),
-  filter: (array: OperationOperand, predicate: OperationOperand) =>
-    Ops.filter(array, predicate),
+  filter: (
+    array: OperationOperand,
+    predicate: OperationOperand
+  ): Operation => Ops.filter(array, predicate),
   reduce: (
     array: OperationOperand,
     callback: OperationOperand,
     initial?: OperationOperand
-  ) => Ops.reduce(array, callback, initial),
-  find: (array: OperationOperand, predicate: OperationOperand) =>
+  ): Operation => Ops.reduce(array, callback, initial),
+  find: (array: OperationOperand, predicate: OperationOperand): Operation =>
     Ops.find(array, predicate),
-  every: (array: OperationOperand, predicate: OperationOperand) =>
+  every: (array: OperationOperand, predicate: OperationOperand): Operation =>
     Ops.every(array, predicate),
-  some: (array: OperationOperand, predicate: OperationOperand) =>
+  some: (array: OperationOperand, predicate: OperationOperand): Operation =>
     Ops.some(array, predicate),
-  includes: (array: OperationOperand, value: OperationOperand) =>
+  includes: (array: OperationOperand, value: OperationOperand): Operation =>
     Ops.includes(array, value),
-  length: (array: OperationOperand) => Ops.length(array),
-  get: (array: OperationOperand, index: OperationOperand) =>
+  length: (array: OperationOperand): Operation => Ops.length(array),
+  get: (array: OperationOperand, index: OperationOperand): Operation =>
     Ops.get(array, index),
   slice: (
     array: OperationOperand,
     start: OperationOperand,
     end?: OperationOperand
-  ) => Ops.slice(array, start, end),
+  ): Operation => Ops.slice(array, start, end),
 } as const;
 
 /**
  * Validation helpers
  */
 export const Is = {
-  null: (value: OperationOperand) => Ops.isNull(value),
-  defined: (value: OperationOperand) => Ops.isDefined(value),
-  empty: (value: OperationOperand) => Ops.isEmpty(value),
-  string: (value: OperationOperand) => Ops.isString(value),
-  number: (value: OperationOperand) => Ops.isNumber(value),
-  boolean: (value: OperationOperand) => Ops.isBoolean(value),
-  array: (value: OperationOperand) => Ops.isArray(value),
-  object: (value: OperationOperand) => Ops.isObject(value),
-  email: (value: OperationOperand) => Ops.isEmail(value),
-  url: (value: OperationOperand) => Ops.isUrl(value),
+  null: (value: OperationOperand): Operation => Ops.isNull(value),
+  defined: (value: OperationOperand): Operation => Ops.isDefined(value),
+  empty: (value: OperationOperand): Operation => Ops.isEmpty(value),
+  string: (value: OperationOperand): Operation => Ops.isString(value),
+  number: (value: OperationOperand): Operation => Ops.isNumber(value),
+  boolean: (value: OperationOperand): Operation => Ops.isBoolean(value),
+  array: (value: OperationOperand): Operation => Ops.isArray(value),
+  object: (value: OperationOperand): Operation => Ops.isObject(value),
+  email: (value: OperationOperand): Operation => Ops.isEmail(value),
+  url: (value: OperationOperand): Operation => Ops.isUrl(value),
 } as const;
 
 /**
  * Object helpers
  */
 export const Obj = {
-  get: (obj: OperationOperand, key: OperationOperand) => Ops.get(obj, key),
-  keys: (obj: OperationOperand) => Ops.keys(obj),
-  values: (obj: OperationOperand) => Ops.values(obj),
-  entries: (obj: OperationOperand) => Ops.entries(obj),
-  has: (obj: OperationOperand, key: OperationOperand) => Ops.has(obj, key),
-  merge: (...objects: OperationOperand[]) => Ops.merge(...objects),
+  get: (obj: OperationOperand, key: OperationOperand): Operation =>
+    Ops.get(obj, key),
+  keys: (obj: OperationOperand): Operation => Ops.keys(obj),
+  values: (obj: OperationOperand): Operation => Ops.values(obj),
+  entries: (obj: OperationOperand): Operation => Ops.entries(obj),
+  has: (obj: OperationOperand, key: OperationOperand): Operation =>
+    Ops.has(obj, key),
+  merge: (...objects: OperationOperand[]): Operation => Ops.merge(...objects),
 } as const;
 
 /**
  * Date helpers
  */
 export const DateTime = {
-  now: () => Ops.now(),
-  date: (value: OperationOperand) => Ops.date(value),
-  format: (date: OperationOperand, format: OperationOperand) =>
+  now: (): Operation => Ops.now(),
+  date: (value: OperationOperand): Operation => Ops.date(value),
+  format: (date: OperationOperand, format: OperationOperand): Operation =>
     Ops.format(date, format),
-  isBefore: (date1: OperationOperand, date2: OperationOperand) =>
+  isBefore: (date1: OperationOperand, date2: OperationOperand): Operation =>
     Ops.isBefore(date1, date2),
-  isAfter: (date1: OperationOperand, date2: OperationOperand) =>
+  isAfter: (date1: OperationOperand, date2: OperationOperand): Operation =>
     Ops.isAfter(date1, date2),
 } as const;
 
@@ -189,18 +201,22 @@ export const DateTime = {
  * Higher-order operation helpers (legacy compatibility)
  */
 export const HO = {
-  map: (iterable: OperationOperand, lambda: OperationOperand) =>
+  map: (iterable: OperationOperand, lambda: OperationOperand): Operation =>
     Ops.map(iterable, lambda),
   reduce: (
     iterable: OperationOperand,
     lambda: OperationOperand,
     init?: OperationOperand
-  ) =>
+  ): Operation =>
     init ? Ops.reduce(iterable, lambda, init) : Ops.reduce(iterable, lambda),
-  every: (iterable: OperationOperand, predicate: OperationOperand) =>
-    Ops.every(iterable, predicate),
-  some: (iterable: OperationOperand, predicate: OperationOperand) =>
-    Ops.some(iterable, predicate),
+  every: (
+    iterable: OperationOperand,
+    predicate: OperationOperand
+  ): Operation => Ops.every(iterable, predicate),
+  some: (
+    iterable: OperationOperand,
+    predicate: OperationOperand
+  ): Operation => Ops.some(iterable, predicate),
 } as const;
 
 /**
