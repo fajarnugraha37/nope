@@ -1,3 +1,5 @@
+import { Readable } from "stream";
+import fs from "fs/promises";
 import { isStr } from "./primitives.js";
 
 export const isBrowser = (): boolean =>
@@ -23,7 +25,6 @@ export const isReadableStreamWeb = (x: unknown): x is ReadableStream<any> =>
 
 export const isReadableStreamNode = (x: unknown): x is import("stream").Readable => {
   try {
-    const { Readable } = require("stream") as typeof import("stream");
     return x instanceof Readable;
   } catch {
     return false;
@@ -33,8 +34,7 @@ export const isReadableStreamNode = (x: unknown): x is import("stream").Readable
 /** does a path exist (node only). resolves false in non-node envs */
 export const isPathExists = async (p: unknown) => {
   if (typeof p !== "string") return false;
-  try {
-    const fs = require("fs/promises") as typeof import("fs/promises");
+  try { 
     await fs.access(p);
     return true;
   } catch {
@@ -46,7 +46,6 @@ export const isPathExists = async (p: unknown) => {
 export const isFile = async (p: unknown) => {
   if (typeof p !== "string") return false;
   try {
-    const fs = require("fs/promises") as typeof import("fs/promises");
     const s = await fs.stat(p);
     return s.isFile();
   } catch {
@@ -60,7 +59,6 @@ export const isJsonFile =
   async (p: unknown) => {
     if (!(await isFile(p))) return false;
     try {
-      const fs = require("fs/promises") as typeof import("fs/promises");
       const raw = await fs.readFile(p as string, "utf8");
       const data = JSON.parse(raw);
       return valueGuard(data);

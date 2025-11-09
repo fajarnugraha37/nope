@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/error",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Runtime-agnostic error handling library with structured errors, adapters, and validation support for Bun, Node.js, and browsers",
   "keywords": [
     "error",
