@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/pattern-matching",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers.",
     "keywords": [
     "pattern-matching",
@@ -73,7 +73,7 @@
     "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
   },
   "dependencies": {
-    "@fajarnugraha37/common": "workspace:*"
+    "@fajarnugraha37/error": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",

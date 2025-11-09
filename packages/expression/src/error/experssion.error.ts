@@ -1,10 +1,10 @@
-import { HttpError } from "@fajarnugraha37/common";
+import { HttpError } from "@fajarnugraha37/error";
 
 // Error types
 export class ExpressionError extends HttpError {
   constructor(
     message: string,
-    public readonly code: string,
+    public override readonly code: string,
     public readonly context?: unknown
   ) {
     super(`[${code}] ${message}`, 400, context);

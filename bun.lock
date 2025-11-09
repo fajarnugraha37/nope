@@ -30,10 +30,10 @@
     },
     "packages/expression": {
       "name": "@fajarnugraha37/expression",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
         "@fajarnugraha37/cache": "workspace:*",
-        "@fajarnugraha37/common": "workspace:*",
+        "@fajarnugraha37/error": "workspace:*",
         "@fajarnugraha37/validator": "workspace:*",
         "json-logic-engine": "^5.0.3",
       },
@@ -46,9 +46,9 @@
     },
     "packages/pattern-matching": {
       "name": "@fajarnugraha37/pattern-matching",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
-        "@fajarnugraha37/common": "workspace:*",
+        "@fajarnugraha37/error": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -76,7 +76,7 @@
     },
     "packages/validator": {
       "name": "@fajarnugraha37/validator",
-      "version": "0.1.2",
+      "version": "0.1.3",
       "dependencies": {
         "@fajarnugraha37/cache": "workspace:*",
         "@fajarnugraha37/error": "workspace:*",
@@ -1227,6 +1227,8 @@
 
     "@fajarnugraha37/error/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
+    "@fajarnugraha37/expression/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
+
     "@fajarnugraha37/pattern-matching/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
     "@fajarnugraha37/reactive/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
@@ -1314,6 +1316,8 @@
     "@fajarnugraha37/common/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
     "@fajarnugraha37/error/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
+
+    "@fajarnugraha37/expression/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
     "@fajarnugraha37/pattern-matching/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 

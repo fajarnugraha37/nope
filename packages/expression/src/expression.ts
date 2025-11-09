@@ -1,4 +1,4 @@
-import type { ValidationResult } from "@fajarnugraha37/common";
+import type { ValidationResult } from "@fajarnugraha37/error";
 
 export type ValidatorFn = (data: unknown) => boolean;
 export type validateExpressionFn = <T>(data: T) => ValidationResult<T>;

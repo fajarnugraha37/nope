@@ -1,4 +1,4 @@
-import { HttpError } from "@fajarnugraha37/common";
+import { HttpError } from "@fajarnugraha37/error";
 
 export class NonExhaustiveError extends HttpError {
   constructor(public input: unknown) {
