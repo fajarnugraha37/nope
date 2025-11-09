@@ -20,6 +20,7 @@ _Normalized Ops & Predicate Ecosystem_
 | `@fajarnugraha37/common` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/common.svg)](https://www.npmjs.com/package/@fajarnugraha37/common) | `shareds/common` | Typed errors, ULID helpers, guards, regex/string utilities, and structural object helpers shared everywhere else. |
 | `@fajarnugraha37/cache` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache) | `shareds/cache` | LRU+TTL caches, singleflight, memoization, idempotent execution helpers, and read-through/write-through adapters. |
 | `@fajarnugraha37/async` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async) | `shareds/async` | Concurrency primitives (channels, semaphores, thread pools), event emitters, async iterators, and resilient `try/retry` utilities. |
+| `@fajarnugraha37/error` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/error.svg)](https://www.npmjs.com/package/@fajarnugraha37/error) | `shareds/error` | Structured error handling with error codes, context preservation, error wrapping, serialization, and type-safe error factories. |
 | `@fajarnugraha37/reactive` | [![npm](https://img.shields.io/npm/v/@fajarnugraha37/reactive.svg)](https://www.npmjs.com/package/@fajarnugraha37/reactive) | `shareds/reactive` | Observable/Stream implementation with plugins, operators (map/combine/throttle/…), and immutable state helpers on top of `limu`. |
 | `apps/*` | — | `apps` | Reserved for demo or integration apps that consume the workspace packages. |
 
@@ -46,6 +47,7 @@ npm install @fajarnugraha37/pattern-matching
 npm install @fajarnugraha37/common
 npm install @fajarnugraha37/cache
 npm install @fajarnugraha37/async
+npm install @fajarnugraha37/error
 npm install @fajarnugraha37/reactive
 
 # Node.js with pnpm
@@ -111,7 +113,7 @@ CI workflows live in `.github/workflows` and can be executed locally with the `a
 - All source is TypeScript (`"type": "module"` everywhere) and compiled through `tsup`.
 - Tests live next to the package under `tests/*.test.ts` and use Bun's `bun:test` runner.
 - Keep README files in sync with the code (this document summarizes the whole workspace; each package ships its own README for deep dives).
-- Prefer the shared helpers in `@fajarnugraha37/common`, `@fajarnugraha37/cache`, and `@fajarnugraha37/async` instead of re-implementing them inside feature packages.
+- Prefer the shared helpers in `@fajarnugraha37/common`, `@fajarnugraha37/cache`, `@fajarnugraha37/async`, and `@fajarnugraha37/error` instead of re-implementing them inside feature packages.
 
 
 
