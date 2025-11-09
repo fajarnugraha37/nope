@@ -1,11 +1,10 @@
 # @fajarnugraha37/cache
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache)
+[![Tests](https://img.shields.io/badge/tests-47%20passing-success)](./tests)
+[![Coverage](https://img.shields.io/badge/coverage-98.27%25%20lines-brightgreen)](./coverage)
 
-[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async)
-[![Tests](https://img.shields.io/badge/tests-228%20passing-success)](./tests)
-[![Coverage](https://img.shields.io/badge/coverage-98.06%25%20lines-brightgreen)](./coverage)
-
-> Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
+> Production-ready caching primitives: LRU, TTL, stale-while-revalidate, singleflight loading, and flexible memoization for TypeScript/JavaScript applications.
 
 ## Table of Contents
 
@@ -16,43 +15,46 @@
 5. [Usage catalog](#usage-catalog)
 6. [Advanced features](#advanced-features)
 7. [Cookbook](#cookbook)
-8. [API reference](#api-reference)
-9. [FAQ & troubleshooting](#faq--troubleshooting)
+8. [Performance benchmarks](#performance-benchmarks)
+9. [API reference](#api-reference)
 
 ## Installation
 
 ```bash
 # Node.js with npm
-npm install @fajarnugraha37/async
+npm install @fajarnugraha37/cache
 
 # Node.js with pnpm
-pnpm add @fajarnugraha37/async
+pnpm add @fajarnugraha37/cache
 
 # Node.js with yarn
-yarn add @fajarnugraha37/async
+yarn add @fajarnugraha37/cache
 
 # Bun
-bun add @fajarnugraha37/async
+bun add @fajarnugraha37/cache
 
 # Deno
-deno add npm:@fajarnugraha37/async
+deno add npm:@fajarnugraha37/cache
 ```
+
 ---
 
 ## Why this lib?
 
-Modern JavaScript/TypeScript applications need powerful async primitives beyond basic Promises. This library provides:
+Modern applications need efficient caching to reduce latency, minimize expensive operations, and improve user experience. This library provides:
 
-- **🚦 Go-style Channels**: CSP-style concurrency with buffered/unbuffered channels and `select` for multi-channel operations
-- **🔒 Synchronization Primitives**: Mutex, Semaphore, CountdownLatch for coordinating concurrent operations
-- **📡 Typed Event Systems**: Type-safe EventBus with stream integration, regex filtering, and async iteration
-- **🔄 Resilient Retry Logic**: Exponential backoff, circuit breakers, rate limiting, and timeout handling
-- **🎯 Resource Safety**: Automatic cleanup with defer scopes (inspired by Go's `defer` and Zig's `errdefer`)
-- **⚡ Async Generators**: Rich manipulation tools (map, filter, chunk, zip, tee) for async iteration
-- **🎭 Flow Control**: Debounce, throttle, job queues, thread pools for managing async workloads
-- **📊 Production-Ready**: 228 tests, 98% coverage, battle-tested patterns
+- **💾 LRU Cache**: Least-Recently-Used eviction with size limits and TTL support
+- **⏱️ TTL Management**: Automatic expiration with lazy and active cleanup strategies
+- **🔄 Stale-While-Revalidate**: Serve stale data while refreshing in the background
+- **🔐 Singleflight Loading**: Deduplicate concurrent cache misses to prevent thundering herd
+- **📊 Statistics & Events**: Track hit/miss rates, evictions, and cache health metrics
+- **🎯 Memoization**: Function result caching with flexible key generation
+- **🔑 Idempotency**: Request deduplication with expiring keys
+- **🔒 Keyed Locks**: Per-key mutual exclusion for coordinated cache updates
+- **🎨 Flexible Design**: Namespaced caches, custom transformers, and batch operations
+- **✅ Production-Ready**: 47 tests, 98% coverage, battle-tested patterns
 
-Whether you're building event-driven systems, managing complex async workflows, or need structured concurrency, this library provides the tools.
+Whether you're caching API responses, expensive computations, or database queries, this library provides the tools.
 
 ---
 
@@ -60,38 +62,39 @@ Whether you're building event-driven systems, managing complex async workflows, 
 
 ```ts
 import { 
-  Channel, 
-  select, 
-  EventBus, 
-  retry, 
-  withDefer 
-} from "@fajarnugraha37/async";
+  Cache, 
+  LoadingCache, 
+  memoize,
+  createIdempotencyCache
+} from "@fajarnugraha37/cache";
 
-// Go-style channels
-const ch = new Channel<number>(10);
-await ch.send(42);
-const { value } = await ch.recv();
+// Basic LRU cache with TTL
+const cache = new Cache<string, User>({ maxSize: 1000, ttlMs: 60000 });
+cache.set("user:123", { id: "123", name: "Alice" });
+const user = cache.get("user:123");
 
-// Select from multiple channels
-const result = await select([ch1, ch2, ch3], 1000);
+// Loading cache with automatic population
+const userCache = new LoadingCache({
+  maxSize: 500,
+  ttlMs: 30000,
+  loader: async (userId: string) => {
+    return await db.users.findById(userId);
+  }
+});
+const alice = await userCache.get("123"); // Loads if missing
 
-// Typed event bus
-type Events = { "user:login": { id: string } };
-const bus = new EventBus<Events>();
-bus.on("user:login", (evt) => console.log(evt.payload.id));
-bus.emit("user:login", { id: "123" });
+// Memoize expensive functions
+const fibonacci = memoize((n: number): number => {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}, { maxSize: 100 });
 
-// Resilient retry with backoff
-const data = await retry(
-  async () => fetch("https://api.example.com/data").then(r => r.json()),
-  { maxAttempts: 3, delayMs: 1000 }
-);
-
-// Resource-safe cleanup
-await withDefer(async (scope) => {
-  const file = await openFile("data.txt");
-  scope.defer(() => file.close());
-  return processFile(file);
+// Idempotency for API requests
+const idempotency = createIdempotencyCache<OrderResponse>({
+  ttlMs: 3600000 // 1 hour
+});
+await idempotency.execute("order-123", async () => {
+  return await createOrder(orderData);
 });
 ```
 
@@ -99,1004 +102,384 @@ await withDefer(async (scope) => {
 
 ## Core concepts
 
-### Channels & CSP
+### LRU Cache with TTL
 
-Channels provide Go-style communication between async tasks:
+Least-Recently-Used cache automatically evicts old entries:
 
 ```ts
-const ch = new Channel<string>(5); // buffered channel
+const cache = new Cache<string, Data>({
+  maxSize: 1000,      // Max 1000 entries
+  ttlMs: 60000,       // Entries expire after 1 minute
+  staleMs: 5000,      // Consider stale after 5 seconds
+  allowStale: true,   // Serve stale data while revalidating
+  checkPeriod: 30000  // Clean up expired entries every 30s
+});
 
-// Producer
-(async () => {
-  for (let i = 0; i < 10; i++) {
-    await ch.send(`message-${i}`);
-  }
-  ch.close();
-})();
+cache.set("key", data);
+const result = cache.get("key");
 
-// Consumer
-for await (const msg of ch) {
-  console.log(msg);
+if (cache.has("key")) {
+  console.log("Cache hit!");
 }
 ```
 
 **Key features:**
-- Unbuffered (synchronous) or buffered channels
-- `select` for multiplexing multiple channels
-- Async iteration support
-- Backpressure handling
+- Automatic LRU eviction when maxSize reached
+- Optional TTL with expiration
+- Stale-while-revalidate support
+- Lazy and active cleanup strategies
 
-### Synchronization Primitives
+### Loading Cache
 
-#### Mutex
+Automatically populate cache on miss with singleflight protection:
+
 ```ts
-const mutex = new Mutex();
-await mutex.runExclusive(async () => {
-  // Critical section - only one task at a time
-  await updateSharedResource();
+const cache = new LoadingCache({
+  maxSize: 500,
+  ttlMs: 60000,
+  loader: async (key: string) => {
+    // Expensive operation (database, API, computation)
+    return await fetchFromDatabase(key);
+  }
 });
+
+// First call loads from loader
+const data1 = await cache.get("user:123");
+
+// Second call returns cached value
+const data2 = await cache.get("user:123");
+
+// Multiple concurrent calls deduplicated (singleflight)
+const [a, b, c] = await Promise.all([
+  cache.get("user:456"),
+  cache.get("user:456"),
+  cache.get("user:456")
+]); // Only ONE loader call!
 ```
 
-#### Semaphore
+### Memoization
+
+Cache function results automatically:
+
 ```ts
-const sem = new Semaphore(3); // max 3 concurrent operations
-await sem.withPermit(async () => {
-  await expensiveOperation();
-});
+// Simple memoization
+const expensive = memoize(
+  (n: number) => {
+    // Expensive computation
+    return fibonacci(n);
+  },
+  { maxSize: 100, ttlMs: 60000 }
+);
+
+// Async memoization
+const fetchUser = memoizeAsync(
+  async (id: string) => {
+    return await api.getUser(id);
+  },
+  { maxSize: 500, ttlMs: 30000 }
+);
+
+// Custom key generation
+const search = memoize(
+  (query: string, filters: Filter[]) => {
+    return performSearch(query, filters);
+  },
+  {
+    keyFn: (query, filters) => `${query}:${JSON.stringify(filters)}`,
+    maxSize: 200
+  }
+);
 ```
 
-#### CountdownLatch
-```ts
-const latch = new CountdownLatch(5);
+### Statistics & Events
 
-// 5 workers
-for (let i = 0; i < 5; i++) {
-  doWork().finally(() => latch.countDown());
-}
-
-// Wait for all workers
-await latch.wait();
-console.log("All work complete!");
-```
-
-### Resource Management
-
-Inspired by Go's `defer` and Zig's error handling:
+Monitor cache performance:
 
 ```ts
-await withDefer(async (scope) => {
-  const conn = await db.connect();
-  scope.defer(() => conn.close());
-  
-  const tx = await conn.beginTransaction();
-  scope.defer(() => tx.rollback());
-  
-  await tx.execute("INSERT ...");
-  await tx.commit();
-  // Deferred cleanup runs in LIFO order
-});
-```
-
-### Event Systems
-
-Type-safe event bus with advanced features:
-
-```ts
-type Events = {
-  "user:created": { id: string; email: string };
-  "order:placed": { orderId: number; total: number };
-};
-
-const bus = new EventBus<Events>();
-
-// Subscribe with type safety
-bus.on("user:created", (evt) => {
-  console.log(evt.payload.email); // ✅ Type-checked
+const cache = new Cache({
+  maxSize: 1000,
+  enableStats: true,
+  enableEvents: true
 });
 
-// Regex filtering
-bus.on(/^user:/, (evt) => {
-  console.log("User event:", evt.topic);
-});
+// Get statistics
+const stats = cache.stats();
+console.log(`Hit rate: ${stats.hitRate.toFixed(2)}%`);
+console.log(`Evictions: ${stats.evictions}`);
 
-// Async iteration
-for await (const evt of bus) {
-  if (evt.topic === "order:placed") break;
-}
-```
-
-### Retry & Resilience
-
-Comprehensive error handling:
-
-```ts
-// Simple retry
-await retry(fetchData, { maxAttempts: 3 });
-
-// Advanced retry with backoff
-await retryWith(fetchData, {
-  maxAttempts: 5,
-  baseMs: 100,
-  factor: 2,
-  jitter: 0.1,
-  shouldRetry: (err) => err.code !== "PERMANENT_ERROR"
-});
-
-// Circuit breaker
-const cb = new CircuitBreaker({ failureThreshold: 5 });
-await cb.call(async () => callExternalAPI());
-
-// Rate limiting
-const limiter = new TokenBucket(100, 10); // 100 capacity, 10/sec
-if (limiter.tryTake(1)) {
-  await processRequest();
-}
+// Listen to events
+cache.on("hit", ({ key }) => console.log(`Cache hit: ${key}`));
+cache.on("miss", ({ key }) => console.log(`Cache miss: ${key}`));
+cache.on("evict", ({ key, reason }) => console.log(`Evicted ${key}: ${reason}`));
+cache.on("expire", ({ key }) => console.log(`Expired: ${key}`));
 ```
 
 ---
 
 ## Usage catalog
 
-### Concurrency
+### Basic Cache Operations
 
-#### Channel & Select
 ```ts
-import { Channel, select } from "@fajarnugraha37/async";
+import { Cache } from "@fajarnugraha37/cache";
 
-// Unbuffered channel (blocking send/recv)
-const ch = new Channel<number>();
-await ch.send(42);
-const { value } = await ch.recv();
+const cache = new Cache<string, number>({ maxSize: 100 });
 
-// Buffered channel
-const buffered = new Channel<string>(10);
-for (let i = 0; i < 10; i++) {
-  buffered.send(`msg-${i}`); // non-blocking until buffer full
+// Set value
+cache.set("key1", 42);
+
+// Set with custom TTL
+cache.set("key2", 100, 5000); // Expires in 5 seconds
+
+// Get value
+const value = cache.get("key1"); // 42 or undefined
+
+// Check existence
+if (cache.has("key1")) {
+  console.log("Key exists");
 }
 
-// Select from multiple channels
-const ch1 = new Channel<number>();
-const ch2 = new Channel<string>();
-const result = await select([ch1, ch2], 1000); // 1s timeout
-if (result.ok && result.channel === 0) {
-  console.log("ch1:", result.value);
-}
+// Delete
+cache.delete("key1");
 
-// Async iteration
-for await (const msg of ch) {
-  console.log(msg);
-  if (msg === "stop") break;
-}
+// Clear all
+cache.clear();
+
+// Size
+console.log(cache.size);
 ```
 
-#### Mutex
+### Batch Operations
+
 ```ts
-import { Mutex } from "@fajarnugraha37/async";
-
-const mutex = new Mutex();
-let counter = 0;
-
-// Exclusive access
-await mutex.runExclusive(async () => {
-  counter++;
-  await someAsyncOperation();
-});
-
-// Manual lock/unlock
-await mutex.acquire();
-try {
-  // critical section
-} finally {
-  mutex.release();
-}
-```
-
-#### Semaphore & FairSemaphore
-```ts
-import { Semaphore, FairSemaphore } from "@fajarnugraha37/async";
-
-// Standard semaphore (allows up to N concurrent operations)
-const sem = new Semaphore(3);
-await sem.withPermit(async () => {
-  await processData(); // max 3 concurrent
-});
-
-// Fair semaphore (FIFO order)
-const fair = new FairSemaphore(5);
-await fair.acquire();
-try {
-  await criticalWork();
-} finally {
-  fair.release();
-}
-```
-
-#### CountdownLatch
-```ts
-import { CountdownLatch } from "@fajarnugraha37/async";
-
-const latch = new CountdownLatch(3);
-
-// Start 3 parallel tasks
-Promise.all([
-  task1().finally(() => latch.countDown()),
-  task2().finally(() => latch.countDown()),
-  task3().finally(() => latch.countDown())
+// Set multiple
+cache.setMany([
+  ["user:1", { id: 1, name: "Alice" }],
+  ["user:2", { id: 2, name: "Bob" }]
 ]);
 
-// Wait for all to complete
-await latch.wait();
-console.log("All tasks done!");
+// Get multiple
+const users = cache.getMany(["user:1", "user:2"]);
+// Returns: Map<string, User | undefined>
+
+// Delete multiple
+cache.deleteMany(["user:1", "user:2"]);
+
+// Check multiple
+const existence = cache.hasMany(["user:1", "user:2"]);
+// Returns: Map<string, boolean>
 ```
 
-#### JobQueue
+### TTL & Expiration
+
 ```ts
-import { JobQueue } from "@fajarnugraha37/async";
+const cache = new Cache({
+  maxSize: 1000,
+  ttlMs: 60000,       // Global TTL: 1 minute
+  checkPeriod: 30000  // Cleanup every 30 seconds
+});
 
-const queue = new JobQueue(5); // 5 concurrent workers
+// Per-entry TTL
+cache.set("short-lived", data, 5000); // 5 seconds
 
-// Enqueue jobs
-for (let i = 0; i < 100; i++) {
-  queue.enqueue(async () => {
-    await processItem(i);
-  });
+// Get remaining TTL
+const ttl = cache.ttl("key"); // milliseconds or undefined
+
+// Update TTL
+cache.touch("key", 120000); // Extend to 2 minutes
+
+// Check if expired (without removing)
+if (cache.isExpired("key")) {
+  cache.delete("key");
 }
-
-await queue.drain(); // wait for all jobs
-queue.close();
 ```
 
-#### ThreadPool
+### Stale-While-Revalidate
+
 ```ts
-import { ThreadPool } from "@fajarnugraha37/async";
-
-const pool = new ThreadPool(4); // 4 workers
-
-const results = await Promise.all([
-  pool.submit(() => expensiveTask(1)),
-  pool.submit(() => expensiveTask(2)),
-  pool.submit(() => expensiveTask(3))
-]);
-
-pool.shutdown();
-```
-
-#### PriorityQueue
-```ts
-import { PriorityQueue } from "@fajarnugraha37/async";
-
-// Min-heap by default
-const pq = new PriorityQueue<number>();
-pq.push(5, 2, 8, 1);
-console.log(pq.pop()); // 1
-
-// Custom comparator
-const maxHeap = new PriorityQueue<number>((a, b) => b - a);
-maxHeap.push(5, 2, 8, 1);
-console.log(maxHeap.pop()); // 8
-```
-
-#### Debounce & Throttle
-```ts
-import { debounce, throttle } from "@fajarnugraha37/async";
-
-// Debounce: wait for quiet period
-const search = debounce(async (query: string) => {
-  return await api.search(query);
-}, 300);
-
-// Throttle: limit execution rate
-const trackScroll = throttle(() => {
-  updateScrollPosition();
-}, 100);
-
-window.addEventListener("scroll", trackScroll);
-```
-
-#### Defer & Resource Management
-```ts
-import { 
-  withDefer, 
-  withAbort, 
-  timedAbort, 
-  using, 
-  deferred 
-} from "@fajarnugraha37/async";
-
-// Automatic cleanup
-await withDefer(async (scope) => {
-  const file = await fs.open("data.txt");
-  scope.defer(() => file.close());
-  
-  const conn = await db.connect();
-  scope.defer(() => conn.close());
-  
-  // All defers run in LIFO order
-  return await process(file, conn);
+const cache = new Cache({
+  maxSize: 500,
+  ttlMs: 60000,
+  staleMs: 5000,      // Fresh for 5s, then stale
+  allowStale: true
 });
 
-// AbortController cleanup
-await withDefer(async (scope) => {
-  const ac = withAbort(scope);
-  const response = await fetch(url, { signal: ac.signal });
-  return await response.json();
-});
+// Returns stale data immediately if available
+const data = cache.get("key");
 
-// Timed abort
-await withDefer(async (scope) => {
-  const ac = timedAbort(scope, 5000); // 5s timeout
-  return await longRunningOp(ac.signal);
-});
-
-// Generic resource wrapper
-await withDefer(async (scope) => {
-  const handle = using(resource, (r) => r.cleanup());
-  scope.defer(handle);
-  return await useResource(resource);
-});
-
-// Manual deferred promise
-const { promise, resolve, reject } = deferred<number>();
-setTimeout(() => resolve(42), 1000);
-const result = await promise;
-```
-
-#### Sleep & Utilities
-```ts
-import { sleep } from "@fajarnugraha37/async";
-
-await sleep(1000); // 1 second
-console.log("Done waiting");
-```
-
----
-
-### Event Systems
-
-#### EventBus (Stream-based)
-```ts
-import { EventBus, match, filterEnv } from "@fajarnugraha37/async";
-
-type Events = {
-  "user:login": { userId: string };
-  "user:logout": { userId: string };
-  "order:created": { orderId: number; total: number };
-};
-
-const bus = new EventBus<Events>();
-
-// Type-safe subscription
-bus.on("user:login", (evt) => {
-  console.log("User logged in:", evt.payload.userId);
-});
-
-// Regex filtering
-bus.on(/^user:/, (evt) => {
-  console.log("User event:", evt.topic);
-});
-
-// Predicate filtering
-bus.on((evt) => evt.topic.startsWith("order:"), (evt) => {
-  console.log("Order event:", evt.payload);
-});
-
-// Emit events
-bus.emit("user:login", { userId: "123" });
-
-// Async iteration
-for await (const evt of bus) {
-  console.log(evt.topic, evt.payload);
-  if (evt.topic === "shutdown") break;
+// Manual revalidation
+if (cache.isStale("key")) {
+  // Serve stale data while refreshing in background
+  fetchFreshData().then(fresh => cache.set("key", fresh));
 }
+```
 
-// Transform streams
-const userEvents = bus.pipe(
-  filterEnv((e) => e.topic.startsWith("user:"))
+### Namespaced Caches
+
+```ts
+import { createNamespacedCache } from "@fajarnugraha37/cache";
+
+const cache = new Cache({ maxSize: 1000 });
+
+// Create namespaced views
+const userCache = createNamespacedCache(cache, "users:");
+const postCache = createNamespacedCache(cache, "posts:");
+
+// Set in namespace
+userCache.set("123", userData);   // Actually: "users:123"
+postCache.set("456", postData);   // Actually: "posts:456"
+
+// Get from namespace
+const user = userCache.get("123"); // Gets "users:123"
+
+// Clear namespace
+userCache.clear(); // Only clears "users:*"
+```
+
+### Transform Caches
+
+```ts
+import { createTransformCache } from "@fajarnugraha37/cache";
+
+const cache = new Cache<string, string>({ maxSize: 100 });
+
+// JSON transform
+const jsonCache = createTransformCache(
+  cache,
+  (obj) => JSON.stringify(obj),
+  (str) => JSON.parse(str)
 );
 
-// Topic reader/writer
-const writer = bus.writer();
-writer.write({ topic: "user:login", payload: { userId: "456" } });
-```
+jsonCache.set("user", { id: 123, name: "Alice" });
+const user = jsonCache.get("user"); // Automatically deserialized
 
-#### EventEmitter (Lightweight)
-```ts
-import { EventEmitter } from "@fajarnugraha37/async";
-
-type Events = {
-  data: { value: number };
-  error: Error;
-};
-
-const emitter = new EventEmitter<Events>();
-
-// Subscribe
-const unsubscribe = emitter.on("data", (evt) => {
-  console.log("Data:", evt.value);
-});
-
-// One-time listener
-emitter.once("error", (err) => {
-  console.error("Error:", err);
-});
-
-// Emit
-emitter.emit("data", { value: 42 });
-
-// Wildcard handlers
-emitter.on("*", (type, evt) => {
-  console.log(`Event ${String(type)}:`, evt);
-});
-
-// Cleanup
-unsubscribe();
-emitter.off("data", handler);
-```
-
-#### Event Factories
-```ts
-import {
-  createEventBus,
-  createTopicDemux,
-  createTopicMux,
-  pipeTopics,
-  tapLog
-} from "@fajarnugraha37/async";
-
-// Factory for typed bus
-const bus = createEventBus<MyEvents>();
-
-// Demux: split topics into separate streams
-const { read, streams } = createTopicDemux<Events>(bus);
-for await (const evt of streams["user:login"]) {
-  console.log("Login:", evt.payload);
-}
-
-// Mux: combine streams
-const combined = createTopicMux([stream1, stream2]);
-
-// Pipe topics between buses
-pipeTopics(sourceBus, targetBus);
-
-// Debug logging
-const logged = tapLog(bus, (evt) => console.log("Event:", evt));
-```
-
----
-
-### Async Generators
-
-#### Basics: map, filter, take, drop
-```ts
-import { 
-  mapG, 
-  filterG, 
-  take, 
-  drop, 
-  takeWhile, 
-  dropWhile,
-  enumerate,
-  chunk,
-  flatMapG,
-  zip,
-  chain
-} from "@fajarnugraha37/async";
-
-async function* numbers() {
-  for (let i = 0; i < 10; i++) yield i;
-}
-
-// Map
-const doubled = mapG(numbers(), (x) => x * 2);
-
-// Filter
-const evens = filterG(numbers(), (x) => x % 2 === 0);
-
-// Take first N
-const first5 = take(numbers(), 5);
-
-// Drop first N
-const rest = drop(numbers(), 3);
-
-// Take while condition
-const lessThan5 = takeWhile(numbers(), (x) => x < 5);
-
-// Enumerate with index
-for await (const [idx, val] of enumerate(numbers())) {
-  console.log(idx, val);
-}
-
-// Chunk into arrays
-for await (const chunk of chunk(numbers(), 3)) {
-  console.log(chunk); // [0,1,2], [3,4,5], ...
-}
-
-// Flat map
-const nested = flatMapG(numbers(), function*(n) {
-  for (let i = 0; i < n; i++) yield i;
-});
-
-// Zip multiple iterables
-for await (const [a, b, c] of zip(iter1, iter2, iter3)) {
-  console.log(a, b, c);
-}
-
-// Chain iterables
-const combined = chain(iter1, iter2, iter3);
-```
-
-#### Collectors
-```ts
-import { 
-  reduceG, 
-  toArray, 
-  toSet, 
-  toMap,
-  groupBy,
-  partition
-} from "@fajarnugraha37/async";
-
-// Reduce
-const sum = reduceG(numbers(), (acc, x) => acc + x, 0);
-
-// To collections
-const arr = toArray(numbers());
-const set = toSet(numbers());
-const map = toMap(
-  enumerate(numbers()),
-  ([idx, val]) => [idx, val]
+// Compression transform (hypothetical)
+const compressedCache = createTransformCache(
+  cache,
+  (data) => compress(data),
+  (compressed) => decompress(compressed)
 );
-
-// Group by key
-const grouped = groupBy(items, (item) => item.category);
-
-// Partition by predicate
-const [evens, odds] = partition(numbers(), (x) => x % 2 === 0);
 ```
 
-#### Creators
+### Cache Warming
+
 ```ts
-import { 
-  range, 
-  count, 
-  repeat, 
-  cycle 
-} from "@fajarnugraha37/async";
+import { warmCache } from "@fajarnugraha37/cache";
 
-// Range
-for (const n of range(10)) console.log(n); // 0..9
-for (const n of range(5, 10)) console.log(n); // 5..9
-for (const n of range(0, 10, 2)) console.log(n); // 0,2,4,6,8
+const cache = new Cache({ maxSize: 1000 });
 
-// Infinite counter
-for (const n of count(0, 2)) {
-  console.log(n); // 0,2,4,6,...
-  if (n >= 10) break;
-}
-
-// Repeat value
-for (const x of repeat("hello", 3)) {
-  console.log(x); // hello, hello, hello
-}
-
-// Cycle through values
-for (const x of cycle([1, 2, 3])) {
-  console.log(x); // 1,2,3,1,2,3,...
-}
-```
-
-#### Sorting & Merging
-```ts
-import { mergeSorted } from "@fajarnugraha37/async";
-
-const iter1 = [1, 3, 5];
-const iter2 = [2, 4, 6];
-
-// Merge sorted iterables
-for (const n of mergeSorted((a, b) => a - b, iter1, iter2)) {
-  console.log(n); // 1,2,3,4,5,6
-}
-```
-
-#### Tee (Split iterator)
-```ts
-import { tee } from "@fajarnugraha37/async";
-
-const source = numbers();
-const [iter1, iter2] = tee(source, 2);
-
-// Two independent copies
-for await (const n of iter1) console.log("A:", n);
-for await (const n of iter2) console.log("B:", n);
-```
-
----
-
-### Retry & Resilience
-
-#### Basic Retry
-```ts
-import { retry, retryWith, retryAll } from "@fajarnugraha37/async";
-
-// Simple retry
-const result = await retry(
-  async () => fetchData(),
-  { maxAttempts: 3, delayMs: 1000 }
-);
-
-// Advanced retry with backoff
-const data = await retryWith(
-  async () => callAPI(),
-  {
-    maxAttempts: 5,
-    baseMs: 100,
-    factor: 2,
-    jitter: 0.1,
-    shouldRetry: (err) => err.status !== 400
-  }
-);
-
-// Retry all with individual policies
-const results = await retryAll([
-  { fn: task1, policy: { maxAttempts: 3 } },
-  { fn: task2, policy: { maxAttempts: 5 } }
-]);
-```
-
-#### Retry Policies
-```ts
-import { 
-  retryAfterDelayMs, 
-  httpRetryPolicy,
-  expBackoffDelay 
-} from "@fajarnugraha37/async";
-
-// Fixed delay
-const policy1 = retryAfterDelayMs(1000);
-
-// HTTP-aware retry
-const httpPolicy = httpRetryPolicy({
-  method: "GET",
-  status: 503
-});
-const decision = httpPolicy(error, 2);
-
-// Exponential backoff
-const backoff = expBackoffDelay({
-  baseMs: 100,
-  factor: 2,
-  maxMs: 10000,
-  jitter: 0.1
-});
-```
-
-#### Circuit Breaker
-```ts
-import { CircuitBreaker } from "@fajarnugraha37/async";
-
-const breaker = new CircuitBreaker({
-  failureThreshold: 5,
-  resetTimeout: 30000,
-  halfOpenMaxAttempts: 2
+// Pre-populate cache
+await warmCache(cache, async () => {
+  const users = await db.users.findAll();
+  return users.map(u => [`user:${u.id}`, u]);
 });
 
-try {
-  const result = await breaker.call(async () => {
-    return await externalAPI();
-  });
-} catch (err) {
-  console.error("Circuit open:", err);
-}
-
-// Check state
-console.log(breaker.state); // "closed" | "open" | "half-open"
-```
-
-#### Rate Limiting
-```ts
-import { 
-  TokenBucket, 
-  rateLimit,
-  Scheduler 
-} from "@fajarnugraha37/async";
-
-// Token bucket
-const bucket = new TokenBucket(100, 10); // 100 capacity, 10/sec
-if (bucket.tryTake(5)) {
-  await processRequest();
-}
-
-// Rate limit wrapper
-const limited = rateLimit(
-  async (data) => processData(data),
-  { capacity: 100, refillRate: 10 }
-);
-await limited(myData);
-
-// Scheduler for batch operations
-const scheduler = new Scheduler({
-  maxConcurrency: 5,
-  intervalMs: 1000
-});
-scheduler.schedule(() => task1());
-scheduler.schedule(() => task2());
-```
-
-#### Timeout Handling
-```ts
-import { 
-  timeoutPromise, 
-  withTimeout 
-} from "@fajarnugraha37/async";
-
-// Promise timeout
-const result = await timeoutPromise(
-  fetchData(),
-  5000,
-  "Operation timed out"
-);
-
-// Wrapper with timeout
-const timedFetch = withTimeout(fetchData, 3000);
-await timedFetch("https://api.example.com");
-```
-
-#### Result Type (Ok/Err)
-```ts
-import { 
-  tryCatch, 
-  collectAll,
-  partitionOkErr,
-  firstErr,
-  anyOk,
-  collectAllObj
-} from "@fajarnugraha37/async";
-
-// Try-catch wrapper
-const result = tryCatch(() => riskyOperation());
-if (result.ok) {
-  console.log(result.value);
-} else {
-  console.error(result.error);
-}
-
-// Collect results
-const results = [
-  { ok: true, value: 1 },
-  { ok: true, value: 2 },
-  { ok: false, error: "fail" }
-];
-const all = collectAll(results); // Err if any fail
-
-// Partition
-const [oks, errs] = partitionOkErr(results);
-
-// First error
-const err = firstErr(results);
-
-// Any success
-const hasOk = anyOk(results);
-
-// Object results
-const obj = collectAllObj({
-  a: { ok: true, value: 1 },
-  b: { ok: true, value: 2 }
-}); // { ok: true, value: { a: 1, b: 2 } }
-```
-
-#### Parallel Execution
-```ts
-import { 
-  parallel, 
-  parallelLimit,
-  race,
-  raceMaybe
-} from "@fajarnugraha37/async";
-
-// Unlimited parallel
-const results = await parallel([
-  async () => task1(),
-  async () => task2(),
-  async () => task3()
-]);
-
-// Limited concurrency
-const limited = await parallelLimit([
-  async () => task1(),
-  async () => task2(),
-  async () => task3()
-], 2); // max 2 concurrent
-
-// Race
-const winner = await race([
-  fetchFromAPI1(),
-  fetchFromAPI2()
-]);
-
-// Race maybe (returns all results)
-const all = await raceMaybe([
-  fetchFromAPI1(),
-  fetchFromAPI2()
-]);
-```
-
----
-
-### Channels & `select`
-
-```ts
-import { Channel, select } from "@fajarnugraha37/async";
-
-const input = new Channel<number>(1);
-
-(async () => {
-  await input.send(41);
-  await input.send(42);
-  input.close();
-})();
-
-while (true) {
-  const { value, done } = await input.recv();
-  if (done) break;
-  console.log(value);
-}
-
-// Listen to whichever channel fires first
-const a = new Channel<string>();
-const b = new Channel<string>();
-
-setTimeout(() => void a.send("from A"), 10);
-setTimeout(() => void b.send("from B"), 5);
-
-const first = await select([a, b], 100);
-console.log(first.index, first.value);
-```
-
-### Resource-safe scopes
-
-```ts
-import { withDefer, timedAbort } from "@fajarnugraha37/async";
-
-await withDefer(async (scope) => {
-  const abortController = timedAbort(scope, 1_000);
-  scope.defer(() => console.log("cleanup runs even on throw"));
-
-  const response = await fetch(url, { signal: abortController.signal });
-  return response.json();
-});
-```
-
-### Event bus
-
-```ts
-import { EventBus } from "@fajarnugraha37/async";
-
-type Events = {
-  "user:created": { id: string };
-  audit: { action: string };
-};
-
-const bus = new EventBus<Events>();
-
-const stop = bus.on("user:created", (evt) => {
-  console.log("user", evt.payload.id);
-});
-
-await bus.emitAsync("user:created", { id: "42" });
-stop();
-```
-
-### Retry helpers
-
-```ts
-import { retryWith } from "@fajarnugraha37/async";
-
-const result = await retryWith(
-  async (signal) => {
-    const response = await fetch("https://example.com", { signal });
-    if (!response.ok) throw new Error("boom");
-    return response.json();
-  },
-  { retries: 5, delayMs: 200, backoff: 1.5, jitter: 0.1, timeoutMs: 2_000 }
-);
-
-if (!result.ok) throw result.error;
+// Now cache is pre-warmed with data
+const alice = cache.get("user:123");
 ```
 
 ---
 
 ## Advanced features
 
-### Custom Retry Policies
-
-Create sophisticated retry strategies:
+### LoadingCache with Custom Loaders
 
 ```ts
-import { RetryDecision } from "@fajarnugraha37/async";
-
-function customRetryPolicy(error: any, attempt: number): RetryDecision {
-  // Don't retry client errors
-  if (error.status >= 400 && error.status < 500) {
-    return { shouldRetry: false };
+const cache = new LoadingCache({
+  maxSize: 500,
+  ttlMs: 60000,
+  loader: async (key: string, context?: RequestContext) => {
+    // Access context in loader
+    const headers = context?.headers;
+    return await fetchWithAuth(key, headers);
+  },
+  onError: (err, key) => {
+    console.error(`Failed to load ${key}:`, err);
+    // Return fallback value or re-throw
+    return defaultValue;
   }
-  
-  // Exponential backoff with jitter
-  const baseDelay = 1000;
-  const delay = baseDelay * Math.pow(2, attempt) * (0.9 + Math.random() * 0.2);
-  
-  return {
-    shouldRetry: attempt < 5,
-    delayMs: Math.min(delay, 30000) // cap at 30s
-  };
-}
-
-await retryWith(apiCall, customRetryPolicy);
-```
-
-### Circuit Breaker Patterns
-
-Implement resilient microservices:
-
-```ts
-const breaker = new CircuitBreaker({
-  failureThreshold: 5,      // Open after 5 failures
-  resetTimeout: 30000,       // Try again after 30s
-  halfOpenMaxAttempts: 2     // Test with 2 requests
 });
 
-// Fallback on circuit open
-async function resilientCall() {
-  try {
-    return await breaker.call(() => primaryService());
-  } catch (err) {
-    if (breaker.state === "open") {
-      return await fallbackService();
+// Pass context to loader
+const data = await cache.get("resource", { headers: authHeaders });
+```
+
+### Idempotency Cache
+
+Prevent duplicate operations:
+
+```ts
+import { createIdempotencyCache, IdempotencyCache } from "@fajarnugraha37/cache";
+
+const idempotency: IdempotencyCache<PaymentResult> = createIdempotencyCache({
+  ttlMs: 3600000 // 1 hour
+});
+
+// First call executes
+const result1 = await idempotency.execute("payment-123", async () => {
+  return await processPayment(paymentData);
+});
+
+// Second call returns cached result
+const result2 = await idempotency.execute("payment-123", async () => {
+  return await processPayment(paymentData); // NOT called
+});
+
+// Clean up after completion
+idempotency.resolve("payment-123");
+```
+
+### Keyed Locks
+
+Per-key mutual exclusion:
+
+```ts
+import { KeyedLock } from "@fajarnugraha37/cache";
+
+const lock = new KeyedLock();
+
+// Only one operation per key at a time
+await lock.withLock("user:123", async () => {
+  const user = await cache.get("user:123");
+  user.balance += 100;
+  await cache.set("user:123", user);
+});
+
+// Different keys can run concurrently
+await Promise.all([
+  lock.withLock("user:123", async () => updateUser("123")),
+  lock.withLock("user:456", async () => updateUser("456")) // Runs in parallel
+]);
+```
+
+### Custom Eviction Policies
+
+```ts
+// Priority-based eviction
+class PriorityCache<K, V> extends Cache<K, V> {
+  private priorities = new Map<K, number>();
+
+  set(key: K, value: V, priority: number = 0) {
+    this.priorities.set(key, priority);
+    return super.set(key, value);
+  }
+
+  protected evict(): void {
+    // Evict lowest priority first
+    let lowestKey: K | undefined;
+    let lowestPriority = Infinity;
+    
+    for (const [key, priority] of this.priorities) {
+      if (priority < lowestPriority) {
+        lowestPriority = priority;
+        lowestKey = key;
+      }
     }
-    throw err;
+    
+    if (lowestKey) {
+      this.delete(lowestKey);
+    }
   }
-}
-```
-
-### Composing Event Streams
-
-Build complex event pipelines:
-
-```ts
-import { EventBus, filterEnv, createTopicDemux } from "@fajarnugraha37/async";
-
-const bus = new EventBus<MyEvents>();
-
-// Create filtered sub-streams
-const userEvents = bus.pipe(filterEnv(e => e.topic.startsWith("user:")));
-const orderEvents = bus.pipe(filterEnv(e => e.topic.startsWith("order:")));
-
-// Demux into separate channels
-const { streams } = createTopicDemux(bus);
-for await (const evt of streams["critical:error"]) {
-  await alertOps(evt);
-}
-```
-
-### Custom Priority Queues
-
-```ts
-interface Task {
-  priority: number;
-  deadline: Date;
-  execute: () => Promise<void>;
-}
-
-const taskQueue = new PriorityQueue<Task>((a, b) => {
-  // Higher priority first
-  if (a.priority !== b.priority) return b.priority - a.priority;
-  // Earlier deadline first
-  return a.deadline.getTime() - b.deadline.getTime();
-});
-
-taskQueue.push(...tasks);
-while (taskQueue.size > 0) {
-  const task = taskQueue.pop();
-  await task.execute();
 }
 ```
 
@@ -1104,448 +487,147 @@ while (taskQueue.size > 0) {
 
 ## Cookbook
 
-### Pattern 1: Fan-out/Fan-in
+### Pattern 1: Multi-Level Cache
 
-Process items in parallel, collect results:
+Combine local and remote caches:
 
 ```ts
-import { Channel, withDefer } from "@fajarnugraha37/async";
+class MultiLevelCache<K, V> {
+  constructor(
+    private l1: Cache<K, V>,
+    private l2: LoadingCache<K, V>
+  ) {}
 
-async function fanOutFanIn<T, R>(
-  items: T[],
-  process: (item: T) => Promise<R>,
-  workers: number
-): Promise<R[]> {
-  return withDefer(async (scope) => {
-    const input = new Channel<T>(items.length);
-    const output = new Channel<R>(items.length);
-    
-    scope.defer(() => { input.close(); output.close(); });
-    
-    // Fan-out: spawn workers
-    const workerPromises = Array.from({ length: workers }, async () => {
-      for await (const item of input) {
-        const result = await process(item);
-        await output.send(result);
-      }
-    });
-    
-    // Feed input
-    for (const item of items) await input.send(item);
-    input.close();
-    
-    // Fan-in: collect results
-    const results: R[] = [];
-    for await (const result of output) {
-      results.push(result);
-      if (results.length === items.length) break;
+  async get(key: K): Promise<V | undefined> {
+    // Try L1 (fast local cache)
+    let value = this.l1.get(key);
+    if (value) return value;
+
+    // Try L2 (slower remote/loading cache)
+    value = await this.l2.get(key);
+    if (value) {
+      this.l1.set(key, value); // Backfill L1
+      return value;
     }
-    
-    await Promise.all(workerPromises);
-    return results;
-  });
-}
 
-// Usage
-const urls = ["url1", "url2", "url3"];
-const responses = await fanOutFanIn(urls, fetch, 5);
-```
-
-### Pattern 2: Worker Pool with Queue
-
-```ts
-import { ThreadPool } from "@fajarnugraha37/async";
-
-async function workerPool<T, R>(
-  tasks: T[],
-  worker: (task: T) => Promise<R>,
-  poolSize: number
-): Promise<R[]> {
-  const pool = new ThreadPool(poolSize);
-  const results = await Promise.all(
-    tasks.map(task => pool.submit(() => worker(task)))
-  );
-  pool.shutdown();
-  return results;
-}
-
-// Usage
-const processed = await workerPool(data, processItem, 10);
-```
-
-### Pattern 3: Rate-Limited Batch Processor
-
-```ts
-import { TokenBucket, sleep } from "@fajarnugraha37/async";
-
-async function rateLimitedBatch<T>(
-  items: T[],
-  process: (item: T) => Promise<void>,
-  ratePerSecond: number
-) {
-  const bucket = new TokenBucket(ratePerSecond, ratePerSecond);
-  
-  for (const item of items) {
-    while (!bucket.tryTake(1)) {
-      await sleep(100); // wait for tokens
-    }
-    await process(item);
+    return undefined;
   }
 }
 
-// Process 100 items/sec
-await rateLimitedBatch(items, processItem, 100);
+const l1 = new Cache({ maxSize: 100, ttlMs: 5000 });
+const l2 = new LoadingCache({
+  maxSize: 1000,
+  ttlMs: 60000,
+  loader: fetchFromDb
+});
+
+const cache = new MultiLevelCache(l1, l2);
 ```
 
-### Pattern 4: Retry with Fallback Chain
+### Pattern 2: Cache-Aside
 
-Try multiple strategies:
+Manual cache population:
 
 ```ts
-import { retry } from "@fajarnugraha37/async";
+async function getUser(id: string): Promise<User> {
+  const cached = cache.get(`user:${id}`);
+  if (cached) return cached;
 
-async function resilientFetch(url: string) {
-  // Try primary
-  try {
-    return await retry(
-      () => fetch(url).then(r => r.json()),
-      { maxAttempts: 3, delayMs: 1000 }
-    );
-  } catch (err) {
-    console.warn("Primary failed, trying cache");
-  }
-  
-  // Try cache
-  try {
-    return await cache.get(url);
-  } catch (err) {
-    console.warn("Cache failed, using fallback");
-  }
-  
-  // Fallback
-  return await fetchFromBackup(url);
+  const user = await db.users.findById(id);
+  cache.set(`user:${id}`, user, 60000);
+  return user;
+}
+
+async function updateUser(id: string, data: Partial<User>): Promise<User> {
+  const user = await db.users.update(id, data);
+  cache.set(`user:${id}`, user, 60000); // Write-through
+  return user;
+}
+
+async function deleteUser(id: string): Promise<void> {
+  await db.users.delete(id);
+  cache.delete(`user:${id}`); // Invalidate
 }
 ```
 
-### Pattern 5: Pub/Sub with Type Safety
+### Pattern 3: Read-Through Cache
 
 ```ts
-import { EventBus } from "@fajarnugraha37/async";
+const cache = new LoadingCache({
+  maxSize: 500,
+  ttlMs: 60000,
+  loader: async (key: string) => {
+    return await db.get(key);
+  }
+});
 
-type Events = {
-  "user:login": { userId: string; timestamp: number };
-  "user:logout": { userId: string };
-  "data:update": { key: string; value: any };
-};
+// Always use get - loads automatically on miss
+const data = await cache.get("key");
+```
 
-class PubSub {
-  private bus = new EventBus<Events>();
-  
-  subscribe<K extends keyof Events>(
-    topic: K,
-    handler: (payload: Events[K]) => void
+### Pattern 4: Write-Through Cache
+
+```ts
+class WriteThroughCache<K, V> extends Cache<K, V> {
+  constructor(
+    opts: CacheOptions,
+    private persist: (key: K, value: V) => Promise<void>
   ) {
-    return this.bus.on(topic, (evt) => handler(evt.payload));
+    super(opts);
   }
-  
-  publish<K extends keyof Events>(topic: K, payload: Events[K]) {
-    this.bus.emit(topic, payload);
+
+  async set(key: K, value: V, ttl?: number): Promise<this> {
+    await this.persist(key, value);
+    return super.set(key, value, ttl);
   }
-  
-  async *stream() {
-    for await (const evt of this.bus) {
-      yield evt;
-    }
+}
+
+const cache = new WriteThroughCache(
+  { maxSize: 1000 },
+  async (key, value) => {
+    await db.set(key, value);
+  }
+);
+```
+
+### Pattern 5: Cache Invalidation Strategies
+
+```ts
+// Time-based invalidation
+cache.set("key", value, 60000); // Auto-expire after 1 min
+
+// Event-based invalidation
+eventBus.on("user:updated", ({ userId }) => {
+  cache.delete(`user:${userId}`);
+});
+
+// Tag-based invalidation
+const taggedCache = new Map<string, Set<string>>();
+
+function setWithTags(key: string, value: any, tags: string[]) {
+  cache.set(key, value);
+  for (const tag of tags) {
+    if (!taggedCache.has(tag)) taggedCache.set(tag, new Set());
+    taggedCache.get(tag)!.add(key);
+  }
+}
+
+function invalidateTag(tag: string) {
+  const keys = taggedCache.get(tag);
+  if (keys) {
+    for (const key of keys) cache.delete(key);
+    taggedCache.delete(tag);
   }
 }
 
 // Usage
-const pubsub = new PubSub();
-pubsub.subscribe("user:login", ({ userId }) => {
-  console.log(`User ${userId} logged in`);
-});
-pubsub.publish("user:login", { userId: "123", timestamp: Date.now() });
+setWithTags("user:123", userData, ["users", "team:A"]);
+invalidateTag("team:A"); // Invalidates all team A entries
 ```
 
 ---
 
-## Benchmark results
-
-Performance characteristics (Bun 1.3.1):
-
-```
-Channel send/recv              33.84ms  (100k ops)
-Channel buffered (100)         44.61ms  (10k ops)
-JobQueue (100 jobs)            36.87ms  
-Mutex lock/unlock              32.72ms  (100k ops)
-Semaphore (5 permits)          33.26ms  (50k ops)
-CountdownLatch (10)            30.19ms  (10k ops)
-PriorityQueue (1000 items)      4.07ms  
-ThreadPool (10 tasks)          72.78ms  
-EventBus (1000 events)         18.42ms  
-EventEmitter (100 events)       1.30ms  
-```
-
-Run benchmarks yourself:
-```bash
-bun run benchmark
-```
-
----
-
-## API reference
-
-Complete type signatures and detailed documentation for all exports.
-
-### Concurrency Module
-
-#### `Channel<T>`
-Go-style buffered/unbuffered channel.
-
-```ts
-class Channel<T> {
-  constructor(bufferSize?: number);
-  send(value: T): Promise<void>;
-  recv(): Promise<{ value: T, ok: boolean }>;
-  close(): void;
-  [Symbol.asyncIterator](): AsyncIterator<T>;
-}
-```
-
-#### `select()`
-```ts
-function select<T>(
-  channels: Channel<T>[],
-  timeoutMs?: number
-): Promise<{ ok: boolean; channel?: number; value?: T }>
-```
-
-#### `Mutex`
-```ts
-class Mutex {
-  acquire(): Promise<void>;
-  release(): void;
-  runExclusive<T>(fn: () => Promise<T>): Promise<T>;
-}
-```
-
-#### `Semaphore` / `FairSemaphore`
-```ts
-class Semaphore {
-  constructor(permits: number);
-  acquire(): Promise<void>;
-  release(): void;
-  withPermit<T>(fn: () => Promise<T>): Promise<T>;
-}
-
-class FairSemaphore {
-  constructor(permits: number);
-  acquire(): Promise<void>;
-  release(): void;
-  withPermit<T>(fn: () => Promise<T>): Promise<T>;
-}
-```
-
-#### `CountdownLatch`
-```ts
-class CountdownLatch {
-  constructor(count: number);
-  countDown(): void;
-  wait(): Promise<void>;
-}
-```
-
-#### `JobQueue`
-```ts
-class JobQueue {
-  constructor(concurrency: number);
-  enqueue(job: () => Promise<void>): void;
-  drain(): Promise<void>;
-  close(): void;
-}
-```
-
-#### `ThreadPool`
-```ts
-class ThreadPool {
-  constructor(size: number);
-  submit<T>(task: () => T): Promise<T>;
-  shutdown(): void;
-}
-```
-
-#### `PriorityQueue<T>`
-```ts
-class PriorityQueue<T> {
-  constructor(comparator?: (a: T, b: T) => number);
-  push(...items: T[]): void;
-  pop(): T | undefined;
-  peek(): T | undefined;
-  size: number;
-}
-```
-
-#### Defer & Resource Management
-```ts
-interface Defer {
-  defer(finalizer: () => void | Promise<void>): void;
-}
-
-function withDefer<T>(fn: (scope: Defer) => Promise<T>): Promise<T>;
-function withAbort(scope: Defer): AbortController;
-function timedAbort(scope: Defer, ms: number): AbortController;
-function using<T>(value: T, dispose: (v: T) => void | Promise<void>);
-
-interface Deferred<T> {
-  promise: Promise<T>;
-  resolve(value: T): void;
-  reject(error: any): void;
-}
-function deferred<T>(): Deferred<T>;
-```
-
-#### Flow Control
-```ts
-function debounce<A extends any[], R>(
-  fn: (...args: A) => R,
-  delayMs: number
-): (...args: A) => Promise<R>;
-
-function throttle<A extends any[], R>(
-  fn: (...args: A) => R,
-  intervalMs: number
-): (...args: A) => R;
-```
-
-### Event Systems Module
-
-#### `EventBus<T>`
-```ts
-class EventBus<T extends Record<string, any>> {
-  on(topic: string | RegExp | Predicate, handler: Handler): () => void;
-  emit(topic: string, payload: any): void;
-  close(): void;
-  pipe(transform: Transform): Readable;
-  [Symbol.asyncIterator](): AsyncIterator;
-}
-```
-
-#### `EventEmitter<T>`
-```ts
-class EventEmitter<T extends Record<EventType, any>> {
-  on(event: keyof T, handler: (data: T[event]) => void): () => void;
-  once(event: keyof T, handler: (data: T[event]) => void): () => void;
-  off(event: keyof T, handler: Handler): void;
-  emit(event: keyof T, data: T[event]): void;
-}
-```
-
-### Generator Module
-
-All generator utilities (`mapG`, `filterG`, `take`, `drop`, `chunk`, `zip`, `chain`, etc.) plus creators (`range`, `count`, `repeat`, `cycle`) and collectors (`toArray`, `toSet`, `reduceG`).
-
-### Retry & Resilience Module
-
-#### `retry()` / `retryWith()`
-```ts
-function retry<T>(
-  fn: () => Promise<T>,
-  options?: { maxAttempts?: number; delayMs?: number }
-): Promise<T>;
-
-function retryWith<T>(
-  fn: () => Promise<T>,
-  policy: RetryPolicy | RetryDecisionFn
-): Promise<T>;
-
-interface RetryDecision {
-  shouldRetry: boolean;
-  delayMs?: number;
-}
-```
-
-#### `CircuitBreaker`
-```ts
-class CircuitBreaker {
-  constructor(options: {
-    failureThreshold: number;
-    resetTimeout: number;
-    halfOpenMaxAttempts?: number;
-  });
-  call<T>(fn: () => Promise<T>): Promise<T>;
-  state: "closed" | "open" | "half-open";
-}
-```
-
-#### `TokenBucket`
-```ts
-class TokenBucket {
-  constructor(capacity: number, refillRate: number);
-  tryTake(tokens: number): boolean;
-  take(tokens: number): Promise<void>;
-  availableTokens(): number;
-}
-```
-
-#### Utilities
-- `timeoutPromise<T>(promise, ms, message?)`: Add timeout to promise
-- `withTimeout<T>(fn, ms)`: Wrap function with timeout
-- `parallel<T>(fns)`: Run functions in parallel
-- `parallelLimit<T>(fns, limit)`: Limit concurrency
-- `Result<T, E>` types: `Ok<T>`, `Err<E>`, and collection helpers
-
----
-
-## FAQ
-
-**Q: When should I use Channels vs EventBus?**
-
-- **Channels**: Point-to-point communication, backpressure, CSP patterns
-- **EventBus**: Pub/sub, multiple subscribers, event filtering
-
-**Q: How do I handle cleanup in async workflows?**
-
-Use `withDefer` for automatic resource cleanup in LIFO order.
-
-**Q: What's the difference between Semaphore and FairSemaphore?**
-
-- `Semaphore`: LIFO-like (stack order)
-- `FairSemaphore`: FIFO (queue order) - use when fairness matters
-
-**Q: How do I implement request retries with backoff?**
-
-```ts
-await retryWith(apiCall, {
-  maxAttempts: 5,
-  baseMs: 100,
-  factor: 2,
-  jitter: 0.1
-});
-```
-
-**Q: Can I use this with Node.js streams?**
-
-Yes! `EventBus` is built on Node streams and fully compatible.
-
-**Q: How do I prevent memory leaks?**
-
-Always unsubscribe when done, or use `for await` with `break`.
-
-**Q: What's the performance overhead of defer scopes?**
-
-Minimal (~1-2% overhead). Defers are stored in an array and called in reverse.
-
-**Q: Can I nest `withDefer` scopes?**
-
-Yes! Inner scopes' defers run first (LIFO within each scope).
-
-**Q: How do I debug circuit breaker issues?**
-
-Check `breaker.state` and add logging on state transitions.
-
----
-
-## Performance Benchmarks
+## Performance benchmarks
 
 Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 
@@ -1591,7 +673,148 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 
 ---
 
-## Test Coverage
+## API reference
+
+### Cache<K, V>
+
+Core LRU cache with TTL support.
+
+```ts
+interface CacheOptions {
+  maxSize?: number;          // Max entries (default: 1000)
+  ttlMs?: number;            // Time-to-live in ms
+  staleMs?: number;          // Stale-while-revalidate window
+  allowStale?: boolean;      // Serve stale data (default: false)
+  checkPeriod?: number;      // Cleanup interval (default: 60000)
+  enableStats?: boolean;     // Track hit/miss stats
+  enableEvents?: boolean;    // Emit cache events
+}
+
+class Cache<K, V> {
+  constructor(options?: CacheOptions);
+  
+  // Basic operations
+  set(key: K, value: V, ttl?: number): this;
+  get(key: K): V | undefined;
+  has(key: K): boolean;
+  delete(key: K): boolean;
+  clear(): void;
+  
+  // Batch operations
+  setMany(entries: Iterable<[K, V]>): this;
+  getMany(keys: Iterable<K>): Map<K, V | undefined>;
+  deleteMany(keys: Iterable<K>): number;
+  hasMany(keys: Iterable<K>): Map<K, boolean>;
+  
+  // TTL management
+  ttl(key: K): number | undefined;
+  touch(key: K, ttl?: number): boolean;
+  isExpired(key: K): boolean;
+  isStale(key: K): boolean;
+  
+  // Iteration
+  keys(): IterableIterator<K>;
+  values(): IterableIterator<V>;
+  entries(): IterableIterator<[K, V]>;
+  [Symbol.iterator](): IterableIterator<[K, V]>;
+  
+  // Stats & events
+  stats(): CacheStats;
+  resetStats(): void;
+  on(event: CacheEvent, handler: Function): () => void;
+  off(event: CacheEvent, handler: Function): void;
+  
+  // Properties
+  size: number;
+}
+```
+
+### LoadingCache<K, V>
+
+Auto-loading cache with singleflight protection.
+
+```ts
+interface LoadingCacheOptions<K, V> extends CacheOptions {
+  loader: (key: K, context?: any) => Promise<V>;
+  onError?: (error: Error, key: K) => V | Promise<V>;
+}
+
+class LoadingCache<K, V> extends Cache<K, V> {
+  constructor(options: LoadingCacheOptions<K, V>);
+  get(key: K, context?: any): Promise<V>;
+  refresh(key: K, context?: any): Promise<V>;
+}
+```
+
+### Memoization
+
+```ts
+interface MemoizeOptions {
+  maxSize?: number;
+  ttlMs?: number;
+  keyFn?: (...args: any[]) => string;
+}
+
+function memoize<A extends any[], R>(
+  fn: (...args: A) => R,
+  options?: MemoizeOptions
+): (...args: A) => R;
+
+function memoizeAsync<A extends any[], R>(
+  fn: (...args: A) => Promise<R>,
+  options?: MemoizeOptions
+): (...args: A) => Promise<R>;
+```
+
+### Idempotency Cache
+
+```ts
+interface IdempotencyOptions {
+  ttlMs?: number;
+  maxSize?: number;
+}
+
+interface IdempotencyCache<T> {
+  execute(key: string, fn: () => Promise<T>): Promise<T>;
+  resolve(key: string): void;
+  reject(key: string, error: Error): void;
+  clear(): void;
+}
+
+function createIdempotencyCache<T>(
+  options?: IdempotencyOptions
+): IdempotencyCache<T>;
+```
+
+### Utilities
+
+```ts
+function createNamespacedCache<K, V>(
+  cache: Cache<K, V>,
+  namespace: string
+): Cache<K, V>;
+
+function createTransformCache<K, V, S>(
+  cache: Cache<K, S>,
+  serialize: (value: V) => S,
+  deserialize: (stored: S) => V
+): Cache<K, V>;
+
+function warmCache<K, V>(
+  cache: Cache<K, V>,
+  loader: () => Promise<Iterable<[K, V]>>
+): Promise<void>;
+
+class KeyedLock {
+  withLock<T>(key: string, fn: () => Promise<T>): Promise<T>;
+  acquire(key: string): Promise<() => void>;
+  release(key: string): void;
+}
+```
+
+---
+
+## Test coverage
 
 **Unit Tests:** 47 tests passing
 - **Function Coverage:** 90.49%
@@ -1615,13 +838,13 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 ## Scripts
 
 | Command | Description |
-| --- | --- |
+|---------|-------------|
 | `bun run build` | Bundle sources via `tsup`. |
-| `bun run test` | Run the suites under `shareds/async/tests` (concurrency, emitter, generator, try). |
+| `bun run test` | Run test suite. |
 | `bun run test:watch` | Watch mode. |
-| `bun run coverage:view` | Inspect coverage output. |
-
-`@fajarnugraha37/expression` and other packages treat this module as their standard async toolbox—prefer it over ad-hoc helpers so behavior stays consistent throughout the repo.
+| `bun run test:coverage` | Generate coverage report. |
+| `bun run benchmark` | Run performance benchmarks. |
+| `bun run coverage:view` | View coverage in browser. |
 
 ---
 
