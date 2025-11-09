@@ -1,0 +1,166 @@
+{
+  "name": "@fajarnugraha37/error",
+  "private": false,
+  "version": "0.1.0",
+  "description": "Runtime-agnostic error handling library with structured errors, adapters, and validation support for Bun, Node.js, and browsers",
+  "keywords": [
+    "error",
+    "errors",
+    "error-handling",
+    "typed-errors",
+    "exceptions",
+    "validation",
+    "problem-details",
+    "rfc9457",
+    "typescript",
+    "bun",
+    "nodejs",
+    "browser"
+  ],
+  "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fajarnugraha37/nope.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.mjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./result": {
+      "types": "./dist/result.d.ts",
+      "import": "./dist/result.mjs",
+      "require": "./dist/result.cjs"
+    },
+    "./assert": {
+      "types": "./dist/assert.d.ts",
+      "import": "./dist/assert.mjs",
+      "require": "./dist/assert.cjs"
+    },
+    "./format": {
+      "types": "./dist/format.d.ts",
+      "import": "./dist/format.mjs",
+      "require": "./dist/format.cjs"
+    },
+    "./problem": {
+      "types": "./dist/problem.d.ts",
+      "import": "./dist/problem.mjs",
+      "require": "./dist/problem.cjs"
+    },
+    "./validation": {
+      "types": "./dist/validation.d.ts",
+      "import": "./dist/validation.mjs",
+      "require": "./dist/validation.cjs"
+    },
+    "./adapters/web": {
+      "types": "./dist/adapters/web.d.ts",
+      "import": "./dist/adapters/web.mjs",
+      "require": "./dist/adapters/web.cjs"
+    },
+    "./adapters/express": {
+      "types": "./dist/adapters/express.d.ts",
+      "import": "./dist/adapters/express.mjs",
+      "require": "./dist/adapters/express.cjs"
+    },
+    "./adapters/fastify": {
+      "types": "./dist/adapters/fastify.d.ts",
+      "import": "./dist/adapters/fastify.mjs",
+      "require": "./dist/adapters/fastify.cjs"
+    },
+    "./adapters/koa": {
+      "types": "./dist/adapters/koa.d.ts",
+      "import": "./dist/adapters/koa.mjs",
+      "require": "./dist/adapters/koa.cjs"
+    },
+    "./adapters/hono": {
+      "types": "./dist/adapters/hono.d.ts",
+      "import": "./dist/adapters/hono.mjs",
+      "require": "./dist/adapters/hono.cjs"
+    },
+    "./adapters/h3": {
+      "types": "./dist/adapters/h3.d.ts",
+      "import": "./dist/adapters/h3.mjs",
+      "require": "./dist/adapters/h3.cjs"
+    },
+    "./adapters/elysia": {
+      "types": "./dist/adapters/elysia.d.ts",
+      "import": "./dist/adapters/elysia.mjs",
+      "require": "./dist/adapters/elysia.cjs"
+    },
+    "./adapters/graphql": {
+      "types": "./dist/adapters/graphql.d.ts",
+      "import": "./dist/adapters/graphql.mjs",
+      "require": "./dist/adapters/graphql.cjs"
+    },
+    "./observability/otel": {
+      "types": "./dist/observability/otel.d.ts",
+      "import": "./dist/observability/otel.mjs",
+      "require": "./dist/observability/otel.cjs"
+    },
+    "./observability/sentry": {
+      "types": "./dist/observability/sentry.d.ts",
+      "import": "./dist/observability/sentry.mjs",
+      "require": "./dist/observability/sentry.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "size": "size-limit",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run test && bun run size"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@size-limit/preset-small-lib": "^11.1.6",
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0",
+    "size-limit": "^11.1.6",
+    "tsup": "^8.5.0",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0",
+    "@sinclair/typebox": "^0.33.0",
+    "ajv": "^8.0.0",
+    "express": "^4.0.0 || ^5.0.0",
+    "fastify": "^4.0.0 || ^5.0.0",
+    "koa": "^2.0.0",
+    "hono": "^4.0.0 || ^5.0.0",
+    "h3": "^1.0.0",
+    "elysia": "^1.0.0",
+    "graphql": "^16.0.0",
+    "@opentelemetry/api": "^1.0.0",
+    "@sentry/types": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": { "optional": true },
+    "@sinclair/typebox": { "optional": true },
+    "ajv": { "optional": true },
+    "express": { "optional": true },
+    "fastify": { "optional": true },
+    "koa": { "optional": true },
+    "hono": { "optional": true },
+    "h3": { "optional": true },
+    "elysia": { "optional": true },
+    "graphql": { "optional": true },
+    "@opentelemetry/api": { "optional": true },
+    "@sentry/types": { "optional": true }
+  }
+}

@@ -1,15 +1,6 @@
 import { collectAll } from "./collections.js";
 import type { Result } from "./wrappers.js";
 import { tryCatchAsync } from "./wrappers.js";
-
-export async function mapAsync<T, U, E>(
-  p: Promise<Result<T, E>>,
-  f: (x: T) => Promise<U>
-): Promise<Result<U, E>> {
-  const r = await p;
-  return r.ok ? tryCatchAsync<U, E>(() => f(r.value)) : r;
-}
-
 /* ---------- retry logic ---------- */
 
 /** retry async fn up to n times (exponential backoff optional) */

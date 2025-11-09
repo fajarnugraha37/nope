@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-
 import {
   mapAsync,
   retry,
@@ -9,7 +8,7 @@ import {
   retryAll,
   oksOnly,
   allOk,
-} from "../src/try/async";
+} from "../src/try";
 
 describe("async try helpers", () => {
   test("mapAsync transforms ok results and leaves errors", async () => {
@@ -20,7 +19,10 @@ describe("async try helpers", () => {
     expect(ok).toEqual({ ok: true, value: 6 });
 
     const err = await mapAsync(
-      Promise.resolve<{ ok: false; error: string }>({ ok: false, error: "boom" }),
+      Promise.resolve<{ ok: false; error: string }>({
+        ok: false,
+        error: "boom",
+      }),
       async () => {
         throw new Error("nope");
       }
@@ -30,19 +32,25 @@ describe("async try helpers", () => {
 
   test("retry succeeds after failures and reports final error", async () => {
     let attempts = 0;
-    const success = await retry(async () => {
-      attempts++;
-      if (attempts < 2) {
-        throw new Error("fail");
-      }
-      return "ok";
-    }, { retries: 3, delayMs: 5 });
+    const success = await retry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          throw new Error("fail");
+        }
+        return "ok";
+      },
+      { retries: 3, delayMs: 5 }
+    );
     expect(success).toEqual({ ok: true, value: "ok" });
     expect(attempts).toBe(2);
 
-    const failure = await retry(async () => {
-      throw new Error("always");
-    }, { retries: 2, delayMs: 5 });
+    const failure = await retry(
+      async () => {
+        throw new Error("always");
+      },
+      { retries: 2, delayMs: 5 }
+    );
     expect(failure.ok).toBe(false);
     expect(failure.error).toBeInstanceOf(Error);
   });
@@ -85,10 +93,12 @@ describe("async try helpers", () => {
   });
 
   test("timeoutPromise settles or rejects on timeout", async () => {
-    await expect(timeoutPromise(Promise.resolve("yes"), 20)).resolves.toBe("yes");
-    await expect(
-      timeoutPromise(new Promise(() => {}), 5)
-    ).rejects.toThrow("timeout");
+    await expect(timeoutPromise(Promise.resolve("yes"), 20)).resolves.toBe(
+      "yes"
+    );
+    await expect(timeoutPromise(new Promise(() => {}), 5)).rejects.toThrow(
+      "timeout"
+    );
   });
 
   test("retryWith honours timeouts and abort signals", async () => {
@@ -109,20 +119,26 @@ describe("async try helpers", () => {
     expect(attempts).toBeGreaterThanOrEqual(1);
 
     const ac = new AbortController();
-    const aborted = retryWith(async () => {
-      throw new Error("fail");
-    }, { retries: 3, delayMs: 5, signal: ac.signal });
+    const aborted = retryWith(
+      async () => {
+        throw new Error("fail");
+      },
+      { retries: 3, delayMs: 5, signal: ac.signal }
+    );
     ac.abort(new Error("cancelled"));
     const abortedResult = await aborted;
     expect(abortedResult.ok).toBe(false);
     expect(abortedResult.error).toBeInstanceOf(Error);
 
     let succeedAttempts = 0;
-    const succeeded = await retryWith(async () => {
-      succeedAttempts++;
-      if (succeedAttempts < 2) throw new Error("retry");
-      return "ok";
-    }, { retries: 3, delayMs: 1 });
+    const succeeded = await retryWith(
+      async () => {
+        succeedAttempts++;
+        if (succeedAttempts < 2) throw new Error("retry");
+        return "ok";
+      },
+      { retries: 3, delayMs: 1 }
+    );
     expect(succeeded).toEqual({ ok: true, value: "ok" });
   });
 

@@ -1,4 +1,3 @@
-export * from "./error/index.js";
 export * from "./file/index.js";
 export * from "./guard/index.js";
 export * from "./id/index.js";

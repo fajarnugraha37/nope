@@ -1,9 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { HttpError } from "../src/error/http.error";
-import { ConflictError } from "../src/error/conflict.error";
-import { NotFoundError } from "../src/error/not-found.error";
-import { ValidationError } from "../src/error/validation.error";
+import { HttpError, ConflictError, ValidationError, NotFoundError } from "../src";
 
 describe("HTTP error hierarchy", () => {
   test("HttpError stores status and details", () => {

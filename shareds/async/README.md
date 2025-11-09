@@ -34,7 +34,7 @@ deno add npm:@fajarnugraha37/async
 - **`generator/`**
   - `map`, `tee`, `collectors`, `creators`, sorting helpers to manipulate async generators.
 - **`try/`**
-  - `Result` type (`Ok`/`Err`), `tryCatch*`, `unwrap*`, `retry`, `retryWith`, `retryAll`, `timeoutPromise`, `withTimeout`, collection helpers.
+  - `retry`, `retryWith`, `retryAll`, `timeoutPromise`, `withTimeout`, collection helpers.
 
 Every export is re-exported from `src/index.ts` so you can do:
 

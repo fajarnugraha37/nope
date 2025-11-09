@@ -1,4 +1,3 @@
-import { InvalidDataError } from "../error/index.js";
 import { randomChar } from "./random.js";
 import {
   ENCODING,
@@ -25,13 +24,13 @@ import {
  */
 export function encodeTime(now: number, len: number = TIME_LEN): string {
   if (now > TIME_MAX) {
-    throw new InvalidDataError("cannot encode time greater than " + TIME_MAX);
+    throw new Error("cannot encode time greater than " + TIME_MAX);
   }
   if (now < 0) {
-    throw new InvalidDataError("time must be positive");
+    throw new Error("time must be positive");
   }
   if (Number.isInteger(now) === false) {
-    throw new InvalidDataError("time must be an integer");
+    throw new Error("time must be an integer");
   }
   let str = "";
   for (; len > 0; len--) {
@@ -63,7 +62,7 @@ export function encodeTime(now: number, len: number = TIME_LEN): string {
  */
 export function decodeTime(id: string): number {
   if (id.length !== TIME_LEN + RANDOM_LEN) {
-    throw new InvalidDataError("malformed ulid");
+    throw new Error("malformed ulid");
   }
   const time = id
     .substring(0, TIME_LEN)
@@ -72,12 +71,12 @@ export function decodeTime(id: string): number {
     .reduce((carry, char, index) => {
       const encodingIndex = ENCODING.indexOf(char);
       if (encodingIndex === -1) {
-        throw new InvalidDataError("invalid character found: " + char);
+        throw new Error("invalid character found: " + char);
       }
       return (carry += encodingIndex * Math.pow(ENCODING_LEN, index));
     }, 0);
   if (time > TIME_MAX) {
-    throw new InvalidDataError("malformed ulid, timestamp too large");
+    throw new Error("malformed ulid, timestamp too large");
   }
 
   return time;

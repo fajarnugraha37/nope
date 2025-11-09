@@ -14,7 +14,7 @@ import {
   isArnPrincipal,
   isServicePrincipal,
 } from "../src/string/principals";
-import { createId } from "../src/string/ids";
+import { createId } from "../src/id";
 
 describe("AWS ARN helpers", () => {
   const roleArn = "arn:aws:iam::123456789012:role/Admin";

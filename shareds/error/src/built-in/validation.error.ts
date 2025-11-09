@@ -17,9 +17,12 @@ export interface ValidationErrorInfo {
   schema?: any;
 }
 
-export class ValidationError extends HttpError {
-  constructor(message: string, details?: unknown) {
+export class ValidationError<T> extends HttpError {
+  public readonly validationDetails?: ValidationResult<T>;
+
+  constructor(message: string, details?: unknown, validationDetails?: ValidationResult<T>) {
     super(message, 400, details);
     this.name = "ValidationError";
+    this.validationDetails = validationDetails;
   }
 }

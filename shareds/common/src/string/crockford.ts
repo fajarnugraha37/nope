@@ -1,4 +1,3 @@
-import { InvalidDataError } from "../error/index.js";
 import { B32_CHARACTERS } from "./const.js";
 
 export const crockford = {
@@ -31,7 +30,7 @@ export const crockford = {
     for (const character of sanitizedInput) {
       const byte = B32_CHARACTERS.indexOf(character);
       if (byte === -1) {
-        throw new InvalidDataError(
+        throw new Error(
           `Invalid base 32 character found in string: ${character}`
         );
       }

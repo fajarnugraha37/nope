@@ -1,4 +1,3 @@
-import { InvalidDataError } from "../error/index.js";
 import { ENCODING, ENCODING_LEN } from "./const.js";
 
 /**
@@ -24,7 +23,7 @@ export function replaceCharAt(
  *
  * @param {string} str The base32 encoded string to increment.
  * @returns {string} The incremented string.
- * @throws {InvalidDataError} If the string is not correctly encoded or cannot be incremented.
+ * @throws {Error} If the string is not correctly encoded or cannot be incremented.
  */
 export function incrementBase32(str: string): string {
   let index = str.length;
@@ -35,7 +34,7 @@ export function incrementBase32(str: string): string {
     char = str[index]!;
     charIndex = ENCODING.indexOf(char);
     if (charIndex === -1) {
-      throw new InvalidDataError("incorrectly encoded string");
+      throw new Error("incorrectly encoded string");
     }
     if (charIndex === maxCharIndex) {
       str = replaceCharAt(str, index, ENCODING[0]!);
@@ -45,5 +44,5 @@ export function incrementBase32(str: string): string {
     return replaceCharAt(str, index, ENCODING[charIndex + 1]!);
   }
 
-  throw new InvalidDataError("cannot increment this string");
+  throw new Error("cannot increment this string");
 }   

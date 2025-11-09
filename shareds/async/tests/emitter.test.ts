@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "events";
 import { Readable } from "stream";
-
 import mitt from "../src/emitter/event-emitter";
 import {
   match,
@@ -57,9 +56,7 @@ describe("emitter helpers", () => {
     };
     expect(match("test", envelope)).toBe(true);
     expect(match(/te.*/, envelope)).toBe(true);
-    expect(
-      match((_e) => true, envelope)
-    ).toBe(true);
+    expect(match((_e) => true, envelope)).toBe(true);
   });
 
   test("filterEnv filters stream payloads", async () => {
@@ -176,9 +173,9 @@ describe("EventBus", () => {
 
   test("once rejects after timeout elapses", async () => {
     const bus = new EventBus<SampleEvents>();
-    await expect(
-      bus.once("created", { timeoutMs: 5 })
-    ).rejects.toThrow("once timeout");
+    await expect(bus.once("created", { timeoutMs: 5 })).rejects.toThrow(
+      "once timeout"
+    );
   });
 
   test("manual async iterator control supports return and throw", async () => {
@@ -221,7 +218,11 @@ describe("EventBus", () => {
     bus.on("created", (e) => seen.push(e.payload.id));
     const originalEmit = bus.emit.bind(bus);
     let first = true;
-    bus.emit = ((type: keyof SampleEvents, payload: SampleEvents[keyof SampleEvents], meta?: Record<string, any>) => {
+    bus.emit = ((
+      type: keyof SampleEvents,
+      payload: SampleEvents[keyof SampleEvents],
+      meta?: Record<string, any>
+    ) => {
       if (first) {
         first = false;
         setTimeout(() => {

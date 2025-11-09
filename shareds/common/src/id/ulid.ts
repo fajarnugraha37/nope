@@ -4,7 +4,6 @@ import {
   encodeRandom,
   encodeTime,
   ENCODING,
-  InvalidDataError,
   RANDOM_LEN,
   TIME_LEN,
   ULID_REGEX,
@@ -93,12 +92,12 @@ export function factory(prng: () => number = detectPrng()): ULID {
  *
  * @param {string} ulid - The ULID string to convert.
  * @returns {string} The corresponding UUID string.
- * @throws {InvalidDataError} If the provided ULID is invalid.
+ * @throws {Error} If the provided ULID is invalid.
  */
 export function ulidToUUID(ulid: string): string {
   const isValid = ULID_REGEX.test(ulid);
   if (!isValid) {
-    throw new InvalidDataError("Invalid ULID");
+    throw new Error("Invalid ULID");
   }
 
   const uint8Array = crockford.decode(ulid);
@@ -130,16 +129,16 @@ export function ulidToUUID(ulid: string): string {
  *
  * @param {string} uuid - The UUID string to convert.
  * @returns {string} The corresponding ULID string.
- * @throws {InvalidDataError} If the provided UUID is invalid.
+ * @throws {Error} If the provided UUID is invalid.
  */
 export function uuidToULID(uuid: string): string {
   const isValid = UUID_REGEX.test(uuid);
   if (!isValid) {
-    throw new InvalidDataError("Invalid UUID");
+    throw new Error("Invalid UUID");
   }
   const clean = uuid.replace(/-/g, "").match(/.{1,2}/g);
   if (!clean) {
-    throw new InvalidDataError("Invalid UUID");
+    throw new Error("Invalid UUID");
   }
   const uint8Array = new Uint8Array(clean.map((byte) => parseInt(byte, 16)));
 

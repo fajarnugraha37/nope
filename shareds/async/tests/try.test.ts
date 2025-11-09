@@ -3,15 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   tryCatch,
   tryCatchAsync,
-  unwrap,
-  unwrapOr,
-  unwrapOrElse,
-  map,
-  mapErr,
-  andThen,
   type Result,
-} from "../src/try/wrappers";
-import {
   collectAll,
   partitionOkErr,
   firstErr,
@@ -23,20 +15,10 @@ import {
   raceAsync,
   raceResultsAsync,
   allAsyncLimited,
-} from "../src/try/collections";
-import {
   mapAsync,
   retry,
   withTimeout,
-} from "../src/try/async";
-import {
-  logErr,
-  ensureOk,
-  tapOk,
-  tapErr,
-  tapLogOk,
-  tapLogErr,
-} from "../src/try/misc";
+} from "../src/try";
 
 describe("try wrappers", () => {
   test("tryCatch captures exceptions", () => {
@@ -55,32 +37,6 @@ describe("try wrappers", () => {
     });
     expect(ok.ok).toBe(true);
     expect(err.ok).toBe(false);
-  });
-
-  test("unwrap helpers", () => {
-    expect(unwrap({ ok: true, value: 1 })).toBe(1);
-    expect(unwrapOr({ ok: false, error: new Error("x") }, 5)).toBe(5);
-    expect(
-      unwrapOrElse({ ok: false, error: "x" }, (e) => String(e).length)
-    ).toBe(1);
-  });
-
-  test("map and mapErr transform results", () => {
-    expect(map({ ok: true, value: 2 }, (x) => x * 2)).toEqual({
-      ok: true,
-      value: 4,
-    });
-    expect(mapErr({ ok: false, error: "x" }, (e) => e + "!")).toEqual({
-      ok: false,
-      error: "x!",
-    });
-  });
-
-  test("andThen chains results", () => {
-    const res = andThen({ ok: true, value: 2 }, (x) =>
-      x > 1 ? { ok: true, value: x * 2 } : { ok: false, error: "bad" }
-    );
-    expect(res).toEqual({ ok: true, value: 4 });
   });
 });
 
@@ -110,7 +66,10 @@ describe("collections helpers", () => {
   });
 
   test("allAsync resolves parallel tasks", async () => {
-    const res = await allAsync([() => Promise.resolve(1), () => Promise.resolve(2)]);
+    const res = await allAsync([
+      () => Promise.resolve(1),
+      () => Promise.resolve(2),
+    ]);
     expect(res).toEqual({ ok: true, value: [1, 2] });
   });
 
@@ -202,48 +161,5 @@ describe("async helpers", () => {
         return "done";
       }, 25)
     ).resolves.toEqual("done");
-  });
-});
-
-describe("misc helpers", () => {
-  test("logErr writes to console.error", () => {
-    const logs: unknown[] = [];
-    const original = console.error;
-    console.error = (...args: unknown[]) => {
-      logs.push(args);
-    };
-    logErr({ ok: false, error: "boom" });
-    console.error = original;
-    expect(logs.length).toBe(1);
-  });
-
-  test("ensureOk unwraps or throws", () => {
-    expect(ensureOk({ ok: true, value: 1 })).toBe(1);
-    expect(() => ensureOk({ ok: false, error: "bad" }, "ctx")).toThrow(
-      "ctx: bad"
-    );
-  });
-
-  test("tapOk and tapErr run side effects", () => {
-    const okLogs: unknown[] = [];
-    const errLogs: unknown[] = [];
-    tapOk({ ok: true, value: 1 }, (v) => okLogs.push(v));
-    tapErr({ ok: false, error: "bad" }, (e) => errLogs.push(e));
-    expect(okLogs).toEqual([1]);
-    expect(errLogs).toEqual(["bad"]);
-  });
-
-  test("tapLogOk and tapLogErr use console", () => {
-    const logs: string[] = [];
-    const originalLog = console.log;
-    const originalErr = console.error;
-    console.log = (msg: string) => logs.push(msg);
-    console.error = (msg: string) => logs.push(msg);
-    tapLogOk<number>("OK")({ ok: true, value: 1 });
-    tapLogErr("ERR")({ ok: false, error: "bad" });
-    console.log = originalLog;
-    console.error = originalErr;
-    expect(logs.some((msg) => msg.includes("OK"))).toBe(true);
-    expect(logs.some((msg) => msg.includes("ERR"))).toBe(true);
   });
 });

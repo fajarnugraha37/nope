@@ -1,4 +1,6 @@
-export class HttpError extends Error {
+import { AppError } from "../app-error.ts";
+
+export class HttpError extends AppError {
   public readonly statusCode: number;
   public readonly details?: unknown;
 
