@@ -87,13 +87,17 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     const node = this.map.get(key);
     if (!node) {
       this.stats?.recordMiss();
-      this.events?.emit({ type: "miss", key, timestamp: now() });
+      if (this.events?.hasListeners()) {
+        this.events.emit({ type: "miss", key, timestamp: now() });
+      }
       return undefined;
     }
     if (this.isExpired(node.entry)) {
       this.removeNode(node);
       this.stats?.recordMiss();
-      this.events?.emit({ type: "miss", key, timestamp: now(), reason: "expired" });
+      if (this.events?.hasListeners()) {
+        this.events.emit({ type: "miss", key, timestamp: now(), reason: "expired" });
+      }
       return undefined;
     }
     // sliding ttl => bump expiry
@@ -102,7 +106,9 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     // Move to front (most recently used) - O(1)
     this.moveToFront(node);
     this.stats?.recordHit();
-    this.events?.emit({ type: "hit", key, value: node.entry.v, timestamp: now() });
+    if (this.events?.hasListeners()) {
+      this.events.emit({ type: "hit", key, value: node.entry.v, timestamp: now() });
+    }
     return node.entry.v;
   }
 
@@ -138,7 +144,9 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
 
     this.stats?.recordSet();
     this.stats?.updateSize(this.map.size, this.totalSize);
-    this.events?.emit({ type: "set", key, value: val, size: sz, timestamp: now() });
+    if (this.events?.hasListeners()) {
+      this.events.emit({ type: "set", key, value: val, size: sz, timestamp: now() });
+    }
 
     this.evict();
   }
@@ -153,7 +161,9 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     if (!node) return;
     this.stats?.recordDelete();
     this.stats?.updateSize(this.map.size - 1, this.totalSize - node.entry.sz);
-    this.events?.emit({ type: "delete", key, value: node.entry.v, size: node.entry.sz, timestamp: now() });
+    if (this.events?.hasListeners()) {
+      this.events.emit({ type: "delete", key, value: node.entry.v, size: node.entry.sz, timestamp: now() });
+    }
     this.removeNode(node);
   }
 
@@ -164,8 +174,8 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     this.tail = null;
     this.totalSize = 0;
     this.stats?.updateSize(0, 0);
-    if (size > 0) {
-      this.events?.emit({ type: "clear", key: null as any, timestamp: now() });
+    if (size > 0 && this.events?.hasListeners()) {
+      this.events.emit({ type: "clear", key: null as any, timestamp: now() });
     }
   }
 
@@ -212,8 +222,8 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     this.totalSize -= node.entry.sz;
     
     // Emit event if needed
-    if (node.entry.exp && node.entry.exp <= now()) {
-      this.events?.emit({ 
+    if (this.events?.hasListeners() && node.entry.exp && node.entry.exp <= now()) {
+      this.events.emit({ 
         type: "expire", 
         key: node.key, 
         value: node.entry.v, 
@@ -264,14 +274,16 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
       // remove least recently used = tail
       this.stats?.recordEviction();
       const node = this.tail;
-      this.events?.emit({ 
-        type: "evict", 
-        key: node.key, 
-        value: node.entry.v, 
-        size: node.entry.sz, 
-        timestamp: now(),
-        reason: "size-limit"
-      });
+      if (this.events?.hasListeners()) {
+        this.events.emit({ 
+          type: "evict", 
+          key: node.key, 
+          value: node.entry.v, 
+          size: node.entry.sz, 
+          timestamp: now(),
+          reason: "size-limit"
+        });
+      }
       this.removeNode(node);
     }
     
@@ -279,14 +291,16 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     while (this.map.size > this.maxEntries && this.tail) {
       this.stats?.recordEviction();
       const node = this.tail;
-      this.events?.emit({ 
-        type: "evict", 
-        key: node.key, 
-        value: node.entry.v, 
-        size: node.entry.sz, 
-        timestamp: now(),
-        reason: "count-limit"
-      });
+      if (this.events?.hasListeners()) {
+        this.events.emit({ 
+          type: "evict", 
+          key: node.key, 
+          value: node.entry.v, 
+          size: node.entry.sz, 
+          timestamp: now(),
+          reason: "count-limit"
+        });
+      }
       this.removeNode(this.tail);
     }
     this.stats?.updateSize(this.map.size, this.totalSize);

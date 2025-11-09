@@ -27,11 +27,13 @@ export class CacheEventEmitter<K, V> {
     CacheEventType | "*",
     Set<CacheEventListener<K, V>>
   >();
+  private _hasListeners = false; // Fast check to skip event creation
 
   on(event: CacheEventType | "*", listener: CacheEventListener<K, V>): () => void {
     const set = this.listeners.get(event) ?? new Set();
     set.add(listener);
     this.listeners.set(event, set);
+    this._hasListeners = true; // Mark that we have listeners
     
     // Return unsubscribe function
     return () => {
@@ -39,6 +41,8 @@ export class CacheEventEmitter<K, V> {
       if (set.size === 0) {
         this.listeners.delete(event);
       }
+      // Update flag - check if any listeners remain
+      this._hasListeners = this.listeners.size > 0;
     };
   }
 
@@ -58,10 +62,15 @@ export class CacheEventEmitter<K, V> {
       if (set.size === 0) {
         this.listeners.delete(event);
       }
+      // Update flag - check if any listeners remain
+      this._hasListeners = this.listeners.size > 0;
     }
   }
 
   emit(event: CacheEvent<K, V>) {
+    // Fast path: skip if no listeners at all
+    if (!this._hasListeners) return;
+
     // Emit to specific listeners
     const specificListeners = this.listeners.get(event.type);
     if (specificListeners) {
@@ -93,6 +102,12 @@ export class CacheEventEmitter<K, V> {
     } else {
       this.listeners.clear();
     }
+    // Update flag
+    this._hasListeners = this.listeners.size > 0;
+  }
+
+  hasListeners(): boolean {
+    return this._hasListeners;
   }
 
   listenerCount(event: CacheEventType | "*"): number {

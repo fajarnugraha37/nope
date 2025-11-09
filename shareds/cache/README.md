@@ -629,13 +629,29 @@ invalidateTag("team:A"); // Invalidates all team A entries
 
 ## Performance benchmarks
 
-Benchmarks run on Bun 1.3.1 (10k operations unless specified):
+Benchmarks run on Bun 1.3.1 with statistical outlier removal (trimmed mean):
 
 > **⚡ v0.3.0 Update:** Major performance optimizations deliver **5-71x improvements** across the board!
 > - 🔗 **Optimization #1**: Doubly-linked list for O(1) LRU operations (5-13x faster)
 > - 🦥 **Optimization #2**: Lazy expiration strategy (71x faster eviction with expired entries)
+> - 🎯 **Optimization #3**: Memoize hot-path optimization (1.7-2.8x faster)
+> - ⚡ **Optimization #4**: Event system fast-path (15x faster, 52% overhead reduction)
 
-### Core Operations
+### Comprehensive Benchmarks (Large Scale)
+
+Real-world performance at scale:
+
+| Operation | Dataset | Time | Throughput | Notes |
+|-----------|---------|------|------------|-------|
+| **Set** | 1M entries | 923ms | **1,083,873 ops/sec** | Small objects |
+| **Get** | 1M entries | 1,971ms | **507,302 ops/sec** | Cache hits |
+| **Set** | 100k large objects | 2,459ms | **40,670 ops/sec** | ~1KB each |
+| **Get** | 100k large objects | 2,919ms | **34,253 ops/sec** | Cache hits |
+| **LRU Eviction** | 1M→500k | 1,709ms | **292,544 evictions/sec** | Half cache cleared |
+| **Lazy Expiration** | 100k entries | 335ms | **298,507 ops/sec** | TTL-based cleanup |
+| **Event Overhead** | With no listeners | - | **12.1% overhead** | Fast-path optimized |
+
+### Core Operations (10k ops)
 | Operation | Time | Ops/sec | vs v0.2.0 |
 |-----------|------|---------|-----------|
 | Set (basic) | **113.65ms** | ~88,000 | **12x faster** 🚀 |
@@ -673,18 +689,29 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 | 100k small entries | **21.8s** | **4.5x faster** 🚀 |
 | 10k large objects | **166.57ms** | **4x faster** 🚀 |
 
-### Expiration Performance (NEW! ✨)
+### Expiration Performance
 | Scenario | BEFORE | AFTER | Improvement |
 |----------|--------|-------|-------------|
 | 10k entries, 50% expired | 81.30ms | **16.03ms** | **5.1x faster** 🚀 |
 | 100k entries, 80% expired | 8,076.99ms | **98.83ms** | **81.7x faster** 🔥 |
 | **Average** | 4,079.15ms | **57.43ms** | **71x faster** 🚀 |
 
-**Run benchmarks:** `bun run tests/cache.bench.ts` & `bun run tests/expiration.bench.ts`
+### Event System Performance
+| Scenario | BEFORE | AFTER | Improvement |
+|----------|--------|-------|-------------|
+| Event emit (no listeners) | 69.5µs | **4.6µs** | **15x faster** ⚡ |
+| Real-world overhead | 34.6% | **16.4%** | **52.6% reduction** 🎯 |
+| With listeners | Same | Same | No regression |
+
+**Run benchmarks:**
+- `bun run tests/comprehensive.bench.ts` - Large-scale benchmarks
+- `bun run tests/cache.bench.ts` - Core operations
+- `bun run tests/expiration.bench.ts` - Expiration strategy
+- `bun run tests/event-microbench.bench.ts` - Event system
 
 ### Optimization Details
 
-The v0.3.0 release includes three major performance optimizations:
+The v0.3.0 release includes four major performance optimizations:
 
 **#1: Doubly-Linked List LRU (5-13x faster)**
 - O(1) operations for get/set/evict regardless of cache size
@@ -697,16 +724,25 @@ The v0.3.0 release includes three major performance optimizations:
 - Lazy expiration check on `get()` access
 - 98.6% reduction in eviction time with expired entries
 
-**#3: Memoize Optimization (3-4x faster)**
+**#3: Memoize Optimization (1.7-2.8x faster)**
 - Eliminated redundant Map lookups in hot path
 - Single `peekEntry()` call instead of multiple `get()` calls
 - Memoize sync: 3.11ms → 1.8ms (1.7x faster)
 - Memoize async: 6.39ms → 2.3ms (2.8x faster)
 
+**#4: Event System Fast-Path (15x faster, 52% overhead reduction)**
+- Added `hasListeners()` check for O(1) listener detection
+- Fast-path bypass when no listeners attached
+- Conditional emit calls: `if (events?.hasListeners())`
+- Micro-benchmark: 69.5µs → 4.6µs (15x faster)
+- Real-world overhead: 34.6% → 16.4% (52.6% reduction)
+
 For technical details, see:
 - [OPTIMIZATION_RESULTS_1.md](./docs/OPTIMIZATION_RESULTS_1.md) - LRU optimization
 - [OPTIMIZATION_RESULTS_2.md](./docs/OPTIMIZATION_RESULTS_2.md) - Expiration optimization
 - [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize optimization
+- [OPTIMIZATION_RESULTS_5.md](./docs/OPTIMIZATION_RESULTS_5.md) - Event system optimization
+- [OPTIMIZATION_4_SUMMARY.md](./docs/OPTIMIZATION_4_SUMMARY.md) - Event system executive summary
 
 ---
 

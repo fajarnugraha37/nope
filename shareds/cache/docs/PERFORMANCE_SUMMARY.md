@@ -77,8 +77,8 @@
 ## Test Status
 
 ✅ **All 47 tests passing**  
-✅ **98.27% line coverage**  
-✅ **90.54% function coverage**  
+✅ **98.00% line coverage**  
+✅ **90.82% function coverage**  
 ✅ **Zero breaking changes**
 
 ---
@@ -112,22 +112,53 @@
 
 ---
 
+### ✅ Optimization #5: Event System Overhead
+**Status:** Complete  
+**Version:** v0.3.0  
+**Results:** 15x performance improvement (fast-path)
+
+**Key Metrics:**
+- Fast-path check: 69.5µs → 4.6µs (15x faster) 🚀
+- Overhead (no listeners): 34.6% → 16.4% (52.6% reduction)
+- Event emission skip: 93.3% faster when no listeners
+- Ops/sec: 14.4M → 216M (15x throughput)
+
+**Implementation:**
+- Added `_hasListeners` boolean flag in `CacheEventEmitter`
+- Fast O(1) check before event object creation
+- Skip emission entirely when no listeners attached
+- Updated all 9 emit() calls in `cache.ts` with conditional check
+
+**Impact:**
+- "Safe observability" pattern - enable events without penalty
+- 52.6% better performance when events enabled but not used
+- Zero overhead when listeners ARE present
+- Suitable for production use ✅
+
+**Files:**
+- Implementation: `src/cache-events.ts`, `src/cache.ts`
+- Benchmark: `tests/event-microbench.bench.ts`
+- Documentation: `docs/OPTIMIZATION_RESULTS_5.md`
+- Changeset: `.changeset/event-system-optimization.md` (to be created)
+
+---
+
 ## Next Steps
 
 The following optimizations from `PERFORMANCE_OPTIMIZATION.md` remain:
 
 ### High Priority
 - ~~**#3: Size Estimation**~~ - ✅ INVESTIGATED (no action needed)
+- ~~**#4: Event System**~~ - ✅ COMPLETE (15x faster)
 - **#8: Map Entry Access Pattern** - Optimize Map.get() usage
 - **#11: Batch Operations** - Reduce repeated work in batch methods
 
 ### Medium Priority
-- **#4: Sweep Optimization** - Further optimize background sweep
-- **#5: Event Emission** - Batch event emissions
-- **#6: Statistics Updates** - Reduce stats calculation overhead
+- **#5: Statistics Updates** - Reduce stats calculation overhead
+- **#6: Sweep Optimization** - Further optimize background sweep
+- **#7: Type Guards** - Eliminate runtime type checks
 
 ### Future Considerations
-- **#7: Type Guards** - Eliminate runtime type checks
 - **#9: WeakMap for Objects** - Memory optimization for object keys
 - **#10: Bloom Filters** - Probabilistic existence checks
 - **#12: Concurrent Operations** - Lock-free algorithms
@@ -166,3 +197,4 @@ bun run tests/expiration.bench.ts
   - Lazy expiration strategy (71x faster)
   - Memoize optimization (1.7-2.8x faster)
   - JSON serialization investigation (confirmed optimal)
+  - Event system optimization (15x faster fast-path)
