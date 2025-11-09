@@ -28,9 +28,27 @@
         "validate-conventional-commit": "^1.0.4",
       },
     },
+    "packages/cron": {
+      "name": "@fajarnugraha37/cron",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fajarnugraha37/cache": "workspace:*",
+        "@fajarnugraha37/error": "workspace:*",
+        "ajv": "^8.17.1",
+        "ajv-errors": "^3.0.0",
+        "ajv-formats": "^3.0.1",
+        "ajv-keywords": "^5.1.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "glob": "^11.0.3",
+        "tsup": "^8.5.0",
+        "typescript": "^5",
+      },
+    },
     "packages/expression": {
       "name": "@fajarnugraha37/expression",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "dependencies": {
         "@fajarnugraha37/cache": "workspace:*",
         "@fajarnugraha37/error": "workspace:*",
@@ -46,7 +64,7 @@
     },
     "packages/pattern-matching": {
       "name": "@fajarnugraha37/pattern-matching",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "dependencies": {
         "@fajarnugraha37/error": "workspace:*",
       },
@@ -76,7 +94,7 @@
     },
     "packages/validator": {
       "name": "@fajarnugraha37/validator",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "dependencies": {
         "@fajarnugraha37/cache": "workspace:*",
         "@fajarnugraha37/error": "workspace:*",
@@ -320,6 +338,8 @@
     "@fajarnugraha37/cache": ["@fajarnugraha37/cache@workspace:shareds/cache"],
 
     "@fajarnugraha37/common": ["@fajarnugraha37/common@workspace:shareds/common"],
+
+    "@fajarnugraha37/cron": ["@fajarnugraha37/cron@workspace:packages/cron"],
 
     "@fajarnugraha37/error": ["@fajarnugraha37/error@workspace:shareds/error"],
 
@@ -1225,6 +1245,8 @@
 
     "@fajarnugraha37/common/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
+    "@fajarnugraha37/cron/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
+
     "@fajarnugraha37/error/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
 
     "@fajarnugraha37/expression/@types/bun": ["@types/bun@1.3.2", "", { "dependencies": { "bun-types": "1.3.2" } }, "sha512-t15P7k5UIgHKkxwnMNkJbWlh/617rkDGEdSsDbu+qNHTaz9SKf7aC8fiIlUdD5RPpH6GEkP0cK7WlvmrEBRtWg=="],
@@ -1314,6 +1336,8 @@
     "@fajarnugraha37/cache/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
     "@fajarnugraha37/common/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
+
+    "@fajarnugraha37/cron/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
     "@fajarnugraha37/error/@types/bun/bun-types": ["bun-types@1.3.2", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-i/Gln4tbzKNuxP70OWhJRZz1MRfvqExowP7U6JKoI8cntFrtxg7RJK3jvz7wQW54UuvNC8tbKHHri5fy74FVqg=="],
 
