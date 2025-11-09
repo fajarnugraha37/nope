@@ -636,6 +636,7 @@ Benchmarks run on Bun 1.3.1 with statistical outlier removal (trimmed mean):
 > - 🦥 **Optimization #2**: Lazy expiration strategy (71x faster eviction with expired entries)
 > - 🎯 **Optimization #3**: Memoize hot-path optimization (1.7-2.8x faster)
 > - ⚡ **Optimization #4**: Event system fast-path (15x faster, 52% overhead reduction)
+> - 🚀 **Optimization #6**: Memoization key generation (5.5x faster, 38x for large arrays)
 
 ### Comprehensive Benchmarks (Large Scale)
 
@@ -679,7 +680,7 @@ Real-world performance at scale:
 | LoadingCache (1k loads) | **10.39ms** | ~96,000 | **2.5x faster** 🚀 |
 | LoadingCache (cached) | **8.41ms** | ~119,000 | **2.2x faster** 🚀 |
 | Memoize single-arg (10k) | **~409ms** | ~2,444 | **18x faster keying** ⚡ |
-| Memoize large arrays (10k) | **~600ms** | ~1,667 | **35x faster keying** � |
+| Memoize large arrays (10k) | **~600ms** | ~1,667 | **38x faster keying** 🔥 |
 | Namespaced set (1k, 10 ns) | **2.06ms** | ~485,000 | **14.6x faster** 🚀 |
 | Transform JSON set (1k) | **3.31ms** | ~302,000 | **4.4x faster** 🚀 |
 | Cache warming (1k) | **4.07ms** | ~246,000 | **3.5x faster** 🚀 |
@@ -711,12 +712,22 @@ Real-world performance at scale:
 - `bun run tests/event-microbench.bench.ts` - Event system
 
 ### Memoization Key Generation Performance
+
+**⚡ Optimization #6: Memoization Key Generation (5.5x faster overall, 38x for large arrays)**
+
 | Pattern | BEFORE | AFTER | Improvement |
 |---------|--------|-------|-------------|
-| Single primitive | 7.63ms | **0.42ms** | **18.2x faster** ⚡ |
-| Large array (500) | 652.85ms | **18.67ms** | **35x faster** 🔥 |
-| Medium array (50) | 57.90ms | **14.85ms** | **3.9x faster** 🚀 |
-| **Overall average** | 100.27ms | **18.55ms** | **5.4x faster** (+440%) |
+| Single primitive | 7.95ms | **0.44ms** | **18.1x faster** ⚡ |
+| Large array (500) | 633.62ms | **16.51ms** | **38.4x faster** 🔥 |
+| Medium array (50) | 54.51ms | **13.55ms** | **4.0x faster** 🚀 |
+| getUserById(id) | 8.20ms | **0.77ms** | **10.6x faster** ⚡ |
+| **Overall average** | 96.77ms | **17.54ms** | **5.5x faster** (+452%) |
+
+**Key Optimizations:**
+- ✅ Single primitive fast-path: Direct `String(arg)` conversion (18x faster)
+- ✅ Large array sampling: `[length:first|mid|last]` for arrays ≥50 (38x faster)
+- ✅ Zero-arg optimization: Return `"()"` constant
+- ✅ Real-world patterns: 10.6x faster for common `getUserById(id)` pattern
 
 ### Optimization Details
 
@@ -746,13 +757,15 @@ The v0.3.0 release includes five major performance optimizations:
 - Micro-benchmark: 69.5µs → 4.6µs (15x faster)
 - Real-world overhead: 34.6% → 16.4% (52.6% reduction)
 
-**#5: Memoization Key Generation (5.4x faster, 35x for large arrays)**
+**#6: Memoization Key Generation (5.5x faster, 38x for large arrays)**
 - Fast-path for single primitive arguments (18x faster)
-- Array sampling strategy for large arrays (35x faster)
+- Array sampling strategy for large arrays ≥50 elements (38x faster)
+- Zero-arg optimization returns constant `"()"` (instant)
 - Direct string conversion eliminates JSON overhead
-- Single primitive: 7.63ms → 0.42ms (18.2x faster)
-- Large array (500): 652.85ms → 18.67ms (35x faster)
-- Overall average: 100.27ms → 18.55ms (5.4x faster)
+- Single primitive: 7.95ms → 0.44ms (18.1x faster)
+- Large array (500): 633.62ms → 16.51ms (38.4x faster)
+- Real-world getUserById: 8.20ms → 0.77ms (10.6x faster)
+- Overall average: 96.77ms → 17.54ms (5.5x faster, +452%)
 
 For technical details, see:
 - [OPTIMIZATION_RESULTS_1.md](./docs/OPTIMIZATION_RESULTS_1.md) - LRU optimization
@@ -760,7 +773,8 @@ For technical details, see:
 - [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize hot-path optimization
 - [OPTIMIZATION_RESULTS_5.md](./docs/OPTIMIZATION_RESULTS_5.md) - Event system optimization
 - [OPTIMIZATION_4_SUMMARY.md](./docs/OPTIMIZATION_4_SUMMARY.md) - Event system executive summary
-- [OPTIMIZATION_RESULTS_6.md](./docs/OPTIMIZATION_RESULTS_6.md) - Memoization key generation
+- [OPTIMIZATION_RESULTS_6.md](./docs/OPTIMIZATION_RESULTS_6.md) - Memoization key generation (technical)
+- [OPTIMIZATION_6_SUMMARY.md](./docs/OPTIMIZATION_6_SUMMARY.md) - Memoization key generation (executive summary)
 
 ---
 
