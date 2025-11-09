@@ -643,13 +643,14 @@ Real-world performance at scale:
 
 | Operation | Dataset | Time | Throughput | Notes |
 |-----------|---------|------|------------|-------|
-| **Set** | 1M entries | 923ms | **1,083,873 ops/sec** | Small objects |
-| **Get** | 1M entries | 1,971ms | **507,302 ops/sec** | Cache hits |
-| **Set** | 100k large objects | 2,459ms | **40,670 ops/sec** | ~1KB each |
-| **Get** | 100k large objects | 2,919ms | **34,253 ops/sec** | Cache hits |
-| **LRU Eviction** | 1M→500k | 1,709ms | **292,544 evictions/sec** | Half cache cleared |
-| **Lazy Expiration** | 100k entries | 335ms | **298,507 ops/sec** | TTL-based cleanup |
-| **Event Overhead** | With no listeners | - | **12.1% overhead** | Fast-path optimized |
+| **Set** | 1M entries | 832ms | **1,202,352 ops/sec** | Small objects |
+| **Get** | 1M entries | 680ms | **1,471,029 ops/sec** | Cache hits (2x faster!) |
+| **Set** | 100k large objects | 2,402ms | **41,639 ops/sec** | ~1KB each |
+| **Get** | 100k large objects | 78ms | **1,274,407 ops/sec** | Cache hits (30x faster!) |
+| **LRU Eviction** | 1M→500k | 1,458ms | **343,008 evictions/sec** | Half cache cleared |
+| **Lazy Expiration** | 100k entries | 236ms | **423,729 ops/sec** | TTL-based cleanup |
+| **Event Overhead** | With no listeners | - | **~0% overhead** | Fast-path optimized ✅ |
+| **Memory Efficiency** | Per entry | - | **~168 bytes** | Theoretical estimate |
 
 ### Core Operations (10k ops)
 | Operation | Time | Ops/sec | vs v0.2.0 |

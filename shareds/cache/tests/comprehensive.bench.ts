@@ -41,20 +41,23 @@ const set1M = benchmark("Set 1M small entries", () => {
 
 console.log(`   Set 1M entries:  ${set1M.toFixed(0)}ms (${(1_000_000 / set1M * 1000).toFixed(0)} ops/sec)`);
 
-// 1M get operations
+// 1M get operations (pre-populated cache)
+let cache1M: LruTtlCache<string, number>;
 const get1M = benchmark("Get 1M small entries", () => {
-  const cache = new LruTtlCache<string, number>({ 
+  cache1M = new LruTtlCache<string, number>({ 
     maxEntries: 1_000_000 
   });
   for (let i = 0; i < 1_000_000; i++) {
-    cache.set(`key${i}`, i);
+    cache1M.set(`key${i}`, i);
   }
+}, 1); // Setup phase
+const get1MOnly = benchmark("Get 1M small entries", () => {
   for (let i = 0; i < 1_000_000; i++) {
-    cache.get(`key${i}`);
+    cache1M.get(`key${i}`);
   }
 });
 
-console.log(`   Get 1M entries:  ${get1M.toFixed(0)}ms (${(1_000_000 / get1M * 1000).toFixed(0)} ops/sec)\n`);
+console.log(`   Get 1M entries:  ${get1MOnly.toFixed(0)}ms (${(1_000_000 / get1MOnly * 1000).toFixed(0)} ops/sec)\n`);
 
 console.log("📊 LARGE OBJECTS (100k operations)\n");
 
@@ -84,15 +87,18 @@ const set100k = benchmark("Set 100k large objects", () => {
 
 console.log(`   Set 100k large:  ${set100k.toFixed(0)}ms (${(100_000 / set100k * 1000).toFixed(0)} ops/sec)`);
 
-const get100k = benchmark("Get 100k large objects", () => {
-  const cache = new LruTtlCache<string, any>({ 
+let cache100k: LruTtlCache<string, any>;
+const get100kSetup = benchmark("Setup 100k large objects", () => {
+  cache100k = new LruTtlCache<string, any>({ 
     maxEntries: 100_000 
   });
   for (let i = 0; i < 100_000; i++) {
-    cache.set(`key${i}`, { ...largeObject, id: i });
+    cache100k.set(`key${i}`, { ...largeObject, id: i });
   }
+}, 1); // Setup phase
+const get100k = benchmark("Get 100k large objects", () => {
   for (let i = 0; i < 100_000; i++) {
-    cache.get(`key${i}`);
+    cache100k.get(`key${i}`);
   }
 }, 5);
 
@@ -175,19 +181,21 @@ console.log(`   With listener:   ${withListener.toFixed(0)}ms\n`);
 
 console.log("📊 MEMORY EFFICIENCY\n");
 
-const cache = new LruTtlCache<string, { data: string }>({ 
-  maxEntries: 10_000 
-});
+// Theoretical memory calculation for LRU cache entry
+// Each entry has:
+// - Map entry: ~32 bytes (key reference + value reference in V8/JSC)
+// - Linked list node: ~48 bytes (prev pointer + next pointer + key + value + metadata)
+// - Key string: 2 bytes per char + 24 bytes overhead (V8/JSC string object)
+// - Value object: varies by size
 
-// Estimate memory per entry
-const memBefore = (performance as any).memory?.usedJSHeapSize || 0;
-for (let i = 0; i < 10_000; i++) {
-  cache.set(`key_${i}`, { data: `value_${i}` });
-}
-const memAfter = (performance as any).memory?.usedJSHeapSize || 0;
-const memPerEntry = Math.round((memAfter - memBefore) / 10_000);
+const avgKeySize = "key_1234".length * 2 + 24; // UTF-16 + overhead
+const avgValueSize = 48; // Small object { data: "value_1234" }
+const mapEntryOverhead = 32;
+const nodeOverhead = 48;
+const theoreticalPerEntry = avgKeySize + avgValueSize + mapEntryOverhead + nodeOverhead;
 
-console.log(`   10k entries:     ~${memPerEntry} bytes/entry (estimated)\n`);
+console.log(`   Theoretical:     ~${theoreticalPerEntry} bytes/entry`);
+console.log(`   Components:      ${avgKeySize}B (key) + ${avgValueSize}B (value) + ${mapEntryOverhead + nodeOverhead}B (overhead)\n`);
 
 console.log("=".repeat(70));
 console.log("📈 SUMMARY FOR README");
@@ -195,11 +203,11 @@ console.log("=".repeat(70) + "\n");
 
 console.log("Performance Benchmarks:");
 console.log(`  • 1M set operations:      ${set1M.toFixed(0)}ms (${(1_000_000 / set1M * 1000).toFixed(0)} ops/sec)`);
-console.log(`  • 1M get operations:      ${get1M.toFixed(0)}ms (${(1_000_000 / get1M * 1000).toFixed(0)} ops/sec)`);
+console.log(`  • 1M get operations:      ${get1MOnly.toFixed(0)}ms (${(1_000_000 / get1MOnly * 1000).toFixed(0)} ops/sec)`);
 console.log(`  • 100k large objects set: ${set100k.toFixed(0)}ms (${(100_000 / set100k * 1000).toFixed(0)} ops/sec)`);
 console.log(`  • 100k large objects get: ${get100k.toFixed(0)}ms (${(100_000 / get100k * 1000).toFixed(0)} ops/sec)`);
 console.log(`  • LRU eviction:           ${evict.toFixed(0)}ms (${(500_000 / evict * 1000).toFixed(0)} evictions/sec)`);
 console.log(`  • Event system overhead:  ${eventOverhead}% (when enabled with no listeners)`);
-console.log(`  • Memory per entry:       ~${memPerEntry} bytes\n`);
+console.log(`  • Memory per entry:       ~${theoreticalPerEntry} bytes (theoretical)\n`);
 
 console.log("=== Benchmark Complete ===\n");
