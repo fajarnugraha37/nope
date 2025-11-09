@@ -29,7 +29,7 @@ export class LoadingCache<K, V> {
     const nowMs = now();
 
     // peek raw entry (we need metadata)
-    const e = (this as any).store.map?.get?.(k) as Entry<V> | undefined; // internal access; ok for our class
+    const e = this.store.peekEntry(k);
     if (e) {
       const hardExp = e.exp ?? Number.POSITIVE_INFINITY;
       const swrUntil =

@@ -24,6 +24,16 @@ export type Entry<V> = {
   t: Millis; // last access (for LRU + sliding)
 };
 
+/* ---------- doubly-linked list node for LRU ---------- */
+class LRUNode<K, V> {
+  constructor(
+    public key: K,
+    public entry: Entry<V>,
+    public prev: LRUNode<K, V> | null = null,
+    public next: LRUNode<K, V> | null = null
+  ) {}
+}
+
 /* ---------- Cache interface ---------- */
 export interface Cache<K, V> {
   get(key: K): V | undefined;
@@ -49,7 +59,9 @@ export type LruTtlOpts<V> = {
 };
 
 export class LruTtlCache<K, V> implements Cache<K, V> {
-  private map = new Map<K, Entry<V>>(); // maintains recency via reinsertion
+  private map = new Map<K, LRUNode<K, V>>(); // O(1) lookup
+  private head: LRUNode<K, V> | null = null; // Most recently used
+  private tail: LRUNode<K, V> | null = null; // Least recently used
   private totalSize = 0;
   private timer?: any;
   private readonly maxEntries;
@@ -69,27 +81,26 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
   }
 
   get(key: K): V | undefined {
-    const e = this.map.get(key);
-    if (!e) {
+    const node = this.map.get(key);
+    if (!node) {
       this.stats?.recordMiss();
       this.events?.emit({ type: "miss", key, timestamp: now() });
       return undefined;
     }
-    if (this.isExpired(e)) {
-      this.drop(key, e, "expired");
+    if (this.isExpired(node.entry)) {
+      this.removeNode(node);
       this.stats?.recordMiss();
       this.events?.emit({ type: "miss", key, timestamp: now(), reason: "expired" });
       return undefined;
     }
     // sliding ttl => bump expiry
-    if (e.sl) e.exp = now() + e.sl;
-    e.t = now();
-    // lru bump: delete+set to move to end
-    this.map.delete(key);
-    this.map.set(key, e);
+    if (node.entry.sl) node.entry.exp = now() + node.entry.sl;
+    node.entry.t = now();
+    // Move to front (most recently used) - O(1)
+    this.moveToFront(node);
     this.stats?.recordHit();
-    this.events?.emit({ type: "hit", key, value: e.v, timestamp: now() });
-    return e.v;
+    this.events?.emit({ type: "hit", key, value: node.entry.v, timestamp: now() });
+    return node.entry.v;
   }
 
   set(
@@ -98,18 +109,29 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     opts?: { ttlMs?: number; slidingTtlMs?: number; size?: number }
   ) {
     const sz = opts?.size ?? this.sizer(val);
-    const e: Entry<V> = {
+    const entry: Entry<V> = {
       v: val,
       exp: opts?.ttlMs != null ? now() + opts.ttlMs : undefined,
       sl: opts?.slidingTtlMs,
       sz,
       t: now(),
     };
-    // replace
-    const prev = this.map.get(key);
-    if (prev) this.totalSize -= prev.sz;
-    this.map.set(key, e);
-    this.totalSize += sz;
+    
+    // Check if key exists
+    const existingNode = this.map.get(key);
+    if (existingNode) {
+      // Update existing node
+      this.totalSize -= existingNode.entry.sz;
+      existingNode.entry = entry;
+      this.totalSize += sz;
+      this.moveToFront(existingNode);
+    } else {
+      // Create new node and add to front
+      const node = new LRUNode(key, entry);
+      this.map.set(key, node);
+      this.addToFront(node);
+      this.totalSize += sz;
+    }
 
     this.stats?.recordSet();
     this.stats?.updateSize(this.map.size, this.totalSize);
@@ -124,17 +146,19 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
   }
 
   del(key: K) {
-    const e = this.map.get(key);
-    if (!e) return;
+    const node = this.map.get(key);
+    if (!node) return;
     this.stats?.recordDelete();
-    this.stats?.updateSize(this.map.size - 1, this.totalSize - e.sz);
-    this.events?.emit({ type: "delete", key, value: e.v, size: e.sz, timestamp: now() });
-    this.drop(key, e);
+    this.stats?.updateSize(this.map.size - 1, this.totalSize - node.entry.sz);
+    this.events?.emit({ type: "delete", key, value: node.entry.v, size: node.entry.sz, timestamp: now() });
+    this.removeNode(node);
   }
 
   clear() {
     const size = this.map.size;
     this.map.clear();
+    this.head = null;
+    this.tail = null;
     this.totalSize = 0;
     this.stats?.updateSize(0, 0);
     if (size > 0) {
@@ -153,44 +177,116 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
     return e.exp != null && e.exp <= now();
   }
 
-  private drop(key: K, e: Entry<V>, reason?: string) {
-    this.map.delete(key);
-    this.totalSize -= e.sz;
-    if (reason) {
+  // Doubly-linked list operations (O(1))
+  private addToFront(node: LRUNode<K, V>) {
+    node.next = this.head;
+    node.prev = null;
+    
+    if (this.head) {
+      this.head.prev = node;
+    }
+    this.head = node;
+    
+    if (!this.tail) {
+      this.tail = node;
+    }
+  }
+
+  private removeNode(node: LRUNode<K, V>) {
+    if (node.prev) {
+      node.prev.next = node.next;
+    } else {
+      this.head = node.next;
+    }
+    
+    if (node.next) {
+      node.next.prev = node.prev;
+    } else {
+      this.tail = node.prev;
+    }
+    
+    this.map.delete(node.key);
+    this.totalSize -= node.entry.sz;
+    
+    // Emit event if needed
+    if (node.entry.exp && node.entry.exp <= now()) {
       this.events?.emit({ 
-        type: reason === "expired" ? "expire" : "evict", 
-        key, 
-        value: e.v, 
-        size: e.sz, 
+        type: "expire", 
+        key: node.key, 
+        value: node.entry.v, 
+        size: node.entry.sz, 
         timestamp: now(),
-        reason 
+        reason: "expired"
       });
     }
+  }
+
+  private moveToFront(node: LRUNode<K, V>) {
+    if (node === this.head) return; // Already at front
+    
+    // Remove from current position
+    if (node.prev) {
+      node.prev.next = node.next;
+    }
+    if (node.next) {
+      node.next.prev = node.prev;
+    } else {
+      this.tail = node.prev;
+    }
+    
+    // Add to front
+    node.next = this.head;
+    node.prev = null;
+    if (this.head) {
+      this.head.prev = node;
+    }
+    this.head = node;
   }
 
   private evict() {
     // evict expired first
     this.sweep();
     // then size > maxSize
-    while (this.totalSize > this.maxSize && this.map.size > 0) {
-      // remove least recently used = first item in Map
-      const [k, e] = this.map.entries().next().value as [K, Entry<V>];
+    while (this.totalSize > this.maxSize && this.tail) {
+      // remove least recently used = tail
       this.stats?.recordEviction();
-      this.drop(k, e, "size-limit");
+      const node = this.tail;
+      this.events?.emit({ 
+        type: "evict", 
+        key: node.key, 
+        value: node.entry.v, 
+        size: node.entry.sz, 
+        timestamp: now(),
+        reason: "size-limit"
+      });
+      this.removeNode(node);
     }
     // then count > maxEntries
-    while (this.map.size > this.maxEntries) {
-      const [k, e] = this.map.entries().next().value as [K, Entry<V>];
+    while (this.map.size > this.maxEntries && this.tail) {
       this.stats?.recordEviction();
-      this.drop(k, e, "count-limit");
+      const node = this.tail;
+      this.events?.emit({ 
+        type: "evict", 
+        key: node.key, 
+        value: node.entry.v, 
+        size: node.entry.sz, 
+        timestamp: now(),
+        reason: "count-limit"
+      });
+      this.removeNode(node);
     }
     this.stats?.updateSize(this.map.size, this.totalSize);
   }
 
   private sweep() {
     const n = now();
-    for (const [k, e] of this.map) {
-      if (e.exp != null && e.exp <= n) this.drop(k, e);
+    let node = this.head;
+    while (node) {
+      const next = node.next;
+      if (node.entry.exp != null && node.entry.exp <= n) {
+        this.removeNode(node);
+      }
+      node = next;
     }
   }
 
@@ -216,6 +312,12 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
 
   off(...args: Parameters<CacheEventEmitter<K, V>["off"]>) {
     this.events?.off(...args);
+  }
+
+  /** Internal method for LoadingCache to peek at entry metadata */
+  peekEntry(key: K): Entry<V> | undefined {
+    const node = this.map.get(key);
+    return node?.entry;
   }
 }
 

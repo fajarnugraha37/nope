@@ -83,7 +83,7 @@ export function memoize<A extends any[], V>(
       });
 
     // check store & swr behavior
-    const raw = (store as any).map?.get?.(key) as Entry<V> | undefined;
+    const raw = store.peekEntry(key);
     if (raw) {
       if (!raw.exp || raw.exp > now()) return store.get(key)!; // fresh
       if (opts.swrMs && now() <= raw.exp + opts.swrMs) {
@@ -98,7 +98,7 @@ export function memoize<A extends any[], V>(
 
   const memo = (...args: A): Promise<V> | V => {
     const k = keyer(...args);
-    const raw = (store as any).map?.get?.(k) as Entry<V> | undefined;
+    const raw = store.peekEntry(k);
     if (raw) {
       const nowMs = now();
       const fresh = raw.exp == null || raw.exp > nowMs;
