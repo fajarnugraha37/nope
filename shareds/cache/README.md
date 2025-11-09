@@ -757,6 +757,14 @@ The v0.3.0 release includes five major performance optimizations:
 - Micro-benchmark: 69.5µs → 4.6µs (15x faster)
 - Real-world overhead: 34.6% → 16.4% (52.6% reduction)
 
+**#5: Singleflight Map Overhead (1849x better memory)**
+- Safe cleanup with promise identity check
+- Proper garbage collection of resolved promises
+- New monitoring methods: `has()`, `size()`, `clear()`
+- Memory efficiency: 10.28 MB → 5.69 KB retained (1849x better)
+- Performance: ~same speed, vastly improved GC
+- Zero breaking changes
+
 **#6: Memoization Key Generation (5.5x faster, 38x for large arrays)**
 - Fast-path for single primitive arguments (18x faster)
 - Array sampling strategy for large arrays ≥50 elements (38x faster)
@@ -773,6 +781,7 @@ For technical details, see:
 - [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize hot-path optimization
 - [OPTIMIZATION_RESULTS_5.md](./docs/OPTIMIZATION_RESULTS_5.md) - Event system optimization
 - [OPTIMIZATION_4_SUMMARY.md](./docs/OPTIMIZATION_4_SUMMARY.md) - Event system executive summary
+- [OPTIMIZATION_5_SUMMARY.md](./docs/OPTIMIZATION_5_SUMMARY.md) - Singleflight map overhead (executive summary)
 - [OPTIMIZATION_RESULTS_6.md](./docs/OPTIMIZATION_RESULTS_6.md) - Memoization key generation (technical)
 - [OPTIMIZATION_6_SUMMARY.md](./docs/OPTIMIZATION_6_SUMMARY.md) - Memoization key generation (executive summary)
 

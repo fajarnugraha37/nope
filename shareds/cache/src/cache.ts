@@ -369,11 +369,46 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
 /* ---------- singleflight (dedupe in-flight by key) ---------- */
 export class Singleflight<K, V> {
   private inflight = new Map<K, Promise<V>>();
+  
   do(key: K, fn: () => Promise<V>): Promise<V> {
-    const p = this.inflight.get(key);
-    if (p) return p;
-    const run = fn().finally(() => this.inflight.delete(key));
-    this.inflight.set(key, run);
-    return run;
+    // Fast-path: check if key exists (single Map lookup instead of get + has)
+    const existing = this.inflight.get(key);
+    if (existing) return existing;
+    
+    // Create new promise with safe cleanup
+    const promise = fn().finally(() => {
+      // Only delete if this specific promise is still in the map
+      // Handles edge case where key was reused before cleanup
+      if (this.inflight.get(key) === promise) {
+        this.inflight.delete(key);
+      }
+    });
+    
+    this.inflight.set(key, promise);
+    return promise;
+  }
+  
+  /**
+   * Check if a key is currently in-flight
+   * Useful for monitoring/debugging
+   */
+  has(key: K): boolean {
+    return this.inflight.has(key);
+  }
+  
+  /**
+   * Get number of in-flight requests
+   * Useful for monitoring
+   */
+  size(): number {
+    return this.inflight.size;
+  }
+  
+  /**
+   * Clear all in-flight requests
+   * Use with caution - may leave promises unresolved
+   */
+  clear(): void {
+    this.inflight.clear();
   }
 }
