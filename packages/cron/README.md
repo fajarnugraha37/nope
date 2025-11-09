@@ -246,6 +246,18 @@ await scheduler.registerJob({
 
 When `worker` is provided, `JobRunner` spawns the process, streams stdout/stderr, and enforces aborts/timeouts.
 
+### Execute a job immediately
+
+```ts
+const { runId } = await scheduler.executeNow("sync-invoices", {
+  metadata: { source: "ops-dashboard" },
+});
+
+console.log(`Manual run enqueued as ${runId}`);
+```
+
+`executeNow` creates a one-off `at` trigger scheduled for the current clock tick (clamped to “now” if you pass a past `runAt`) and hands it straight to the scheduler loop, so the run starts without waiting for the normal polling interval. You still get the usual lifecycle events and retries.
+
 ## Advanced features
 
 - **Misfire strategies** – Per-trigger `misfirePolicy` combined with `misfireToleranceMs` decides whether overdue runs skip, fire immediately, or catch up with logging.
@@ -339,6 +351,7 @@ Creates a scheduler. Notable `CreateSchedulerOptions`:
 
 ### `Scheduler` interface
 Key methods:
+- `executeNow(jobName, options?)`
 - `registerJob(definition): Promise<JobHandle>`
 - `schedule(jobName, triggerOptions): Promise<TriggerHandle>`
 - `on(eventName, listener)` / `once` / `off`
@@ -367,6 +380,9 @@ Fields:
   - `at`: `{ runAt }`
   - `rrule`: `{ rrule, exdates? }`
 Shared fields include `idempotencyKey`, `priority`, `startAt`, `endAt`, `maxRuns`, `misfirePolicy`, `metadata`.
+
+### Execute-now options
+`ExecuteNowOptions` mirrors `at()` overrides plus an optional `runAt`. If you pass a past timestamp it is automatically clamped to `clock.now()` so the run is immediately eligible, and the method returns `{ triggerId, runId }` for observability hooks.
 
 ### `Store` interface and `InMemoryStore`
 See `src/store/interfaces.ts` for the full contract: `init`, `upsertJob`, `listDueTriggers`, `claimTrigger`, `recordRunStart`, `recordRunEnd`, `touchRun`, `findStalledRuns`, etc. `createInMemoryStore()` gives you a reference implementation.

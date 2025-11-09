@@ -1,5 +1,8 @@
 import type {
+  AtTriggerOptions,
   CreateSchedulerOptions,
+  ExecuteNowOptions,
+  ExecuteNowResult,
   JobDefinition,
   JobHandle,
   JobName,
@@ -20,6 +23,7 @@ import type { PersistedTrigger, RunRecord, Store } from "./store/interfaces.js";
 import { createSystemClock, type Clock } from "./util/clock.js";
 import { createCronError } from "./util/errors.js";
 import { createLogger, type Logger } from "./util/logger.js";
+import { coerceDate } from "./util/parse.js";
 
 const DEFAULT_HEARTBEAT_MS = 30_000;
 const DEFAULT_STALLED_MS = 90_000;
@@ -160,6 +164,55 @@ class SchedulerEngine implements Scheduler {
     });
     this.armTimer();
     return this.createTriggerHandle(triggerId);
+  }
+
+  async executeNow(jobName: JobName, options: ExecuteNowOptions = {}): Promise<ExecuteNowResult> {
+    await this.ready;
+    const job = this.jobs.get(jobName);
+    if (!job) {
+      throw createCronError("E_NOT_FOUND", `Job '${jobName}' is not registered`);
+    }
+    const now = this.clock.now();
+    const immediateOptions: ExecuteNowOptions = options ?? {};
+    const { runAt: requestedRunAt, ...overrides } = immediateOptions;
+    const resolvedRunAt = requestedRunAt ? coerceDate(requestedRunAt) : now;
+    const normalizedRunAt = resolvedRunAt.getTime() < now.getTime() ? now : resolvedRunAt;
+    const triggerOptions: TriggerOptions = {
+      kind: "at",
+      runAt: normalizedRunAt,
+      ...(overrides as Omit<AtTriggerOptions, "kind" | "runAt">),
+    };
+    const plan = createPlan(triggerOptions);
+    const nextRunAt = plan.next(now);
+    if (!nextRunAt) {
+      throw createCronError("E_STATE", "Unable to compute first fire time for executeNow trigger");
+    }
+    const triggerId = triggerOptions.idempotencyKey ?? this.generateTriggerId(jobName);
+    const nextRunId = this.generateRunId(triggerId);
+    const record: PersistedTrigger = {
+      id: triggerId,
+      job: jobName,
+      options: triggerOptions,
+      nextRunAt,
+      lastRunAt: undefined,
+      failureCount: 0,
+      misfirePolicy: triggerOptions.misfirePolicy ?? "skip",
+      priority: triggerOptions.priority ?? 0,
+      paused: false,
+      revision: 0,
+      metadata: { ...(triggerOptions.metadata ?? {}), nextRunId },
+    };
+    await this.store.upsertTrigger(record);
+    this.plans.set(triggerId, plan);
+    this.events.emit("scheduled", {
+      triggerId,
+      job: jobName,
+      runId: nextRunId,
+      scheduledAt: nextRunAt,
+      queuedAt: now,
+    });
+    await this.processTrigger(record, now);
+    return { triggerId, runId: nextRunId };
   }
 
   async pauseAll(): Promise<void> {

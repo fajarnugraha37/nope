@@ -194,6 +194,15 @@ export type TriggerOptions =
   | ({ kind: "at" } & AtTriggerOptions)
   | ({ kind: "rrule" } & RRuleTriggerOptions);
 
+export type ExecuteNowOptions = Omit<AtTriggerOptions, "kind" | "runAt"> & {
+  runAt?: AtTriggerOptions["runAt"];
+};
+
+export interface ExecuteNowResult {
+  triggerId: TriggerId;
+  runId: RunId;
+}
+
 export interface JobHandlerContext<TPayload = unknown> {
   runId: RunId;
   triggerId: TriggerId;
@@ -244,6 +253,7 @@ export interface Scheduler {
   on<T extends SchedulerEventName>(event: T, listener: SchedulerListener<T>): () => void;
   registerJob<TPayload, TResult>(definition: JobDefinition<TPayload, TResult>): Promise<JobHandle>;
   schedule(jobName: JobName, options: TriggerOptions): Promise<TriggerHandle>;
+  executeNow(jobName: JobName, options?: ExecuteNowOptions): Promise<ExecuteNowResult>;
   pauseAll(): Promise<void>;
   resumeAll(): Promise<void>;
   getRun(runId: RunId): Promise<RunRecord | undefined>;
