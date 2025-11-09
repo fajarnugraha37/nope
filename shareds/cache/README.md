@@ -678,8 +678,8 @@ Real-world performance at scale:
 |---------|------|---------|-----------|
 | LoadingCache (1k loads) | **10.39ms** | ~96,000 | **2.5x faster** 🚀 |
 | LoadingCache (cached) | **8.41ms** | ~119,000 | **2.2x faster** 🚀 |
-| Memoize sync (1k, 100 unique) | **~1.8ms** | ~555,000 | **3.3x faster** 🚀 |
-| Memoize async (1k, 100 unique) | **~2.3ms** | ~435,000 | **4.1x faster** 🚀 |
+| Memoize single-arg (10k) | **~409ms** | ~2,444 | **18x faster keying** ⚡ |
+| Memoize large arrays (10k) | **~600ms** | ~1,667 | **35x faster keying** � |
 | Namespaced set (1k, 10 ns) | **2.06ms** | ~485,000 | **14.6x faster** 🚀 |
 | Transform JSON set (1k) | **3.31ms** | ~302,000 | **4.4x faster** 🚀 |
 | Cache warming (1k) | **4.07ms** | ~246,000 | **3.5x faster** 🚀 |
@@ -710,9 +710,17 @@ Real-world performance at scale:
 - `bun run tests/expiration.bench.ts` - Expiration strategy
 - `bun run tests/event-microbench.bench.ts` - Event system
 
+### Memoization Key Generation Performance
+| Pattern | BEFORE | AFTER | Improvement |
+|---------|--------|-------|-------------|
+| Single primitive | 7.63ms | **0.42ms** | **18.2x faster** ⚡ |
+| Large array (500) | 652.85ms | **18.67ms** | **35x faster** 🔥 |
+| Medium array (50) | 57.90ms | **14.85ms** | **3.9x faster** 🚀 |
+| **Overall average** | 100.27ms | **18.55ms** | **5.4x faster** (+440%) |
+
 ### Optimization Details
 
-The v0.3.0 release includes four major performance optimizations:
+The v0.3.0 release includes five major performance optimizations:
 
 **#1: Doubly-Linked List LRU (5-13x faster)**
 - O(1) operations for get/set/evict regardless of cache size
@@ -725,7 +733,7 @@ The v0.3.0 release includes four major performance optimizations:
 - Lazy expiration check on `get()` access
 - 98.6% reduction in eviction time with expired entries
 
-**#3: Memoize Optimization (1.7-2.8x faster)**
+**#3: Memoize Hot-Path Optimization (1.7-2.8x faster)**
 - Eliminated redundant Map lookups in hot path
 - Single `peekEntry()` call instead of multiple `get()` calls
 - Memoize sync: 3.11ms → 1.8ms (1.7x faster)
@@ -738,12 +746,21 @@ The v0.3.0 release includes four major performance optimizations:
 - Micro-benchmark: 69.5µs → 4.6µs (15x faster)
 - Real-world overhead: 34.6% → 16.4% (52.6% reduction)
 
+**#5: Memoization Key Generation (5.4x faster, 35x for large arrays)**
+- Fast-path for single primitive arguments (18x faster)
+- Array sampling strategy for large arrays (35x faster)
+- Direct string conversion eliminates JSON overhead
+- Single primitive: 7.63ms → 0.42ms (18.2x faster)
+- Large array (500): 652.85ms → 18.67ms (35x faster)
+- Overall average: 100.27ms → 18.55ms (5.4x faster)
+
 For technical details, see:
 - [OPTIMIZATION_RESULTS_1.md](./docs/OPTIMIZATION_RESULTS_1.md) - LRU optimization
 - [OPTIMIZATION_RESULTS_2.md](./docs/OPTIMIZATION_RESULTS_2.md) - Expiration optimization
-- [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize optimization
+- [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize hot-path optimization
 - [OPTIMIZATION_RESULTS_5.md](./docs/OPTIMIZATION_RESULTS_5.md) - Event system optimization
 - [OPTIMIZATION_4_SUMMARY.md](./docs/OPTIMIZATION_4_SUMMARY.md) - Event system executive summary
+- [OPTIMIZATION_RESULTS_6.md](./docs/OPTIMIZATION_RESULTS_6.md) - Memoization key generation
 
 ---
 

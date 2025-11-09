@@ -15,7 +15,49 @@ const defer =
 
 /* ---------- memoize (sync/async) ---------- */
 export type MemoKeyer<A extends any[]> = (...args: A) => string;
-const defaultKeyer = (args: any[]) => {
+
+// Optimized key generation with fast-paths
+const defaultKeyer = (...args: any[]) => {
+  const len = args.length;
+  
+  // Fast-path: No arguments
+  if (len === 0) return "()";
+  
+  // Fast-path: Single argument
+  if (len === 1) {
+    const arg = args[0];
+    const type = typeof arg;
+    
+    // Single primitive - direct string conversion
+    if (type !== "object" && type !== "function") {
+      if (arg === null) return "null";
+      if (arg === undefined) return "undefined";
+      return String(arg);
+    }
+    
+    // Single null
+    if (arg === null) return "null";
+    
+    // Single array - fast hash for large arrays
+    if (Array.isArray(arg)) {
+      // For large arrays (>= 50), use sampling to avoid O(n) serialization
+      if (arg.length >= 50) {
+        const first = String(arg[0]);
+        const last = String(arg[arg.length - 1]);
+        const mid = String(arg[Math.floor(arg.length / 2)]);
+        return `[${arg.length}:${first}|${mid}|${last}]`;
+      }
+    }
+    
+    // Single object or small array - use JSON.stringify
+    try {
+      return JSON.stringify(arg);
+    } catch {
+      return String(arg);
+    }
+  }
+  
+  // Multiple arguments - use JSON.stringify (it's fast enough for small arrays)
   try {
     return JSON.stringify(args);
   } catch {
