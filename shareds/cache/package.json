@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/cache",
   "private": false,
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`",
   "keywords": [
     "cache",
@@ -68,6 +68,8 @@
     "build": "rm -rf dist && bunx tsc && bunx tsup",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "benchmark": "bun run tests/cache.bench.ts",
     "coverage:view": "open coverage/lcov-report/index.html",
     "version": "changeset version",
     "release": "changeset publish",

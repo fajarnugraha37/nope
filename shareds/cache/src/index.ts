@@ -1,4 +1,7 @@
 export * from "./cache.ts";
+export * from "./cache-events.ts";
+export * from "./cache-stats.ts";
+export * from "./cache-utils.ts";
 export * from "./idempotency.ts";
 export * from "./keyed-lock.ts";
 export * from "./loading-cache.ts";
