@@ -2,22 +2,21 @@
  * Memory Leak Detection - Reporting Only
  * 
  * Reports memory usage patterns for 100k-1M entries without strict assertions.
- * Run with: bun --expose-gc test tests/memory-report.test.ts --timeout 300000
+ * Run with: bun test tests/memory-report.test.ts --timeout 300000
  */
 
 import { describe, test } from "bun:test";
 import { LruTtlCache, Singleflight, memoize } from "../src";
+import { heapStats } from "bun:jsc";
 
 function gc() {
-  if (global.gc) {
-    global.gc();
-    global.gc();
-  }
+  Bun.gc(true); // Force synchronous GC
 }
 
 function getHeapMB(): number {
   gc();
-  return process.memoryUsage().heapUsed / (1024 * 1024);
+  const stats = heapStats();
+  return stats.heapSize / (1024 * 1024);
 }
 
 function formatMB(mb: number): string {

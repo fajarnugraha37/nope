@@ -10,6 +10,7 @@ import {
   SingleflightWithTimeout,
   SingleflightHybrid,
 } from "../src/singleflight-optimized.ts";
+import { heapStats } from "bun:jsc";
 
 console.log("\n=== Singleflight Map Overhead - COMPARISON ===\n");
 
@@ -19,15 +20,14 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function measureMemory(): { heapUsed: number; external: number; total: number } {
-  if (global.gc) {
-    global.gc();
-  }
-  const mem = process.memoryUsage();
+function measureMemory(): { heapUsed: number; external: number; total: number; objectCount: number } {
+  Bun.gc(true); // Force synchronous GC
+  const stats = heapStats();
   return {
-    heapUsed: mem.heapUsed,
-    external: mem.external,
-    total: mem.heapUsed + mem.external,
+    heapUsed: stats.heapSize,
+    external: stats.extraMemorySize,
+    total: stats.heapSize + stats.extraMemorySize,
+    objectCount: stats.objectCount,
   };
 }
 

@@ -4,6 +4,7 @@
  */
 
 import { Singleflight } from "../src/cache.ts";
+import { heapStats } from "bun:jsc";
 
 console.log("\n=== Singleflight Map Overhead - BASELINE ===\n");
 
@@ -14,16 +15,15 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-// Helper to measure memory
-function measureMemory(): { heapUsed: number; external: number; total: number } {
-  if (global.gc) {
-    global.gc(); // Force GC if available (run with --expose-gc)
-  }
-  const mem = process.memoryUsage();
+// Helper to measure memory using Bun's accurate heapStats API
+function measureMemory(): { heapUsed: number; external: number; total: number; objectCount: number } {
+  Bun.gc(true); // Force synchronous GC
+  const stats = heapStats();
   return {
-    heapUsed: mem.heapUsed,
-    external: mem.external,
-    total: mem.heapUsed + mem.external,
+    heapUsed: stats.heapSize,
+    external: stats.extraMemorySize,
+    total: stats.heapSize + stats.extraMemorySize,
+    objectCount: stats.objectCount,
   };
 }
 
@@ -204,5 +204,4 @@ console.log();
 
 console.log("=== Baseline Benchmark Complete ===\n");
 
-console.log("💡 To run with GC exposure (recommended):");
-console.log("   bun --expose-gc tests/singleflight-baseline.bench.ts\n");
+console.log("💡 Using Bun's accurate heapStats API for memory tracking\n");
