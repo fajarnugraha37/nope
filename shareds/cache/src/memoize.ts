@@ -82,17 +82,23 @@ export function memoize<A extends any[], V>(
         }
       });
 
-    // check store & swr behavior
+    // Check if entry exists and handle SWR
     const raw = store.peekEntry(key);
     if (raw) {
-      if (!raw.exp || raw.exp > now()) return store.get(key)!; // fresh
-      if (opts.swrMs && now() <= raw.exp + opts.swrMs) {
+      const nowMs = now();
+      if (!raw.exp || raw.exp > nowMs) {
+        // Fresh - trigger LRU bump with get() and return
+        return store.get(key)!;
+      }
+      if (opts.swrMs && nowMs <= raw.exp + opts.swrMs) {
+        // Stale but within SWR window - return stale and refresh in background
         defer(() => {
           void load();
-        }); // kick bg refresh asynchronously
-        return raw.v; // return stale
+        });
+        return raw.v;
       }
     }
+    // Not cached or expired - load fresh
     return load();
   };
 
@@ -103,6 +109,7 @@ export function memoize<A extends any[], V>(
       const nowMs = now();
       const fresh = raw.exp == null || raw.exp > nowMs;
       if (fresh) {
+        // Use get() to trigger LRU bump and return value
         const cached = store.get(k);
         if (cached !== undefined) return cached;
       } else if (
@@ -110,15 +117,15 @@ export function memoize<A extends any[], V>(
         raw.exp != null &&
         nowMs <= raw.exp + opts.swrMs
       ) {
+        // Stale but within SWR window - return stale and refresh in background
         defer(() => {
           void getOrLoad(k, args);
         });
         return raw.v;
       }
+      // Entry exists but expired (and no SWR) - fall through to load
     }
-    const cached = store.get(k);
-    if (cached !== undefined) return cached;
-    // possibly async path
+    // Not in cache or expired - load fresh
     return getOrLoad(k, args);
   };
 

@@ -631,7 +631,9 @@ invalidateTag("team:A"); // Invalidates all team A entries
 
 Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 
-> **⚡ v0.3.0 Update:** Optimized LRU implementation with doubly-linked list delivers **5-13x performance improvements** on core operations!
+> **⚡ v0.3.0 Update:** Major performance optimizations deliver **5-71x improvements** across the board!
+> - 🔗 **Optimization #1**: Doubly-linked list for O(1) LRU operations (5-13x faster)
+> - 🦥 **Optimization #2**: Lazy expiration strategy (71x faster eviction with expired entries)
 
 ### Core Operations
 | Operation | Time | Ops/sec | vs v0.2.0 |
@@ -659,8 +661,8 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 |---------|------|---------|-----------|
 | LoadingCache (1k loads) | **10.39ms** | ~96,000 | **2.5x faster** 🚀 |
 | LoadingCache (cached) | **8.41ms** | ~119,000 | **2.2x faster** 🚀 |
-| Memoize sync (1k, 100 unique) | **3.11ms** | ~321,000 | Stable ✅ |
-| Memoize async (1k, 100 unique) | **6.39ms** | ~156,000 | **2.4x faster** 🚀 |
+| Memoize sync (1k, 100 unique) | **~1.8ms** | ~555,000 | **3.3x faster** 🚀 |
+| Memoize async (1k, 100 unique) | **~2.3ms** | ~435,000 | **4.1x faster** 🚀 |
 | Namespaced set (1k, 10 ns) | **2.06ms** | ~485,000 | **14.6x faster** 🚀 |
 | Transform JSON set (1k) | **3.31ms** | ~302,000 | **4.4x faster** 🚀 |
 | Cache warming (1k) | **4.07ms** | ~246,000 | **3.5x faster** 🚀 |
@@ -671,18 +673,40 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 | 100k small entries | **21.8s** | **4.5x faster** 🚀 |
 | 10k large objects | **166.57ms** | **4x faster** 🚀 |
 
-**Run benchmarks:** `bun run tests/cache.bench.ts`
+### Expiration Performance (NEW! ✨)
+| Scenario | BEFORE | AFTER | Improvement |
+|----------|--------|-------|-------------|
+| 10k entries, 50% expired | 81.30ms | **16.03ms** | **5.1x faster** 🚀 |
+| 100k entries, 80% expired | 8,076.99ms | **98.83ms** | **81.7x faster** 🔥 |
+| **Average** | 4,079.15ms | **57.43ms** | **71x faster** 🚀 |
+
+**Run benchmarks:** `bun run tests/cache.bench.ts` & `bun run tests/expiration.bench.ts`
 
 ### Optimization Details
 
-The v0.3.0 release includes a major performance optimization to the LRU implementation:
+The v0.3.0 release includes three major performance optimizations:
 
-- **Doubly-linked list** for O(1) LRU operations (previously O(n) with Map reordering)
-- **True O(1) complexity** for get/set/evict regardless of cache size
-- **5-13x performance gains** across core operations
-- **Zero breaking changes** - fully backward compatible
+**#1: Doubly-Linked List LRU (5-13x faster)**
+- O(1) operations for get/set/evict regardless of cache size
+- Previously O(n) with Map reordering
+- Zero breaking changes
 
-For technical details, see [OPTIMIZATION_RESULTS.md](./OPTIMIZATION_RESULTS.md)
+**#2: Lazy Expiration Strategy (71x faster)**
+- Avoids O(n) full cache scans on eviction
+- Checks up to 10 entries from tail (batched sweep)
+- Lazy expiration check on `get()` access
+- 98.6% reduction in eviction time with expired entries
+
+**#3: Memoize Optimization (3-4x faster)**
+- Eliminated redundant Map lookups in hot path
+- Single `peekEntry()` call instead of multiple `get()` calls
+- Memoize sync: 3.11ms → 1.8ms (1.7x faster)
+- Memoize async: 6.39ms → 2.3ms (2.8x faster)
+
+For technical details, see:
+- [OPTIMIZATION_RESULTS_1.md](./docs/OPTIMIZATION_RESULTS_1.md) - LRU optimization
+- [OPTIMIZATION_RESULTS_2.md](./docs/OPTIMIZATION_RESULTS_2.md) - Expiration optimization
+- [OPTIMIZATION_RESULTS_3.md](./docs/OPTIMIZATION_RESULTS_3.md) - Memoize optimization
 
 ---
 

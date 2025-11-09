@@ -53,9 +53,10 @@ export type LruTtlOpts<V> = {
   maxEntries?: number; // cap by count
   maxSize?: number; // cap by size units (uses sizer)
   sizer?: Sizer<V>;
-  sweepIntervalMs?: number; // optional janitor (expire)
+  sweepIntervalMs?: number; // optional janitor (expire) - 0 = lazy only
   enableStats?: boolean; // track hit/miss/eviction metrics
   enableEvents?: boolean; // emit cache events
+  lazyExpiration?: boolean; // if true, only check expiration on access (default: true)
 };
 
 export class LruTtlCache<K, V> implements Cache<K, V> {
@@ -69,11 +70,13 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
   private readonly sizer: Sizer<V>;
   private readonly stats?: CacheStatistics;
   private readonly events?: CacheEventEmitter<K, V>;
+  private readonly lazyExpiration: boolean;
 
   constructor(opts: LruTtlOpts<V> = {}) {
     this.maxEntries = opts.maxEntries ?? 1000;
     this.maxSize = opts.maxSize ?? Number.POSITIVE_INFINITY;
     this.sizer = opts.sizer ?? jsonSizer;
+    this.lazyExpiration = opts.lazyExpiration ?? true; // Default to lazy
     const iv = opts.sweepIntervalMs ?? 0;
     if (iv > 0) this.timer = setInterval(() => this.sweep(), iv).unref?.();
     if (opts.enableStats) this.stats = new CacheStatistics();
@@ -244,8 +247,18 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
   }
 
   private evict() {
-    // evict expired first
-    this.sweep();
+    if (this.lazyExpiration) {
+      // Lazy strategy: check expired entries opportunistically during eviction
+      // Only sweep if we need space and check tail region first
+      const needsSpace = this.totalSize > this.maxSize || this.map.size > this.maxEntries;
+      if (needsSpace) {
+        this.batchedSweep(10); // Check up to 10 entries from tail
+      }
+    } else {
+      // Active strategy: full sweep (old behavior)
+      this.sweep();
+    }
+    
     // then size > maxSize
     while (this.totalSize > this.maxSize && this.tail) {
       // remove least recently used = tail
@@ -261,6 +274,7 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
       });
       this.removeNode(node);
     }
+    
     // then count > maxEntries
     while (this.map.size > this.maxEntries && this.tail) {
       this.stats?.recordEviction();
@@ -273,9 +287,26 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
         timestamp: now(),
         reason: "count-limit"
       });
-      this.removeNode(node);
+      this.removeNode(this.tail);
     }
     this.stats?.updateSize(this.map.size, this.totalSize);
+  }
+
+  private batchedSweep(maxChecks: number) {
+    // Check up to maxChecks entries from tail (LRU)
+    // This is more efficient than full sweep as LRU entries are more likely expired
+    const n = now();
+    let node = this.tail;
+    let checked = 0;
+    
+    while (node && checked < maxChecks) {
+      const prev = node.prev; // Save before potential removal
+      if (node.entry.exp != null && node.entry.exp <= n) {
+        this.removeNode(node);
+      }
+      node = prev;
+      checked++;
+    }
   }
 
   private sweep() {
