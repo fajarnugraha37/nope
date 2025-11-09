@@ -1,8 +1,8 @@
 module.exports = [
   {
     name: "core",
-    path: "dist/index.js",
-    limit: "3.8 KB",
+    path: "dist/index.mjs",
+    limit: "5 KB",
     gzip: true,
   },
 ];

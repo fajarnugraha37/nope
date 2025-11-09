@@ -79,7 +79,7 @@
       "version": "0.1.2",
       "dependencies": {
         "@fajarnugraha37/cache": "workspace:*",
-        "@fajarnugraha37/common": "workspace:*",
+        "@fajarnugraha37/error": "workspace:*",
         "ajv": "^8.17.1",
         "ajv-errors": "^3.0.0",
         "ajv-formats": "^3.0.1",
@@ -94,7 +94,7 @@
     },
     "shareds/async": {
       "name": "@fajarnugraha37/async",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "devDependencies": {
         "@types/bun": "latest",
         "glob": "^11.0.3",
@@ -104,7 +104,7 @@
     },
     "shareds/cache": {
       "name": "@fajarnugraha37/cache",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "devDependencies": {
         "@types/bun": "latest",
         "glob": "^11.0.3",
@@ -114,7 +114,7 @@
     },
     "shareds/common": {
       "name": "@fajarnugraha37/common",
-      "version": "0.1.2",
+      "version": "0.2.0",
       "dependencies": {
         "limu": "^4.1.1",
         "nanoid": "^5.1.6",

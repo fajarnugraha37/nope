@@ -9,7 +9,15 @@ export {
   type Severity,
   type AppErrorOptions,
 } from "./app-error.js";
-export * from "./built-in/index.js";
+export {
+  ConflictError,
+  HttpError,
+  InvalidDataError,
+  NotFoundError,
+  ValidationError,
+  type ValidationErrorInfo,
+  type ValidationResult,
+} from "./built-in/index.js";
 
 // Result exports
 export {

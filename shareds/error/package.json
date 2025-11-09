@@ -30,85 +30,35 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "browser": "./dist/index.browser.mjs",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.mjs"
     },
-    "./result": {
-      "types": "./dist/result.d.ts",
-      "import": "./dist/result.mjs",
-      "require": "./dist/result.cjs"
-    },
-    "./assert": {
-      "types": "./dist/assert.d.ts",
-      "import": "./dist/assert.mjs",
-      "require": "./dist/assert.cjs"
-    },
-    "./format": {
-      "types": "./dist/format.d.ts",
-      "import": "./dist/format.mjs",
-      "require": "./dist/format.cjs"
-    },
-    "./problem": {
-      "types": "./dist/problem.d.ts",
-      "import": "./dist/problem.mjs",
-      "require": "./dist/problem.cjs"
-    },
-    "./validation": {
-      "types": "./dist/validation.d.ts",
-      "import": "./dist/validation.mjs",
-      "require": "./dist/validation.cjs"
-    },
-    "./adapters/web": {
-      "types": "./dist/adapters/web.d.ts",
-      "import": "./dist/adapters/web.mjs",
-      "require": "./dist/adapters/web.cjs"
-    },
-    "./adapters/express": {
-      "types": "./dist/adapters/express.d.ts",
-      "import": "./dist/adapters/express.mjs",
-      "require": "./dist/adapters/express.cjs"
-    },
-    "./adapters/fastify": {
-      "types": "./dist/adapters/fastify.d.ts",
-      "import": "./dist/adapters/fastify.mjs",
-      "require": "./dist/adapters/fastify.cjs"
-    },
-    "./adapters/koa": {
-      "types": "./dist/adapters/koa.d.ts",
-      "import": "./dist/adapters/koa.mjs",
-      "require": "./dist/adapters/koa.cjs"
-    },
-    "./adapters/hono": {
-      "types": "./dist/adapters/hono.d.ts",
-      "import": "./dist/adapters/hono.mjs",
-      "require": "./dist/adapters/hono.cjs"
-    },
-    "./adapters/h3": {
-      "types": "./dist/adapters/h3.d.ts",
-      "import": "./dist/adapters/h3.mjs",
-      "require": "./dist/adapters/h3.cjs"
-    },
-    "./adapters/elysia": {
-      "types": "./dist/adapters/elysia.d.ts",
-      "import": "./dist/adapters/elysia.mjs",
-      "require": "./dist/adapters/elysia.cjs"
-    },
-    "./adapters/graphql": {
-      "types": "./dist/adapters/graphql.d.ts",
-      "import": "./dist/adapters/graphql.mjs",
-      "require": "./dist/adapters/graphql.cjs"
-    },
-    "./observability/otel": {
-      "types": "./dist/observability/otel.d.ts",
-      "import": "./dist/observability/otel.mjs",
-      "require": "./dist/observability/otel.cjs"
-    },
-    "./observability/sentry": {
-      "types": "./dist/observability/sentry.d.ts",
-      "import": "./dist/observability/sentry.mjs",
-      "require": "./dist/observability/sentry.cjs"
+    "./*": {
+      "import": {
+        "types": "./dist/*.d.ts",
+        "default": "./dist/*.mjs"
+      },
+      "require": {
+        "types": "./dist/*.d.cts",
+        "default": "./dist/*.cjs"
+      },
+      "default": {
+        "import": {
+          "types": "./dist/*/index.d.ts",
+          "default": "./dist/*/index.mjs"
+        },
+        "require": {
+          "types": "./dist/*/index.d.cts",
+          "default": "./dist/*/index.cjs"
+        }
+      }
     }
   },
   "files": [

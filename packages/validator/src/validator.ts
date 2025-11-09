@@ -6,7 +6,7 @@ import {
   ValidationError,
   type ValidationErrorInfo,
   type ValidationResult,
-} from "@fajarnugraha37/common";
+} from "@fajarnugraha37/error";
 import { LruTtlCache, type LruTtlOpts } from "@fajarnugraha37/cache";
 import { ValidatorBuilder } from "./validator.builder.js";
 import type { SchemaBuilder } from "./schema-builder.js";
