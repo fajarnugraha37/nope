@@ -6,8 +6,11 @@ import type { Cache } from "./cache.ts";
 
 export interface BatchCache<K, V> extends Cache<K, V> {
   getMany(keys: K[]): Map<K, V>;
-  setMany(entries: Array<[K, V]> | Map<K, V>, opts?: { ttlMs?: number; slidingTtlMs?: number }): void;
-  deleteMany(keys: K[]): void;
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void;
+  deleteMany(keys: K[]): number;
   hasMany(keys: K[]): Map<K, boolean>;
 }
 
@@ -45,10 +48,13 @@ export function withBatchOperations<K, V>(
       }
     },
 
-    deleteMany(keys: K[]): void {
+    deleteMany(keys: K[]): number {
+      let deleted = 0;
       for (const key of keys) {
         cache.del(key);
+        cache.has(key) || deleted++;
       }
+      return deleted;
     },
 
     hasMany(keys: K[]): Map<K, boolean> {
@@ -93,8 +99,13 @@ export class NamespacedCache<K, V> implements Cache<K, V> {
     return this.cache.has(this.prefixKey(key));
   }
 
-  del(key: K): void {
-    this.cache.del(this.prefixKey(key));
+  del(key: K): number {
+    let deleted = 0;
+    if (this.cache.has(this.prefixKey(key))) {
+      this.cache.del(this.prefixKey(key));
+      deleted = 1;
+    }
+    return deleted;
   }
 
   clear(): void {
@@ -106,6 +117,47 @@ export class NamespacedCache<K, V> implements Cache<K, V> {
   size(): number {
     // Note: Returns size of entire underlying cache
     return this.cache.size();
+  }
+
+  getMany(keys: K[]): Map<K, V> {
+    const results = new Map<K, V>();
+    for (const key of keys) {
+      const value = this.cache.get(this.prefixKey(key));
+      if (value !== undefined) {
+        results.set(key, value);
+      }
+    }
+    return results;
+  }
+
+  setMany(
+    entries: Map<K, V> | [K, V][],
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void {
+    const pairs = entries instanceof Map ? Array.from(entries) : entries;
+    for (const [key, value] of pairs) {
+      this.cache.set(this.prefixKey(key), value, opts);
+    }
+  }
+
+  deleteMany(keys: K[]): number {
+    let deleted = 0;
+    for (const key of keys) {
+      const prefixedKey = this.prefixKey(key);
+      if (this.cache.has(prefixedKey)) {
+        this.cache.del(prefixedKey);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
+  hasMany(keys: K[]): Map<K, boolean> {
+    const results = new Map<K, boolean>();
+    for (const key of keys) {
+      results.set(key, this.cache.has(this.prefixKey(key)));
+    }
+    return results;
   }
 }
 
@@ -172,5 +224,45 @@ export class TransformCache<K, VIn, VOut> implements Cache<K, VOut> {
 
   size(): number {
     return this.cache.size();
+  }
+
+  getMany(keys: K[]): Map<K, VOut> {
+    const results = new Map<K, VOut>();
+    for (const key of keys) {
+      const value = this.cache.get(key);
+      if (value !== undefined) {
+        results.set(key, this.deserialize(value));
+      }
+    }
+    return results;
+  }
+
+  setMany(
+    entries: Map<K, VOut> | [K, VOut][],
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void {
+    const pairs = entries instanceof Map ? Array.from(entries) : entries;
+    for (const [key, value] of pairs) {
+      this.cache.set(key, this.serialize(value), opts);
+    }
+  }
+
+  deleteMany(keys: K[]): number {
+    let deleted = 0;
+    for (const key of keys) {
+      if (this.cache.has(key)) {
+        this.cache.del(key);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
+  hasMany(keys: K[]): Map<K, boolean> {
+    const results = new Map<K, boolean>();
+    for (const key of keys) {
+      results.set(key, this.cache.has(key));
+    }
+    return results;
   }
 }
