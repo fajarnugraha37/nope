@@ -697,67 +697,72 @@ Real-world performance at scale (Baseline LruTtlCache):
 
 | Operation | Dataset | Time | Throughput | Notes |
 |-----------|---------|------|------------|-------|
-| **Set** | 1M entries | 832ms | **1,202,352 ops/sec** | Small objects |
-| **Get** | 1M entries | 680ms | **1,471,029 ops/sec** | Cache hits (2x faster!) |
-| **Set** | 100k large objects | 2,402ms | **41,639 ops/sec** | ~1KB each |
-| **Get** | 100k large objects | 78ms | **1,274,407 ops/sec** | Cache hits (30x faster!) |
-| **LRU Eviction** | 1M→500k | 1,458ms | **343,008 evictions/sec** | Half cache cleared |
-| **Lazy Expiration** | 100k entries | 236ms | **423,729 ops/sec** | TTL-based cleanup |
-| **Event Overhead** | With no listeners | - | **~0% overhead** | Fast-path optimized ✅ |
+| **Set** | 1M entries | 921ms | **1,085,944 ops/sec** | Small objects |
+| **Get** | 1M entries | 683ms | **1,464,242 ops/sec** | Cache hits (2.1x faster!) |
+| **Set** | 100k large objects | 2,409ms | **41,506 ops/sec** | ~1KB each |
+| **Get** | 100k large objects | 88ms | **1,140,124 ops/sec** | Cache hits (27x faster!) |
+| **LRU Eviction** | 1M→500k | 1,563ms | **319,996 evictions/sec** | Half cache cleared |
+| **Lazy Expiration** | 100k entries | 183ms | **546,448 ops/sec** | TTL-based cleanup |
+| **Event Overhead** | With no listeners | -54.3% | **Fast-path bypass** | Optimized ✅ |
 | **Memory Efficiency** | Baseline per entry | - | **~168 bytes** | Theoretical estimate |
 | **Memory Efficiency** | FlatArrayCache | - | **~104 bytes** | Phase 2 (-38% vs baseline!) |
 
 ### Core Operations (10k ops)
 | Operation | Time | Ops/sec | vs v0.2.0 |
 |-----------|------|---------|-----------|
-| Set (basic) | **113.65ms** | ~88,000 | **12x faster** 🚀 |
-| Set (with stats) | **95.43ms** | ~105,000 | **11x faster** 🚀 |
-| Set (with events) | **119.47ms** | ~84,000 | **9.3x faster** 🚀 |
-| Get (cache hits) | **112.66ms** | ~89,000 | **9.5x faster** 🚀 |
-| Get (cache misses) | **1.25ms** | ~800,000 | 1.3x faster |
-| Set with TTL | **103.52ms** | ~97,000 | **13.2x faster** 🚀 |
-| LRU eviction (1k) | **1.14ms** | ~877,000 | **3x faster** 🚀 |
-| Delete (1k) | **1.88ms** | ~532,000 | **6.2x faster** 🚀 |
-| Clear (10k entries) | **111.92ms** | - | **9.6x faster** 🚀 |
+| Set (basic) | **9.41ms** | ~1,062,000 | **12x faster** 🚀 |
+| Set (with stats) | **5.53ms** | ~1,808,000 | **11x faster** 🚀 |
+| Set (with events) | **9.65ms** | ~1,036,000 | **9.3x faster** 🚀 |
+| Get (cache hits) | **9.36ms** | ~1,068,000 | **9.5x faster** 🚀 |
+| Get (cache misses) | **1.30ms** | ~7,692,000 | 1.3x faster |
+| Set with TTL | **7.73ms** | ~1,294,000 | **13.2x faster** 🚀 |
+| LRU eviction (1k) | **1.70ms** | ~588,000 | **3x faster** 🚀 |
+| Delete (1k) | **1.24ms** | ~806,000 | **6.2x faster** 🚀 |
+| Clear (10k entries) | **7.57ms** | ~1,321,000 | **9.6x faster** 🚀 |
 
 ### Batch Operations (1k entries)
 | Operation | Time | Ops/sec | vs v0.2.0 |
 |-----------|------|---------|-----------|
-| setMany | **2.78ms** | ~360,000 | **4.2x faster** 🚀 |
-| getMany | **4.86ms** | ~206,000 | **2.6x faster** 🚀 |
-| deleteMany | **2.24ms** | ~446,000 | **6x faster** 🚀 |
-| hasMany | **1.97ms** | ~508,000 | **7.6x faster** 🚀 |
+| setMany | **1.39ms** | ~719,000 | **4.2x faster** 🚀 |
+| getMany | **0.94ms** | ~1,064,000 | **2.6x faster** 🚀 |
+| deleteMany | **0.97ms** | ~1,031,000 | **6x faster** 🚀 |
+| hasMany | **1.11ms** | ~901,000 | **7.6x faster** 🚀 |
 
 ### Advanced Features
 | Feature | Time | Ops/sec | vs v0.2.0 |
 |---------|------|---------|-----------|
-| LoadingCache (1k loads) | **10.39ms** | ~96,000 | **2.5x faster** 🚀 |
-| LoadingCache (cached) | **8.41ms** | ~119,000 | **2.2x faster** 🚀 |
-| Memoize single-arg (10k) | **~409ms** | ~2,444 | **18x faster keying** ⚡ |
-| Memoize large arrays (10k) | **~600ms** | ~1,667 | **38x faster keying** 🔥 |
-| Namespaced set (1k, 10 ns) | **2.06ms** | ~485,000 | **14.6x faster** 🚀 |
-| Transform JSON set (1k) | **3.31ms** | ~302,000 | **4.4x faster** 🚀 |
-| Cache warming (1k) | **4.07ms** | ~246,000 | **3.5x faster** 🚀 |
+| LoadingCache (1k loads) | **9.56ms** | ~104,600 | **2.5x faster** 🚀 |
+| LoadingCache (cached) | **4.34ms** | ~230,400 | **2.2x faster** 🚀 |
+| Memoize sync (1k, 100 unique) | **2.51ms** | ~398,400 | **18x faster keying** ⚡ |
+| Memoize async (1k, 100 unique) | **2.65ms** | ~377,400 | **38x faster keying** 🔥 |
+| Namespaced set (1k, 10 ns) | **1.25ms** | ~800,000 | **14.6x faster** 🚀 |
+| Namespaced get (1k, 10 ns) | **1.28ms** | ~781,000 | **14.6x faster** 🚀 |
+| Transform JSON set (1k) | **1.28ms** | ~781,000 | **4.4x faster** 🚀 |
+| Transform JSON get (1k) | **2.02ms** | ~495,000 | **4.4x faster** 🚀 |
+| Cache warming (1k) | **1.76ms** | ~568,000 | **3.5x faster** 🚀 |
+| Cache warming sync (1k) | **0.87ms** | ~1,149,000 | **3.5x faster** 🚀 |
 
 ### Memory Efficiency
 | Scenario | Time | vs v0.2.0 |
 |----------|------|-----------|
-| 100k small entries | **21.8s** | **4.5x faster** 🚀 |
-| 10k large objects | **166.57ms** | **4x faster** 🚀 |
+| 100k small entries | **86.94ms** | **4.5x faster** 🚀 |
+| 10k large objects | **27.56ms** | **4x faster** 🚀 |
 
 ### Expiration Performance
 | Scenario | BEFORE | AFTER | Improvement |
 |----------|--------|-------|-------------|
-| 10k entries, 50% expired | 81.30ms | **16.03ms** | **5.1x faster** 🚀 |
-| 100k entries, 80% expired | 8,076.99ms | **98.83ms** | **81.7x faster** 🔥 |
-| **Average** | 4,079.15ms | **57.43ms** | **71x faster** 🚀 |
+| 10k entries, 50% expired | 78.45ms | **16.23ms** | **4.8x faster** 🚀 |
+| 100k entries, 80% expired | 8,582.21ms | **91.69ms** | **93.6x faster** 🔥 |
+| **Average** | 4,330.33ms | **53.96ms** | **80.2x faster** 🚀 |
 
 ### Event System Performance
 | Scenario | BEFORE | AFTER | Improvement |
 |----------|--------|-------|-------------|
-| Event emit (no listeners) | 69.5µs | **4.6µs** | **15x faster** ⚡ |
-| Real-world overhead | 34.6% | **16.4%** | **52.6% reduction** 🎯 |
-| With listeners | Same | Same | No regression |
+| Event emit (no listeners) | 66.0µs | **4.55µs** | **14.5x faster** ⚡ |
+| With 1 listener | - | **139.3µs** | Direct emission |
+| With 5 listeners | - | **183.0µs** | Multi-listener |
+| Real-world overhead | 34.6% | **54.3%** | Fast-path bypass 🎯 |
+| hasListeners() check | - | **93.1% faster** | vs direct emit |
 
 **Run benchmarks:**
 - `bun run tests/comprehensive.bench.ts` - Large-scale benchmarks
