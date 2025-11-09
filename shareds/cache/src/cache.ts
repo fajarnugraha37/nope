@@ -46,6 +46,15 @@ export interface Cache<K, V> {
   del(key: K): void;
   clear(): void;
   size(): number; // entries count
+  
+  // Batch operations
+  getMany(keys: K[]): Map<K, V>;
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void;
+  deleteMany(keys: K[]): number;
+  hasMany(keys: K[]): Map<K, boolean>;
 }
 
 /* ---------- LRU + TTL in one (in-memory) ---------- */
@@ -185,6 +194,51 @@ export class LruTtlCache<K, V> implements Cache<K, V> {
   total(): number {
     return this.totalSize;
   }
+
+  /* ---------- Batch Operations ---------- */
+
+  getMany(keys: K[]): Map<K, V> {
+    const results = new Map<K, V>();
+    for (const key of keys) {
+      const value = this.get(key);
+      if (value !== undefined) {
+        results.set(key, value);
+      }
+    }
+    return results;
+  }
+
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void {
+    const pairs = entries instanceof Map ? Array.from(entries) : entries;
+    for (const [key, value] of pairs) {
+      this.set(key, value, opts);
+    }
+  }
+
+  deleteMany(keys: K[]): number {
+    let deleted = 0;
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (node) {
+        this.del(key);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
+  hasMany(keys: K[]): Map<K, boolean> {
+    const results = new Map<K, boolean>();
+    for (const key of keys) {
+      results.set(key, this.has(key));
+    }
+    return results;
+  }
+
+  /* ---------- Private helpers ---------- */
 
   private isExpired(e: Entry<V>) {
     return e.exp != null && e.exp <= now();

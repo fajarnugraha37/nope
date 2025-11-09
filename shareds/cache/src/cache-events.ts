@@ -9,7 +9,10 @@ export type CacheEventType =
   | "delete"
   | "evict"
   | "clear"
-  | "expire";
+  | "expire"
+  | "batch-get"
+  | "batch-set"
+  | "batch-delete";
 
 export interface CacheEvent<K, V> {
   type: CacheEventType;

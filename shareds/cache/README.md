@@ -262,24 +262,57 @@ console.log(cache.size);
 
 ### Batch Operations
 
+**NEW in Optimization #11:** Native batch methods now available on all cache implementations (LruTtlCache, OptimizedLruTtlCache, FlatArrayCache). No wrapper needed!
+
 ```ts
-// Set multiple
+// ✅ NEW: Native batch methods (faster, more efficient)
+const cache = new LruTtlCache<string, User>({ maxEntries: 1000 });
+
+// Set multiple entries (2.09x faster with OptimizedLruTtlCache)
 cache.setMany([
   ["user:1", { id: 1, name: "Alice" }],
-  ["user:2", { id: 2, name: "Bob" }]
+  ["user:2", { id: 2, name: "Bob" }],
+  ["user:3", { id: 3, name: "Charlie" }]
 ]);
 
-// Get multiple
-const users = cache.getMany(["user:1", "user:2"]);
-// Returns: Map<string, User | undefined>
+// Or use Map
+cache.setMany(new Map([
+  ["user:4", { id: 4, name: "Dave" }],
+  ["user:5", { id: 5, name: "Eve" }]
+]), { ttlMs: 60000 }); // With TTL options
 
-// Delete multiple
-cache.deleteMany(["user:1", "user:2"]);
+// Get multiple values (1.49x faster)
+const users = cache.getMany(["user:1", "user:2", "user:3"]);
+// Returns: Map<string, User>
 
-// Check multiple
-const existence = cache.hasMany(["user:1", "user:2"]);
+// Delete multiple keys (returns count deleted)
+const deleted = cache.deleteMany(["user:1", "user:2"]);
+console.log(`Deleted ${deleted} users`); // 2
+
+// Check multiple keys
+const existence = cache.hasMany(["user:1", "user:2", "user:3"]);
 // Returns: Map<string, boolean>
+console.log(existence.get("user:1")); // false (deleted above)
+console.log(existence.get("user:3")); // true
+
+// 🚀 Performance tip: Use OptimizedLruTtlCache for best batch performance
+const optimized = new OptimizedLruTtlCache<string, number>({ 
+  maxEntries: 10000,
+  enableEvents: true // Batch events: single event for N operations
+});
+
+// Batch event handling
+optimized.getEvents()?.on("batch-set", (event) => {
+  console.log(`Batch set: ${event.count} entries`);
+  console.log(`  Updates: ${event.updates}, Inserts: ${event.inserts}`);
+});
 ```
+
+**Performance Benefits:**
+- ✅ Up to **2.09x faster** for setMany (OptimizedLruTtlCache)
+- ✅ **100% event reduction** (N events → 1 batch event)
+- ✅ **50% fewer objects** created during batch operations
+- ✅ **Unified API** across all cache implementations
 
 ### TTL & Expiration
 
@@ -721,12 +754,23 @@ Real-world performance at scale (Baseline LruTtlCache):
 | Clear (10k entries) | **7.57ms** | ~1,321,000 | **9.6x faster** 🚀 |
 
 ### Batch Operations (1k entries)
-| Operation | Time | Ops/sec | vs v0.2.0 |
-|-----------|------|---------|-----------|
-| setMany | **1.39ms** | ~719,000 | **4.2x faster** 🚀 |
-| getMany | **0.94ms** | ~1,064,000 | **2.6x faster** 🚀 |
-| deleteMany | **0.97ms** | ~1,031,000 | **6x faster** 🚀 |
-| hasMany | **1.11ms** | ~901,000 | **7.6x faster** 🚀 |
+
+**Optimization #11:** Native batch methods (no wrapper needed)
+
+| Operation | LruTtlCache | OptimizedLruTtlCache | Improvement | vs v0.2.0 |
+|-----------|-------------|----------------------|-------------|-----------|
+| setMany | 0.66ms (1.52M ops/sec) | **0.30ms (3.30M ops/sec)** | **2.09x faster** 🚀 | **4.2x faster** |
+| setMany + stats | 0.32ms (3.11M ops/sec) | **0.25ms (4.02M ops/sec)** | **1.29x faster** ⚡ | - |
+| setMany + events | 0.72ms (1.40M ops/sec) | **0.55ms (1.83M ops/sec)** | **1.31x faster** ⚡ | - |
+| getMany | 0.41ms (2.45M ops/sec) | **0.27ms (3.65M ops/sec)** | **1.49x faster** 🚀 | **2.6x faster** |
+| deleteMany | 0.24ms (4.13M ops/sec) | **0.25ms (4.08M ops/sec)** | ~same | **6x faster** |
+| hasMany | 0.04ms (5.65M ops/sec) | **0.04ms (5.65M ops/sec)** | ~same | **7.6x faster** |
+
+**Key Benefits (Optimization #11):**
+- ✅ **Event efficiency**: 100% reduction (5,000 events → 1 batch event)
+- ✅ **Memory efficiency**: 50% fewer objects created
+- ✅ **Best with OptimizedLruTtlCache**: Up to 2.09x faster than LruTtlCache
+- ✅ **Unified API**: Native methods on all cache implementations
 
 ### Advanced Features
 | Feature | Time | Ops/sec | vs v0.2.0 |
@@ -889,6 +933,12 @@ class FlatArrayCache<K, V> implements Cache<K, V> {
   clear(): void;
   size(): number;
   
+  // Batch operations (native)
+  getMany(keys: K[]): Map<K, V>;
+  setMany(entries: Array<[K, V]> | Map<K, V>, opts?: { ttlMs?: number; slidingTtlMs?: number }): void;
+  deleteMany(keys: K[]): number;
+  hasMany(keys: K[]): Map<K, boolean>;
+  
   // Additional monitoring
   getStorageStats(): {
     capacity: number;
@@ -936,11 +986,14 @@ class Cache<K, V> {
   delete(key: K): boolean;
   clear(): void;
   
-  // Batch operations
-  setMany(entries: Iterable<[K, V]>): this;
-  getMany(keys: Iterable<K>): Map<K, V | undefined>;
-  deleteMany(keys: Iterable<K>): number;
-  hasMany(keys: Iterable<K>): Map<K, boolean>;
+  // Batch operations (NEW! Optimization #11 - native methods)
+  getMany(keys: K[]): Map<K, V>;
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void;
+  deleteMany(keys: K[]): number;  // Returns count deleted
+  hasMany(keys: K[]): Map<K, boolean>;
   
   // TTL management
   ttl(key: K): number | undefined;

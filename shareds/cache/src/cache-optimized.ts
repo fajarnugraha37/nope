@@ -175,6 +175,219 @@ export class OptimizedLruTtlCache<K, V> implements Cache<K, V> {
     return this.map.size;
   }
 
+  /* ---------- Optimized Batch Operations ---------- */
+
+  /**
+   * Get multiple values in a single operation
+   * Optimized: Single Map iteration, batch event emission
+   */
+  getMany(keys: K[]): Map<K, V> {
+    const results = new Map<K, V>();
+    const t = now();
+    
+    // Fast path: check if we need stats/events
+    const needsStats = this.stats !== undefined;
+    const needsEvents = this.events?.hasListeners() ?? false;
+    
+    let hits = 0;
+    let misses = 0;
+
+    // Single iteration through keys
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (!node || this.isExpired(node.entry)) {
+        if (needsStats || needsEvents) misses++;
+        if (node && this.isExpired(node.entry)) {
+          this.removeNode(node);
+        }
+        continue;
+      }
+
+      // Update sliding TTL
+      node.entry.t = t;
+      
+      // Move to head (LRU)
+      this.moveToHead(node);
+      
+      results.set(key, node.entry.v);
+      if (needsStats || needsEvents) hits++;
+    }
+
+    // Batch statistics update
+    if (needsStats) {
+      for (let i = 0; i < hits; i++) this.stats!.recordHit();
+      for (let i = 0; i < misses; i++) this.stats!.recordMiss();
+    }
+
+    // Batch event emission (single event for all operations)
+    if (needsEvents) {
+      this.events!.emit({
+        type: "batch-get",
+        keys,
+        results,
+        hits,
+        misses,
+        timestamp: t,
+      } as any);
+    }
+
+    return results;
+  }
+
+  /**
+   * Set multiple values in a single operation
+   * Optimized: Bulk operations, single event emission, batch stats
+   */
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void {
+    const pairs = entries instanceof Map ? Array.from(entries) : entries;
+    const t = now();
+    const exp = opts?.ttlMs ? t + opts.ttlMs : undefined;
+    const sl = opts?.slidingTtlMs;
+    
+    let updates = 0;
+    let inserts = 0;
+    
+    // Fast path: check if we need stats/events
+    const needsStats = this.stats !== undefined;
+    const needsEvents = this.events?.hasListeners() ?? false;
+
+    // Process all entries
+    for (const [key, val] of pairs) {
+      const sz = this.sizer(val);
+      const existing = this.map.get(key);
+
+      if (existing) {
+        // Update existing entry
+        const oldSize = existing.entry.sz;
+        existing.entry.v = val;
+        existing.entry.sz = sz;
+        existing.entry.t = t;
+        existing.entry.exp = exp;
+        existing.entry.sl = sl;
+
+        this.totalSize = this.totalSize - oldSize + sz;
+        this.moveToHead(existing);
+        if (needsStats || needsEvents) updates++;
+      } else {
+        // Check capacity before inserting
+        if (this.map.size >= this.maxEntries || this.totalSize + sz > this.maxSize) {
+          if (this.map.size >= this.maxEntries) {
+            this.evictLRU();
+          }
+          while (this.totalSize + sz > this.maxSize && this.tail) {
+            this.evictLRU();
+          }
+        }
+
+        // Create new entry
+        const entry = this.entryPool.acquire(val, sz, t, exp, sl);
+        const node = this.nodePool.acquire(key, entry);
+
+        this.map.set(key, node);
+        this.totalSize += sz;
+        this.addToHead(node);
+        if (needsStats || needsEvents) inserts++;
+      }
+    }
+
+    // Batch statistics update
+    if (needsStats) {
+      const totalOps = updates + inserts;
+      for (let i = 0; i < totalOps; i++) {
+        this.stats!.recordSet();
+      }
+    }
+
+    // Batch event emission (single event for all operations)
+    if (needsEvents) {
+      this.events!.emit({
+        type: "batch-set",
+        count: pairs.length,
+        updates,
+        inserts,
+        timestamp: t,
+      } as any);
+    }
+  }
+
+  /**
+   * Delete multiple values in a single operation
+   * Optimized: Bulk deletion, single event emission, batch stats
+   */
+  deleteMany(keys: K[]): number {
+    let deleted = 0;
+
+    // Process all deletions - fast path without timestamp
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (node) {
+        // Direct removal without per-item overhead
+        if (node.prev) node.prev.next = node.next;
+        else this.head = node.next;
+
+        if (node.next) node.next.prev = node.prev;
+        else this.tail = node.prev;
+
+        this.map.delete(node.key);
+        this.totalSize -= node.entry.sz;
+        
+        // Return objects to pools
+        this.entryPool.release(node.entry);
+        this.nodePool.release(node);
+        
+        deleted++;
+      }
+    }
+
+    // Batch statistics update
+    if (this.stats) {
+      for (let i = 0; i < deleted; i++) {
+        this.stats.recordDelete();
+      }
+    }
+
+    // Batch event emission (single event for all operations)
+    if (this.events?.hasListeners()) {
+      this.events.emit({
+        type: "batch-delete",
+        keys,
+        deleted,
+        timestamp: now(),
+      } as any);
+    }
+
+    return deleted;
+  }
+
+  /**
+   * Check existence of multiple keys in a single operation
+   * Optimized: Single Map iteration, no event emission needed
+   */
+  hasMany(keys: K[]): Map<K, boolean> {
+    const results = new Map<K, boolean>();
+
+    // Single iteration through keys
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (!node) {
+        results.set(key, false);
+        continue;
+      }
+
+      if (this.isExpired(node.entry)) {
+        this.removeNode(node);
+        results.set(key, false);
+      } else {
+        results.set(key, true);
+      }
+    }
+
+    return results;
+  }
+
   /* ---------- Expiration helpers ---------- */
 
   private isExpired(entry: Entry<V>): boolean {

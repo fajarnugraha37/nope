@@ -240,6 +240,77 @@ export class FlatArrayCache<K, V> implements Cache<K, V> {
     return this.map.size;
   }
 
+  /* ---------- Batch Operations ---------- */
+
+  getMany(keys: K[]): Map<K, V> {
+    const results = new Map<K, V>();
+    const t = now();
+
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (!node || this.storage.isExpired(node.entryIndex, t)) {
+        if (node && this.storage.isExpired(node.entryIndex, t)) {
+          this.removeNode(node);
+        }
+        continue;
+      }
+
+      // Update sliding TTL
+      this.storage.setLastAccess(node.entryIndex, t);
+
+      // Move to head (LRU)
+      this.moveToHead(node);
+
+      results.set(key, this.storage.getValue(node.entryIndex));
+    }
+
+    return results;
+  }
+
+  setMany(
+    entries: Array<[K, V]> | Map<K, V>,
+    opts?: { ttlMs?: number; slidingTtlMs?: number }
+  ): void {
+    const pairs = entries instanceof Map ? Array.from(entries) : entries;
+    for (const [key, value] of pairs) {
+      this.set(key, value, opts);
+    }
+  }
+
+  deleteMany(keys: K[]): number {
+    let deleted = 0;
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (node) {
+        this.removeNode(node);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
+  hasMany(keys: K[]): Map<K, boolean> {
+    const results = new Map<K, boolean>();
+    const t = now();
+
+    for (const key of keys) {
+      const node = this.map.get(key);
+      if (!node) {
+        results.set(key, false);
+        continue;
+      }
+
+      if (this.storage.isExpired(node.entryIndex, t)) {
+        this.removeNode(node);
+        results.set(key, false);
+      } else {
+        results.set(key, true);
+      }
+    }
+
+    return results;
+  }
+
   /* ---------- Expiration helpers ---------- */
 
   private sweep(): void {
