@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 ORDERED_PATHS = [
+    "shareds/error",
     "shareds/common",
     "shareds/cache",
     "shareds/async",
