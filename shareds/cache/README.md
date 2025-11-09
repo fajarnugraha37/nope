@@ -1,1448 +1,1547 @@
-# @fajarnugraha37/cache# @fajarnugraha37/cache
+# @fajarnugraha37/cache
 
 
+[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/async.svg)](https://www.npmjs.com/package/@fajarnugraha37/async)
+[![Tests](https://img.shields.io/badge/tests-228%20passing-success)](./tests)
+[![Coverage](https://img.shields.io/badge/coverage-98.06%25%20lines-brightgreen)](./coverage)
 
-[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache)[![npm version](https://img.shields.io/npm/v/@fajarnugraha37/cache.svg)](https://www.npmjs.com/package/@fajarnugraha37/cache)
+> Async/concurrency utilities: Go-like channels, typed event buses, resource-safe scopes, generators, and resilient retry helpers.
 
-[![Coverage](https://img.shields.io/badge/coverage-90.49%25%20functions%20%7C%2098.27%25%20lines-brightgreen)]()
+## Table of Contents
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()> Caching primitives (LRU, TTL, stale-while-revalidate, singleflight) and memoization helpers shared by `@fajarnugraha37/validator` and `@fajarnugraha37/expression`.
-
-
-
-> High-performance in-memory caching primitives (LRU, TTL, stale-while-revalidate, singleflight) with observability features for modern TypeScript applications.## Installation
-
-
-
-## Table of Contents```bash
-
-# Node.js with npm
-
-1. [Installation](#installation)npm install @fajarnugraha37/cache
-
-2. [Why in-memory cache?](#why-in-memory-cache)
-
-3. [Quick start](#quick-start)# Node.js with pnpm
-
-4. [Core concepts](#core-concepts)pnpm add @fajarnugraha37/cache
-
+1. [Installation](#installation)
+2. [Why this lib?](#why-this-lib)
+3. [Quick start](#quick-start)
+4. [Core concepts](#core-concepts)
 5. [Usage catalog](#usage-catalog)
-
-6. [Advanced features](#advanced-features)# Node.js with yarn
-
-7. [Cookbook](#cookbook)yarn add @fajarnugraha37/cache
-
+6. [Advanced features](#advanced-features)
+7. [Cookbook](#cookbook)
 8. [API reference](#api-reference)
+9. [FAQ & troubleshooting](#faq--troubleshooting)
 
-9. [FAQ & troubleshooting](#faq--troubleshooting)# Bun
-
-bun add @fajarnugraha37/cache
-
----
-
-# Deno
-
-## Installationdeno add npm:@fajarnugraha37/cache
-
-```
+## Installation
 
 ```bash
+# Node.js with npm
+npm install @fajarnugraha37/async
 
-# Node.js with npm## Components
-
-npm install @fajarnugraha37/cache
-
-### Core Cache
-
-# Node.js with pnpm- **`LruTtlCache<K, V>`** – in-memory cache with max entries, size-based eviction, TTL + sliding TTL, background sweepers, and metrics (`size()`, `total()`). Now supports statistics tracking and event emission for observability.
-
-pnpm add @fajarnugraha37/cache- **`jsonSizer`** – naive size estimator used by the cache or memoizer when you do not provide one.
-
-- **`Singleflight`** – deduplicates concurrent lookups per key (fan-in/fan-out pattern).
+# Node.js with pnpm
+pnpm add @fajarnugraha37/async
 
 # Node.js with yarn
+yarn add @fajarnugraha37/async
 
-yarn add @fajarnugraha37/cache### Observability & Metrics
-
-- **`CacheStatistics`** – tracks hit/miss rates, eviction counts, set/delete operations, and size metrics
-
-# Bun- **`CacheEventEmitter`** – event system for cache operations (hit, miss, set, delete, evict, clear, expire)
-
-bun add @fajarnugraha37/cache- **`getStats()`** / **`resetStats()`** – access and reset cache metrics on `LruTtlCache`
-
-- **`on()` / **`once()` / **`off()`** – event listener methods for observing cache behavior
+# Bun
+bun add @fajarnugraha37/async
 
 # Deno
-
-deno add npm:@fajarnugraha37/cache### Advanced Patterns
-
-```- **`IdempotencyCache`** – caches promise results for the lifetime of an idempotency window.
-
-- **`KeyedLock`** – lightweight async mutex keyed by user-defined ids.
-
----- **`LoadingCache`** – composes an underlying cache with an async loader; supports TTL, stale-while-revalidate, jitter, and manual invalidation.
-
-- **`createReadThrough`** – helper that returns a `ReadThrough` wrapper around a loader + `LruTtlCache`.
-
-## Why in-memory cache?- **`memoize`** – wraps sync or async functions with TTL, sliding TTL, max entries, stale-while-revalidate, jitter, optional error caching, and pluggable keyers.
-
-
-
-In-memory caching dramatically improves application performance by:### Utilities
-
-- **`withBatchOperations()`** – adds `getMany()`, `setMany()`, `deleteMany()`, `hasMany()` for bulk operations
-
-- **Reducing latency** – Fetch data from RAM (nanoseconds) instead of disk or network (milliseconds)- **`createNamespace()`** – creates a namespaced cache with key prefixing for multi-tenant scenarios
-
-- **Lowering database load** – Decrease expensive database queries by 70-90%- **`warmCache()`** – preloads data into cache from a loader function
-
-- **Improving scalability** – Handle more requests with same infrastructure- **`TransformCache`** – wraps a cache with serialization/deserialization transformations
-
-- **Cost efficiency** – Reduce cloud costs by minimizing external API calls
-
-Utility exports (`now`, `sleep`) round out the toolkit.
-
-### When to use this library
-
-## Usage
-
-✅ **Perfect for:**
-
-- Caching API responses, database queries, computed results```ts
-
-- Rate limiting and request deduplicationimport {
-
-- Memoizing expensive function calls  LruTtlCache,
-
-- Temporary session data and user preferences  LoadingCache,
-
-- Microservices with high-frequency lookups  memoize,
-
-  createReadThrough,
-
-❌ **Not recommended for:**  KeyedLock,
-
-- Data that must persist across restarts  Singleflight,
-
-- Multi-server cache synchronization (use Redis instead)  sleep,
-
-- Caches larger than available RAM} from "@fajarnugraha37/cache";
-
-
-
-### Performance Characteristics// LRU + TTL cache
-
-const cache = new LruTtlCache<string, number>({
-
-Based on benchmarks with 10k operations (Bun 1.3.1):  maxEntries: 100,
-
-  ttlMs: 5_000,
-
-| Operation | Time | Throughput |  slidingTtlMs: 5_000,
-
-|-----------|------|------------|});
-
-| Set (basic) | ~1.4s | ~7,100 ops/sec |
-
-| Get (hit) | ~1.1s | ~9,300 ops/sec |cache.set("answer", 42);
-
-| Get (miss) | ~1.6ms | ~625,000 ops/sec |await sleep(10);
-
-| Batch set 1k | ~12ms | ~83,000 ops/sec |console.log(cache.get("answer"));
-
-| With stats | ~1.1s | ~9,400 ops/sec |
-
-| With events | ~1.1s | ~9,000 ops/sec |// Loading cache with stale-while-revalidate
-
-const store = new LruTtlCache<string, number>();
-
-**Full benchmarks:** See [Performance Benchmarks](#performance-benchmarks) sectionconst loader = new LoadingCache(store, async (key) => key.length);
-
-
-
----console.log(await loader.get("alpha", { ttlMs: 1_000, staleWhileRevalidateMs: 5_000 }));
-
-
-
-## Quick start// Memoize async work with jitter + SWR
-
-const fetchUser = memoize(
-
-### Basic caching  async (id: string) => {
-
-    const res = await fetch(`/users/${id}`);
-
-```ts    if (!res.ok) throw new Error("request failed");
-
-import { LruTtlCache } from "@fajarnugraha37/cache";    return res.json();
-
-  },
-
-// Create a cache with 1000 entries max  { ttlMs: 30_000, swrMs: 60_000, jitter: 0.2 }
-
-const cache = new LruTtlCache<string, any>({);
-
-  maxEntries: 1000,
-
-});await fetchUser("42"); // network hit
-
-await fetchUser("42"); // cached and refreshed in the background
-
-// Set and get values
-
-cache.set("user:123", { name: "Alice", age: 30 });// Read-through helper
-
-const user = cache.get("user:123");const readThrough = createReadThrough(async (sku: string) => {
-
-  return await loadFromDatabase(sku);
-
-// Set with TTL (expires in 5 seconds)}, { ttlMs: 2_000 });
-
-cache.set("session:abc", { token: "xyz" }, { ttlMs: 5000 });
-
-await readThrough.get("sku-1");
-
-// Check existence
-
-if (cache.has("user:123")) {// Serialize expensive jobs with Singleflight + KeyedLock
-
-  console.log("User found in cache");const sf = new Singleflight<string, any>();
-
-}const lock = new KeyedLock<string>();
-
-
-
-// Remove entryasync function compute(key: string) {
-
-cache.del("user:123");  const release = await lock.acquire(key);
-
-  try {
-
-// Clear all    return await sf.do(key, () => actuallyCompute(key));
-
-cache.clear();  } finally {
-
-```    release();
-
-  }
-
-### Async loading with stale-while-revalidate}
-
+deno add npm:@fajarnugraha37/async
 ```
+---
 
-```ts
+## Why this lib?
 
-import { LruTtlCache, LoadingCache } from "@fajarnugraha37/cache";`@fajarnugraha37/validator` uses these primitives to memoize AJV validators, while `@fajarnugraha37/expression` caches compiled json-logic functions.
+Modern JavaScript/TypeScript applications need powerful async primitives beyond basic Promises. This library provides:
 
+- **🚦 Go-style Channels**: CSP-style concurrency with buffered/unbuffered channels and `select` for multi-channel operations
+- **🔒 Synchronization Primitives**: Mutex, Semaphore, CountdownLatch for coordinating concurrent operations
+- **📡 Typed Event Systems**: Type-safe EventBus with stream integration, regex filtering, and async iteration
+- **🔄 Resilient Retry Logic**: Exponential backoff, circuit breakers, rate limiting, and timeout handling
+- **🎯 Resource Safety**: Automatic cleanup with defer scopes (inspired by Go's `defer` and Zig's `errdefer`)
+- **⚡ Async Generators**: Rich manipulation tools (map, filter, chunk, zip, tee) for async iteration
+- **🎭 Flow Control**: Debounce, throttle, job queues, thread pools for managing async workloads
+- **📊 Production-Ready**: 228 tests, 98% coverage, battle-tested patterns
 
-
-const store = new LruTtlCache<string, User>();### Advanced Features
-
-const loader = new LoadingCache(store, async (userId: string) => {
-
-  return await fetchUserFromDatabase(userId);#### Statistics & Metrics
-
-});
-
-Track cache performance with built-in statistics:
-
-// First call: fetches from database
-
-const user = await loader.get("123", { ```ts
-
-  ttlMs: 30_000,                  // Cache for 30 secondsimport { LruTtlCache } from "@fajarnugraha37/cache";
-
-  staleWhileRevalidateMs: 60_000  // Serve stale for 1 minute while refreshing
-
-});const cache = new LruTtlCache<string, number>({
-
-  maxEntries: 100,
-
-// Second call within 30s: returns cached value instantly  enableStats: true, // Enable statistics tracking
-
-const sameUser = await loader.get("123", { ttlMs: 30_000 });});
-
-
-
-// Call after 30s but within 90s: returns stale data instantly + refreshes in backgroundcache.set("key1", 100);
-
-const staleUser = await loader.get("123", { ttlMs: 30_000, staleWhileRevalidateMs: 60_000 });cache.get("key1"); // Hit
-
-```cache.get("key2"); // Miss
-
-
-
-### Function memoizationconst stats = cache.getStats();
-
-console.log(stats);
-
-```ts// {
-
-import { memoize } from "@fajarnugraha37/cache";//   hits: 1,
-
-//   misses: 1,
-
-// Memoize expensive computation//   sets: 1,
-
-const fibonacci = memoize((n: number): number => {//   deletes: 0,
-
-  if (n <= 1) return n;//   evictions: 0,
-
-  return fibonacci(n - 1) + fibonacci(n - 2);//   currentSize: 1
-
-}, { ttlMs: 60_000 });// }
-
-
-
-fibonacci(40); // Computedconst metrics = stats.getMetrics();
-
-fibonacci(40); // Cached (instant)console.log(metrics);
-
-// {
-
-// Memoize async API calls//   hitRate: 0.5,
-
-const fetchUser = memoize(//   missRate: 0.5,
-
-  async (id: string) => {//   avgSizeOverTime: 1
-
-    const res = await fetch(`/api/users/${id}`);// }
-
-    return res.json();
-
-  },cache.resetStats(); // Reset all statistics
-
-  { ```
-
-    ttlMs: 30_000,
-
-    swrMs: 60_000,  // Stale-while-revalidate#### Event Monitoring
-
-    jitter: 0.1     // Add 10% random jitter to TTL
-
-  }Listen to cache events for debugging and monitoring:
-
-);
-
-``````ts
-
-import { LruTtlCache } from "@fajarnugraha37/cache";
+Whether you're building event-driven systems, managing complex async workflows, or need structured concurrency, this library provides the tools.
 
 ---
 
-const cache = new LruTtlCache<string, number>({
-
-## Core concepts  maxEntries: 100,
-
-  enableEvents: true, // Enable event emission
-
-### LRU (Least Recently Used)});
-
-
-
-When cache is full, evicts the **least recently accessed** entry. Keeps hot data in memory.// Listen to specific events
-
-cache.on("hit", ({ key, value }) => {
-
-```ts  console.log(`Cache hit for ${key}:`, value);
-
-const cache = new LruTtlCache<string, number>({ maxEntries: 3 });});
-
-cache.set("a", 1);
-
-cache.set("b", 2);cache.on("miss", ({ key }) => {
-
-cache.set("c", 3);  console.log(`Cache miss for ${key}`);
-
-cache.get("a"); // Access 'a' (moves to end)});
-
-cache.set("d", 4); // 'b' is evicted (least recently used)
-
-```cache.on("evict", ({ key, value, reason }) => {
-
-  console.log(`Evicted ${key} due to ${reason}`);
-
-### TTL (Time To Live)});
-
-
-
-Entries expire after a fixed duration. Perfect for time-sensitive data.// Listen to all events with wildcard
-
-cache.on("*", (event, data) => {
-
-```ts  console.log(`Event: ${event}`, data);
-
-cache.set("otp", "123456", { ttlMs: 60_000 }); // Expires in 1 minute});
-
-```
-
-// One-time event listener
-
-### Sliding TTLconst unsubscribe = cache.once("set", ({ key, value }) => {
-
-  console.log("First set operation:", key, value);
-
-Expiry extends on each access. Keeps active data cached longer.});
-
-
-
-```ts// Remove event listener
-
-const cache = new LruTtlCache({cache.off("hit", listenerFn);
-
-  maxEntries: 100,```
-
-});
-
-cache.set("session", userData, { slidingTtlMs: 300_000 }); // 5 minutes#### Batch Operations
-
-cache.get("session"); // Resets TTL to 5 minutes from now
-
-```Perform bulk operations efficiently:
-
-
-
-### Stale-While-Revalidate (SWR)```ts
-
-import { LruTtlCache, withBatchOperations } from "@fajarnugraha37/cache";
-
-Serves stale data instantly while refreshing in background. Best of both worlds: speed + freshness.
-
-const cache = new LruTtlCache<string, number>({ maxEntries: 100 });
-
-```tsconst batchCache = withBatchOperations(cache);
-
-const loader = new LoadingCache(store, async (key) => await fetchData(key));
-
-await loader.get("key", { ttlMs: 10_000, staleWhileRevalidateMs: 30_000 });// Get multiple values at once
-
-// After 10s: returns stale data + triggers refreshconst values = batchCache.getMany(["key1", "key2", "key3"]);
-
-// After 40s: returns fresh dataconsole.log(values); // Map { 'key1' => 100, 'key2' => 200 }
-
-```
-
-// Set multiple values
-
-### SingleflightbatchCache.setMany([
-
-  { key: "a", value: 1 },
-
-Deduplicates concurrent requests for the same key. Prevents cache stampede.  { key: "b", value: 2, ttlMs: 1000 },
-
-]);
+## Quick start
 
 ```ts
+import { 
+  Channel, 
+  select, 
+  EventBus, 
+  retry, 
+  withDefer 
+} from "@fajarnugraha37/async";
 
-import { Singleflight } from "@fajarnugraha37/cache";// Check multiple keys
+// Go-style channels
+const ch = new Channel<number>(10);
+await ch.send(42);
+const { value } = await ch.recv();
 
-const exists = batchCache.hasMany(["a", "b", "c"]);
+// Select from multiple channels
+const result = await select([ch1, ch2, ch3], 1000);
 
-const sf = new Singleflight<string, Data>();console.log(exists); // Map { 'a' => true, 'b' => true, 'c' => false }
+// Typed event bus
+type Events = { "user:login": { id: string } };
+const bus = new EventBus<Events>();
+bus.on("user:login", (evt) => console.log(evt.payload.id));
+bus.emit("user:login", { id: "123" });
 
-// 100 concurrent requests for same key → only 1 actual fetch
-
-const results = await Promise.all(// Delete multiple keys
-
-  Array.from({ length: 100 }, () =>const deleted = batchCache.deleteMany(["a", "b"]);
-
-    sf.do("user:1", () => fetchExpensiveData())console.log(deleted); // 2
-
-  )```
-
+// Resilient retry with backoff
+const data = await retry(
+  async () => fetch("https://api.example.com/data").then(r => r.json()),
+  { maxAttempts: 3, delayMs: 1000 }
 );
 
-```#### Namespaced Caches
-
-
-
----Isolate cache entries by namespace for multi-tenant scenarios:
-
-
-
-## Usage catalog```ts
-
-import { LruTtlCache, createNamespace } from "@fajarnugraha37/cache";
-
-### 1. Basic key-value caching
-
-const cache = new LruTtlCache<string, any>({ maxEntries: 1000 });
-
-```ts
-
-import { LruTtlCache } from "@fajarnugraha37/cache";const tenant1 = createNamespace(cache, "tenant1");
-
-const tenant2 = createNamespace(cache, "tenant2");
-
-const cache = new LruTtlCache<string, any>({ maxEntries: 1000 });
-
-cache.set("config", { theme: "dark" });tenant1.set("user:1", { name: "Alice" });
-
-const config = cache.get("config");tenant2.set("user:1", { name: "Bob" });
-
+// Resource-safe cleanup
+await withDefer(async (scope) => {
+  const file = await openFile("data.txt");
+  scope.defer(() => file.close());
+  return processFile(file);
+});
 ```
 
-console.log(tenant1.get("user:1")); // { name: "Alice" }
+---
 
-### 2. Cache with size-based evictionconsole.log(tenant2.get("user:1")); // { name: "Bob" }
+## Core concepts
 
+### Channels & CSP
 
+Channels provide Go-style communication between async tasks:
 
-```ts// Namespaces are isolated
+```ts
+const ch = new Channel<string>(5); // buffered channel
 
-const cache = new LruTtlCache<string, Buffer>({tenant1.clear(); // Only clears tenant1's entries
+// Producer
+(async () => {
+  for (let i = 0; i < 10; i++) {
+    await ch.send(`message-${i}`);
+  }
+  ch.close();
+})();
 
-  maxSize: 10_000_000, // 10 MBconsole.log(tenant2.get("user:1")); // Still { name: "Bob" }
+// Consumer
+for await (const msg of ch) {
+  console.log(msg);
+}
+```
 
-  sizer: (buf) => buf.length```
+**Key features:**
+- Unbuffered (synchronous) or buffered channels
+- `select` for multiplexing multiple channels
+- Async iteration support
+- Backpressure handling
 
+### Synchronization Primitives
+
+#### Mutex
+```ts
+const mutex = new Mutex();
+await mutex.runExclusive(async () => {
+  // Critical section - only one task at a time
+  await updateSharedResource();
+});
+```
+
+#### Semaphore
+```ts
+const sem = new Semaphore(3); // max 3 concurrent operations
+await sem.withPermit(async () => {
+  await expensiveOperation();
+});
+```
+
+#### CountdownLatch
+```ts
+const latch = new CountdownLatch(5);
+
+// 5 workers
+for (let i = 0; i < 5; i++) {
+  doWork().finally(() => latch.countDown());
+}
+
+// Wait for all workers
+await latch.wait();
+console.log("All work complete!");
+```
+
+### Resource Management
+
+Inspired by Go's `defer` and Zig's error handling:
+
+```ts
+await withDefer(async (scope) => {
+  const conn = await db.connect();
+  scope.defer(() => conn.close());
+  
+  const tx = await conn.beginTransaction();
+  scope.defer(() => tx.rollback());
+  
+  await tx.execute("INSERT ...");
+  await tx.commit();
+  // Deferred cleanup runs in LIFO order
+});
+```
+
+### Event Systems
+
+Type-safe event bus with advanced features:
+
+```ts
+type Events = {
+  "user:created": { id: string; email: string };
+  "order:placed": { orderId: number; total: number };
+};
+
+const bus = new EventBus<Events>();
+
+// Subscribe with type safety
+bus.on("user:created", (evt) => {
+  console.log(evt.payload.email); // ✅ Type-checked
 });
 
-cache.set("file1", buffer1);#### Cache Warming
+// Regex filtering
+bus.on(/^user:/, (evt) => {
+  console.log("User event:", evt.topic);
+});
 
+// Async iteration
+for await (const evt of bus) {
+  if (evt.topic === "order:placed") break;
+}
 ```
 
-Preload frequently accessed data into cache:
+### Retry & Resilience
 
-### 3. Automatic expiry with background sweeper
+Comprehensive error handling:
 
 ```ts
+// Simple retry
+await retry(fetchData, { maxAttempts: 3 });
 
-```tsimport { LruTtlCache, warmCache } from "@fajarnugraha37/cache";
+// Advanced retry with backoff
+await retryWith(fetchData, {
+  maxAttempts: 5,
+  baseMs: 100,
+  factor: 2,
+  jitter: 0.1,
+  shouldRetry: (err) => err.code !== "PERMANENT_ERROR"
+});
 
-const cache = new LruTtlCache({
+// Circuit breaker
+const cb = new CircuitBreaker({ failureThreshold: 5 });
+await cb.call(async () => callExternalAPI());
 
-  maxEntries: 1000,const cache = new LruTtlCache<string, User>({ maxEntries: 100 });
-
-  sweepIntervalMs: 10_000 // Clean expired entries every 10 seconds
-
-});// Warm cache with frequently accessed users
-
-```await warmCache(
-
-  cache,
-
-### 4. Loading cache with SWR  async () => {
-
-    const users = await fetchFrequentUsers();
-
-```ts    return users.map((user) => ({ key: user.id, value: user }));
-
-import { LruTtlCache, LoadingCache } from "@fajarnugraha37/cache";  },
-
-  { ttlMs: 3600_000 } // 1 hour TTL
-
-const store = new LruTtlCache<string, Product>(););
-
-const loader = new LoadingCache(store, async (sku) => {
-
-  return await database.products.findOne({ sku });// Cache is now preloaded
-
-});console.log(cache.size()); // 50+ entries ready
-
+// Rate limiting
+const limiter = new TokenBucket(100, 10); // 100 capacity, 10/sec
+if (limiter.tryTake(1)) {
+  await processRequest();
+}
 ```
 
-const product = await loader.get("SKU-123", { 
+---
 
-  ttlMs: 60_000,#### Transform Caches
+## Usage catalog
 
-  staleWhileRevalidateMs: 120_000
+### Concurrency
 
-});Add serialization/deserialization for complex data types:
-
-```
-
+#### Channel & Select
 ```ts
+import { Channel, select } from "@fajarnugraha37/async";
 
-### 5. Memoize with error cachingimport { LruTtlCache, TransformCache } from "@fajarnugraha37/cache";
+// Unbuffered channel (blocking send/recv)
+const ch = new Channel<number>();
+await ch.send(42);
+const { value } = await ch.recv();
 
+// Buffered channel
+const buffered = new Channel<string>(10);
+for (let i = 0; i < 10; i++) {
+  buffered.send(`msg-${i}`); // non-blocking until buffer full
+}
 
+// Select from multiple channels
+const ch1 = new Channel<number>();
+const ch2 = new Channel<string>();
+const result = await select([ch1, ch2], 1000); // 1s timeout
+if (result.ok && result.channel === 0) {
+  console.log("ch1:", result.value);
+}
 
-```tsconst cache = new LruTtlCache<string, string>({ maxEntries: 100 });
-
-const fetchUser = memoize(
-
-  async (id: string) => {// Create a transform cache for storing objects as JSON strings
-
-    const res = await fetch(`/api/users/${id}`);const objectCache = new TransformCache(
-
-    if (!res.ok) throw new Error("Not found");  cache,
-
-    return res.json();  (obj) => JSON.stringify(obj), // serialize
-
-  },  (str) => JSON.parse(str) // deserialize
-
-  {);
-
-    ttlMs: 30_000,
-
-    cacheErrors: true, // Cache errors to prevent retry stormsobjectCache.set("user", { id: 1, name: "Alice" });
-
-    errorTtlMs: 5_000  // Cache errors for shorter durationconsole.log(objectCache.get("user")); // { id: 1, name: "Alice" }
-
-  }
-
-);// Underlying cache stores JSON strings
-
-```console.log(cache.get("user")); // '{"id":1,"name":"Alice"}'
-
+// Async iteration
+for await (const msg of ch) {
+  console.log(msg);
+  if (msg === "stop") break;
+}
 ```
 
-### 6. Idempotency cache (request deduplication)
-
-#### Combining Features
-
+#### Mutex
 ```ts
+import { Mutex } from "@fajarnugraha37/async";
 
-import { IdempotencyCache } from "@fajarnugraha37/cache";All features can be combined for powerful caching strategies:
+const mutex = new Mutex();
+let counter = 0;
 
+// Exclusive access
+await mutex.runExclusive(async () => {
+  counter++;
+  await someAsyncOperation();
+});
 
-
-const cache = new IdempotencyCache<string, Result>(60_000); // 1 minute window```ts
-
-import {
-
-// Multiple identical requests → single execution  LruTtlCache,
-
-await cache.execute("payment:123", async () => {  withBatchOperations,
-
-  return await processPayment(123);  createNamespace,
-
-});  TransformCache,
-
-```} from "@fajarnugraha37/cache";
-
-
-
-### 7. Keyed lock (per-key mutual exclusion)// Base cache with statistics and events
-
-const baseCache = new LruTtlCache<string, string>({
-
-```ts  maxEntries: 1000,
-
-import { KeyedLock } from "@fajarnugraha37/cache";  enableStats: true,
-
-  enableEvents: true,
-
-const lock = new KeyedLock<string>();});
-
-
-
-async function updateUser(userId: string) {// Add batch operations
-
-  const release = await lock.acquire(userId);const batchCache = withBatchOperations(baseCache);
-
-  try {
-
-    // Critical section: only one update per user at a time// Create namespaced cache for tenant isolation
-
-    await database.users.update(userId, data);const tenantCache = createNamespace(batchCache, "tenant:123");
-
-  } finally {
-
-    release();// Add JSON transformation
-
-  }const objectCache = new TransformCache(
-
-}  tenantCache,
-
-```  (obj) => JSON.stringify(obj),
-
-  (str) => JSON.parse(str)
-
-### 8. Read-through cache);
-
-
-
-```ts// Monitor performance
-
-import { createReadThrough } from "@fajarnugraha37/cache";baseCache.on("evict", ({ key, reason }) => {
-
-  console.log(`Evicted ${key}: ${reason}`);
-
-const cache = createReadThrough(});
-
-  async (productId: string) => {
-
-    return await database.products.findById(productId);// Use the fully-featured cache
-
-  },objectCache.set("config", { theme: "dark", lang: "en" });
-
-  { ttlMs: 60_000 }const config = objectCache.get("config");
-
-);console.log(baseCache.getStats().getMetrics().hitRate);
-
+// Manual lock/unlock
+await mutex.acquire();
+try {
+  // critical section
+} finally {
+  mutex.release();
+}
 ```
 
-const product = await cache.get("prod-123");
+#### Semaphore & FairSemaphore
+```ts
+import { Semaphore, FairSemaphore } from "@fajarnugraha37/async";
 
-```## Scripts
+// Standard semaphore (allows up to N concurrent operations)
+const sem = new Semaphore(3);
+await sem.withPermit(async () => {
+  await processData(); // max 3 concurrent
+});
 
+// Fair semaphore (FIFO order)
+const fair = new FairSemaphore(5);
+await fair.acquire();
+try {
+  await criticalWork();
+} finally {
+  fair.release();
+}
+```
 
+#### CountdownLatch
+```ts
+import { CountdownLatch } from "@fajarnugraha37/async";
 
-### 9. Batch operations| Command | Description |
+const latch = new CountdownLatch(3);
 
-| --- | --- |
-
-```ts| `bun run build` | Compile ESM/CJS bundles. |
-
-import { LruTtlCache, withBatchOperations } from "@fajarnugraha37/cache";| `bun run test` | Run `tests/cache.test.ts`. |
-
-| `bun run test:watch` | Watch mode. |
-
-const cache = new LruTtlCache<string, number>({ maxEntries: 1000 });| `bun run coverage:view` | Open the coverage report. |
-
-const batchCache = withBatchOperations(cache);
-
-Drop-in replacements: if you already use another cache, the API is simple enough to adapt—`LruTtlCache` implements the `Cache<K, V>` interface exported from `src/cache.ts`.
-
-// Get multiple values at once
-const values = batchCache.getMany(["key1", "key2", "key3"]);
-
-// Set multiple values
-batchCache.setMany([
-  ["key1", 100],
-  ["key2", 200],
-  ["key3", 300]
+// Start 3 parallel tasks
+Promise.all([
+  task1().finally(() => latch.countDown()),
+  task2().finally(() => latch.countDown()),
+  task3().finally(() => latch.countDown())
 ]);
 
-// Delete multiple
-batchCache.deleteMany(["key1", "key2"]);
-
-// Check multiple
-const exists = batchCache.hasMany(["key1", "key2", "key3"]);
+// Wait for all to complete
+await latch.wait();
+console.log("All tasks done!");
 ```
 
-### 10. Namespaced caches (multi-tenancy)
+#### JobQueue
+```ts
+import { JobQueue } from "@fajarnugraha37/async";
+
+const queue = new JobQueue(5); // 5 concurrent workers
+
+// Enqueue jobs
+for (let i = 0; i < 100; i++) {
+  queue.enqueue(async () => {
+    await processItem(i);
+  });
+}
+
+await queue.drain(); // wait for all jobs
+queue.close();
+```
+
+#### ThreadPool
+```ts
+import { ThreadPool } from "@fajarnugraha37/async";
+
+const pool = new ThreadPool(4); // 4 workers
+
+const results = await Promise.all([
+  pool.submit(() => expensiveTask(1)),
+  pool.submit(() => expensiveTask(2)),
+  pool.submit(() => expensiveTask(3))
+]);
+
+pool.shutdown();
+```
+
+#### PriorityQueue
+```ts
+import { PriorityQueue } from "@fajarnugraha37/async";
+
+// Min-heap by default
+const pq = new PriorityQueue<number>();
+pq.push(5, 2, 8, 1);
+console.log(pq.pop()); // 1
+
+// Custom comparator
+const maxHeap = new PriorityQueue<number>((a, b) => b - a);
+maxHeap.push(5, 2, 8, 1);
+console.log(maxHeap.pop()); // 8
+```
+
+#### Debounce & Throttle
+```ts
+import { debounce, throttle } from "@fajarnugraha37/async";
+
+// Debounce: wait for quiet period
+const search = debounce(async (query: string) => {
+  return await api.search(query);
+}, 300);
+
+// Throttle: limit execution rate
+const trackScroll = throttle(() => {
+  updateScrollPosition();
+}, 100);
+
+window.addEventListener("scroll", trackScroll);
+```
+
+#### Defer & Resource Management
+```ts
+import { 
+  withDefer, 
+  withAbort, 
+  timedAbort, 
+  using, 
+  deferred 
+} from "@fajarnugraha37/async";
+
+// Automatic cleanup
+await withDefer(async (scope) => {
+  const file = await fs.open("data.txt");
+  scope.defer(() => file.close());
+  
+  const conn = await db.connect();
+  scope.defer(() => conn.close());
+  
+  // All defers run in LIFO order
+  return await process(file, conn);
+});
+
+// AbortController cleanup
+await withDefer(async (scope) => {
+  const ac = withAbort(scope);
+  const response = await fetch(url, { signal: ac.signal });
+  return await response.json();
+});
+
+// Timed abort
+await withDefer(async (scope) => {
+  const ac = timedAbort(scope, 5000); // 5s timeout
+  return await longRunningOp(ac.signal);
+});
+
+// Generic resource wrapper
+await withDefer(async (scope) => {
+  const handle = using(resource, (r) => r.cleanup());
+  scope.defer(handle);
+  return await useResource(resource);
+});
+
+// Manual deferred promise
+const { promise, resolve, reject } = deferred<number>();
+setTimeout(() => resolve(42), 1000);
+const result = await promise;
+```
+
+#### Sleep & Utilities
+```ts
+import { sleep } from "@fajarnugraha37/async";
+
+await sleep(1000); // 1 second
+console.log("Done waiting");
+```
+
+---
+
+### Event Systems
+
+#### EventBus (Stream-based)
+```ts
+import { EventBus, match, filterEnv } from "@fajarnugraha37/async";
+
+type Events = {
+  "user:login": { userId: string };
+  "user:logout": { userId: string };
+  "order:created": { orderId: number; total: number };
+};
+
+const bus = new EventBus<Events>();
+
+// Type-safe subscription
+bus.on("user:login", (evt) => {
+  console.log("User logged in:", evt.payload.userId);
+});
+
+// Regex filtering
+bus.on(/^user:/, (evt) => {
+  console.log("User event:", evt.topic);
+});
+
+// Predicate filtering
+bus.on((evt) => evt.topic.startsWith("order:"), (evt) => {
+  console.log("Order event:", evt.payload);
+});
+
+// Emit events
+bus.emit("user:login", { userId: "123" });
+
+// Async iteration
+for await (const evt of bus) {
+  console.log(evt.topic, evt.payload);
+  if (evt.topic === "shutdown") break;
+}
+
+// Transform streams
+const userEvents = bus.pipe(
+  filterEnv((e) => e.topic.startsWith("user:"))
+);
+
+// Topic reader/writer
+const writer = bus.writer();
+writer.write({ topic: "user:login", payload: { userId: "456" } });
+```
+
+#### EventEmitter (Lightweight)
+```ts
+import { EventEmitter } from "@fajarnugraha37/async";
+
+type Events = {
+  data: { value: number };
+  error: Error;
+};
+
+const emitter = new EventEmitter<Events>();
+
+// Subscribe
+const unsubscribe = emitter.on("data", (evt) => {
+  console.log("Data:", evt.value);
+});
+
+// One-time listener
+emitter.once("error", (err) => {
+  console.error("Error:", err);
+});
+
+// Emit
+emitter.emit("data", { value: 42 });
+
+// Wildcard handlers
+emitter.on("*", (type, evt) => {
+  console.log(`Event ${String(type)}:`, evt);
+});
+
+// Cleanup
+unsubscribe();
+emitter.off("data", handler);
+```
+
+#### Event Factories
+```ts
+import {
+  createEventBus,
+  createTopicDemux,
+  createTopicMux,
+  pipeTopics,
+  tapLog
+} from "@fajarnugraha37/async";
+
+// Factory for typed bus
+const bus = createEventBus<MyEvents>();
+
+// Demux: split topics into separate streams
+const { read, streams } = createTopicDemux<Events>(bus);
+for await (const evt of streams["user:login"]) {
+  console.log("Login:", evt.payload);
+}
+
+// Mux: combine streams
+const combined = createTopicMux([stream1, stream2]);
+
+// Pipe topics between buses
+pipeTopics(sourceBus, targetBus);
+
+// Debug logging
+const logged = tapLog(bus, (evt) => console.log("Event:", evt));
+```
+
+---
+
+### Async Generators
+
+#### Basics: map, filter, take, drop
+```ts
+import { 
+  mapG, 
+  filterG, 
+  take, 
+  drop, 
+  takeWhile, 
+  dropWhile,
+  enumerate,
+  chunk,
+  flatMapG,
+  zip,
+  chain
+} from "@fajarnugraha37/async";
+
+async function* numbers() {
+  for (let i = 0; i < 10; i++) yield i;
+}
+
+// Map
+const doubled = mapG(numbers(), (x) => x * 2);
+
+// Filter
+const evens = filterG(numbers(), (x) => x % 2 === 0);
+
+// Take first N
+const first5 = take(numbers(), 5);
+
+// Drop first N
+const rest = drop(numbers(), 3);
+
+// Take while condition
+const lessThan5 = takeWhile(numbers(), (x) => x < 5);
+
+// Enumerate with index
+for await (const [idx, val] of enumerate(numbers())) {
+  console.log(idx, val);
+}
+
+// Chunk into arrays
+for await (const chunk of chunk(numbers(), 3)) {
+  console.log(chunk); // [0,1,2], [3,4,5], ...
+}
+
+// Flat map
+const nested = flatMapG(numbers(), function*(n) {
+  for (let i = 0; i < n; i++) yield i;
+});
+
+// Zip multiple iterables
+for await (const [a, b, c] of zip(iter1, iter2, iter3)) {
+  console.log(a, b, c);
+}
+
+// Chain iterables
+const combined = chain(iter1, iter2, iter3);
+```
+
+#### Collectors
+```ts
+import { 
+  reduceG, 
+  toArray, 
+  toSet, 
+  toMap,
+  groupBy,
+  partition
+} from "@fajarnugraha37/async";
+
+// Reduce
+const sum = reduceG(numbers(), (acc, x) => acc + x, 0);
+
+// To collections
+const arr = toArray(numbers());
+const set = toSet(numbers());
+const map = toMap(
+  enumerate(numbers()),
+  ([idx, val]) => [idx, val]
+);
+
+// Group by key
+const grouped = groupBy(items, (item) => item.category);
+
+// Partition by predicate
+const [evens, odds] = partition(numbers(), (x) => x % 2 === 0);
+```
+
+#### Creators
+```ts
+import { 
+  range, 
+  count, 
+  repeat, 
+  cycle 
+} from "@fajarnugraha37/async";
+
+// Range
+for (const n of range(10)) console.log(n); // 0..9
+for (const n of range(5, 10)) console.log(n); // 5..9
+for (const n of range(0, 10, 2)) console.log(n); // 0,2,4,6,8
+
+// Infinite counter
+for (const n of count(0, 2)) {
+  console.log(n); // 0,2,4,6,...
+  if (n >= 10) break;
+}
+
+// Repeat value
+for (const x of repeat("hello", 3)) {
+  console.log(x); // hello, hello, hello
+}
+
+// Cycle through values
+for (const x of cycle([1, 2, 3])) {
+  console.log(x); // 1,2,3,1,2,3,...
+}
+```
+
+#### Sorting & Merging
+```ts
+import { mergeSorted } from "@fajarnugraha37/async";
+
+const iter1 = [1, 3, 5];
+const iter2 = [2, 4, 6];
+
+// Merge sorted iterables
+for (const n of mergeSorted((a, b) => a - b, iter1, iter2)) {
+  console.log(n); // 1,2,3,4,5,6
+}
+```
+
+#### Tee (Split iterator)
+```ts
+import { tee } from "@fajarnugraha37/async";
+
+const source = numbers();
+const [iter1, iter2] = tee(source, 2);
+
+// Two independent copies
+for await (const n of iter1) console.log("A:", n);
+for await (const n of iter2) console.log("B:", n);
+```
+
+---
+
+### Retry & Resilience
+
+#### Basic Retry
+```ts
+import { retry, retryWith, retryAll } from "@fajarnugraha37/async";
+
+// Simple retry
+const result = await retry(
+  async () => fetchData(),
+  { maxAttempts: 3, delayMs: 1000 }
+);
+
+// Advanced retry with backoff
+const data = await retryWith(
+  async () => callAPI(),
+  {
+    maxAttempts: 5,
+    baseMs: 100,
+    factor: 2,
+    jitter: 0.1,
+    shouldRetry: (err) => err.status !== 400
+  }
+);
+
+// Retry all with individual policies
+const results = await retryAll([
+  { fn: task1, policy: { maxAttempts: 3 } },
+  { fn: task2, policy: { maxAttempts: 5 } }
+]);
+```
+
+#### Retry Policies
+```ts
+import { 
+  retryAfterDelayMs, 
+  httpRetryPolicy,
+  expBackoffDelay 
+} from "@fajarnugraha37/async";
+
+// Fixed delay
+const policy1 = retryAfterDelayMs(1000);
+
+// HTTP-aware retry
+const httpPolicy = httpRetryPolicy({
+  method: "GET",
+  status: 503
+});
+const decision = httpPolicy(error, 2);
+
+// Exponential backoff
+const backoff = expBackoffDelay({
+  baseMs: 100,
+  factor: 2,
+  maxMs: 10000,
+  jitter: 0.1
+});
+```
+
+#### Circuit Breaker
+```ts
+import { CircuitBreaker } from "@fajarnugraha37/async";
+
+const breaker = new CircuitBreaker({
+  failureThreshold: 5,
+  resetTimeout: 30000,
+  halfOpenMaxAttempts: 2
+});
+
+try {
+  const result = await breaker.call(async () => {
+    return await externalAPI();
+  });
+} catch (err) {
+  console.error("Circuit open:", err);
+}
+
+// Check state
+console.log(breaker.state); // "closed" | "open" | "half-open"
+```
+
+#### Rate Limiting
+```ts
+import { 
+  TokenBucket, 
+  rateLimit,
+  Scheduler 
+} from "@fajarnugraha37/async";
+
+// Token bucket
+const bucket = new TokenBucket(100, 10); // 100 capacity, 10/sec
+if (bucket.tryTake(5)) {
+  await processRequest();
+}
+
+// Rate limit wrapper
+const limited = rateLimit(
+  async (data) => processData(data),
+  { capacity: 100, refillRate: 10 }
+);
+await limited(myData);
+
+// Scheduler for batch operations
+const scheduler = new Scheduler({
+  maxConcurrency: 5,
+  intervalMs: 1000
+});
+scheduler.schedule(() => task1());
+scheduler.schedule(() => task2());
+```
+
+#### Timeout Handling
+```ts
+import { 
+  timeoutPromise, 
+  withTimeout 
+} from "@fajarnugraha37/async";
+
+// Promise timeout
+const result = await timeoutPromise(
+  fetchData(),
+  5000,
+  "Operation timed out"
+);
+
+// Wrapper with timeout
+const timedFetch = withTimeout(fetchData, 3000);
+await timedFetch("https://api.example.com");
+```
+
+#### Result Type (Ok/Err)
+```ts
+import { 
+  tryCatch, 
+  collectAll,
+  partitionOkErr,
+  firstErr,
+  anyOk,
+  collectAllObj
+} from "@fajarnugraha37/async";
+
+// Try-catch wrapper
+const result = tryCatch(() => riskyOperation());
+if (result.ok) {
+  console.log(result.value);
+} else {
+  console.error(result.error);
+}
+
+// Collect results
+const results = [
+  { ok: true, value: 1 },
+  { ok: true, value: 2 },
+  { ok: false, error: "fail" }
+];
+const all = collectAll(results); // Err if any fail
+
+// Partition
+const [oks, errs] = partitionOkErr(results);
+
+// First error
+const err = firstErr(results);
+
+// Any success
+const hasOk = anyOk(results);
+
+// Object results
+const obj = collectAllObj({
+  a: { ok: true, value: 1 },
+  b: { ok: true, value: 2 }
+}); // { ok: true, value: { a: 1, b: 2 } }
+```
+
+#### Parallel Execution
+```ts
+import { 
+  parallel, 
+  parallelLimit,
+  race,
+  raceMaybe
+} from "@fajarnugraha37/async";
+
+// Unlimited parallel
+const results = await parallel([
+  async () => task1(),
+  async () => task2(),
+  async () => task3()
+]);
+
+// Limited concurrency
+const limited = await parallelLimit([
+  async () => task1(),
+  async () => task2(),
+  async () => task3()
+], 2); // max 2 concurrent
+
+// Race
+const winner = await race([
+  fetchFromAPI1(),
+  fetchFromAPI2()
+]);
+
+// Race maybe (returns all results)
+const all = await raceMaybe([
+  fetchFromAPI1(),
+  fetchFromAPI2()
+]);
+```
+
+---
+
+### Channels & `select`
 
 ```ts
-import { LruTtlCache, createNamespace } from "@fajarnugraha37/cache";
+import { Channel, select } from "@fajarnugraha37/async";
 
-const cache = new LruTtlCache<string, any>({ maxEntries: 10_000 });
+const input = new Channel<number>(1);
 
-const tenant1 = createNamespace(cache, "tenant1");
-const tenant2 = createNamespace(cache, "tenant2");
+(async () => {
+  await input.send(41);
+  await input.send(42);
+  input.close();
+})();
 
-tenant1.set("user:1", { name: "Alice" }); // Stored as "tenant1:user:1"
-tenant2.set("user:1", { name: "Bob" });   // Stored as "tenant2:user:1"
+while (true) {
+  const { value, done } = await input.recv();
+  if (done) break;
+  console.log(value);
+}
 
-tenant1.clear(); // Only clears tenant1's data
+// Listen to whichever channel fires first
+const a = new Channel<string>();
+const b = new Channel<string>();
+
+setTimeout(() => void a.send("from A"), 10);
+setTimeout(() => void b.send("from B"), 5);
+
+const first = await select([a, b], 100);
+console.log(first.index, first.value);
+```
+
+### Resource-safe scopes
+
+```ts
+import { withDefer, timedAbort } from "@fajarnugraha37/async";
+
+await withDefer(async (scope) => {
+  const abortController = timedAbort(scope, 1_000);
+  scope.defer(() => console.log("cleanup runs even on throw"));
+
+  const response = await fetch(url, { signal: abortController.signal });
+  return response.json();
+});
+```
+
+### Event bus
+
+```ts
+import { EventBus } from "@fajarnugraha37/async";
+
+type Events = {
+  "user:created": { id: string };
+  audit: { action: string };
+};
+
+const bus = new EventBus<Events>();
+
+const stop = bus.on("user:created", (evt) => {
+  console.log("user", evt.payload.id);
+});
+
+await bus.emitAsync("user:created", { id: "42" });
+stop();
+```
+
+### Retry helpers
+
+```ts
+import { retryWith } from "@fajarnugraha37/async";
+
+const result = await retryWith(
+  async (signal) => {
+    const response = await fetch("https://example.com", { signal });
+    if (!response.ok) throw new Error("boom");
+    return response.json();
+  },
+  { retries: 5, delayMs: 200, backoff: 1.5, jitter: 0.1, timeoutMs: 2_000 }
+);
+
+if (!result.ok) throw result.error;
 ```
 
 ---
 
 ## Advanced features
 
-### Statistics tracking
+### Custom Retry Policies
 
-Monitor cache performance with built-in metrics:
+Create sophisticated retry strategies:
 
 ```ts
-const cache = new LruTtlCache<string, number>({
-  maxEntries: 1000,
-  enableStats: true // Enable statistics
-});
+import { RetryDecision } from "@fajarnugraha37/async";
 
-cache.set("key1", 100);
-cache.get("key1"); // Hit
-cache.get("key2"); // Miss
+function customRetryPolicy(error: any, attempt: number): RetryDecision {
+  // Don't retry client errors
+  if (error.status >= 400 && error.status < 500) {
+    return { shouldRetry: false };
+  }
+  
+  // Exponential backoff with jitter
+  const baseDelay = 1000;
+  const delay = baseDelay * Math.pow(2, attempt) * (0.9 + Math.random() * 0.2);
+  
+  return {
+    shouldRetry: attempt < 5,
+    delayMs: Math.min(delay, 30000) // cap at 30s
+  };
+}
 
-const stats = cache.getStats();
-console.log(stats);
-// {
-//   hits: 1,
-//   misses: 1,
-//   sets: 1,
-//   deletes: 0,
-//   evictions: 0,
-//   size: 1,
-//   totalSize: 3,
-//   hitRate: 0.5,
-//   missRate: 0.5,
-//   avgSize: 3
-// }
-
-cache.resetStats(); // Reset counters
+await retryWith(apiCall, customRetryPolicy);
 ```
 
-### Event monitoring
+### Circuit Breaker Patterns
 
-Listen to cache events for debugging and observability:
+Implement resilient microservices:
 
 ```ts
-const cache = new LruTtlCache<string, number>({
-  maxEntries: 100,
-  enableEvents: true // Enable event emission
+const breaker = new CircuitBreaker({
+  failureThreshold: 5,      // Open after 5 failures
+  resetTimeout: 30000,       // Try again after 30s
+  halfOpenMaxAttempts: 2     // Test with 2 requests
 });
 
-// Listen to specific events
-cache.on("hit", ({ key, value, timestamp }) => {
-  console.log(`Cache hit: ${key} at ${timestamp}`);
-});
-
-cache.on("miss", ({ key, timestamp, reason }) => {
-  console.log(`Cache miss: ${key}, reason: ${reason}`);
-});
-
-cache.on("evict", ({ key, value, reason }) => {
-  console.log(`Evicted ${key} due to ${reason}`);
-});
-
-cache.on("expire", ({ key, value }) => {
-  console.log(`Expired ${key}`);
-});
-
-// Wildcard listener (all events)
-cache.on("*", (eventType, data) => {
-  console.log(`Event: ${eventType}`, data);
-});
-
-// One-time listener
-cache.once("set", ({ key, value }) => {
-  console.log("First set operation");
-});
-
-// Remove listener
-const unsubscribe = cache.on("hit", handler);
-unsubscribe(); // or cache.off("hit", handler);
+// Fallback on circuit open
+async function resilientCall() {
+  try {
+    return await breaker.call(() => primaryService());
+  } catch (err) {
+    if (breaker.state === "open") {
+      return await fallbackService();
+    }
+    throw err;
+  }
+}
 ```
 
-**Available events:**
-- `hit` – Cache hit occurred
-- `miss` – Cache miss occurred
-- `set` – Entry was set
-- `delete` – Entry was deleted
-- `evict` – Entry was evicted (LRU/size limit)
-- `expire` – Entry expired (TTL)
-- `clear` – Cache was cleared
-- `*` – Wildcard (all events)
+### Composing Event Streams
 
-### Cache warming
-
-Preload frequently accessed data on startup:
+Build complex event pipelines:
 
 ```ts
-import { warmCache } from "@fajarnugraha37/cache";
+import { EventBus, filterEnv, createTopicDemux } from "@fajarnugraha37/async";
 
-const cache = new LruTtlCache<string, Product>({ maxEntries: 1000 });
+const bus = new EventBus<MyEvents>();
 
-// Warm cache with top products
-await warmCache(
-  cache,
-  async () => {
-    const products = await database.products.findTopSellers();
-    return products.map(p => [p.id, p] as [string, Product]);
-  },
-  { ttlMs: 3600_000 } // Cache for 1 hour
-);
+// Create filtered sub-streams
+const userEvents = bus.pipe(filterEnv(e => e.topic.startsWith("user:")));
+const orderEvents = bus.pipe(filterEnv(e => e.topic.startsWith("order:")));
 
-console.log(`Warmed cache with ${cache.size()} entries`);
+// Demux into separate channels
+const { streams } = createTopicDemux(bus);
+for await (const evt of streams["critical:error"]) {
+  await alertOps(evt);
+}
 ```
 
-### Transform caches (serialization)
-
-Store complex types with automatic serialization:
+### Custom Priority Queues
 
 ```ts
-import { TransformCache } from "@fajarnugraha37/cache";
+interface Task {
+  priority: number;
+  deadline: Date;
+  execute: () => Promise<void>;
+}
 
-const cache = new LruTtlCache<string, string>({ maxEntries: 100 });
-
-// JSON transform cache
-const objectCache = new TransformCache(
-  cache,
-  (obj) => JSON.stringify(obj),  // serialize
-  (str) => JSON.parse(str)        // deserialize
-);
-
-objectCache.set("user", { id: 1, name: "Alice" });
-const user = objectCache.get("user"); // Returns object, not string
-
-// Custom transform (e.g., compression)
-const compressedCache = new TransformCache(
-  cache,
-  (data) => compress(data),
-  (data) => decompress(data)
-);
-```
-
-### Composing features
-
-All features can be combined:
-
-```ts
-import {
-  LruTtlCache,
-  withBatchOperations,
-  createNamespace,
-  TransformCache
-} from "@fajarnugraha37/cache";
-
-// Base cache with observability
-const baseCache = new LruTtlCache<string, string>({
-  maxEntries: 10_000,
-  enableStats: true,
-  enableEvents: true
+const taskQueue = new PriorityQueue<Task>((a, b) => {
+  // Higher priority first
+  if (a.priority !== b.priority) return b.priority - a.priority;
+  // Earlier deadline first
+  return a.deadline.getTime() - b.deadline.getTime();
 });
 
-// Add batch operations
-const batchCache = withBatchOperations(baseCache);
-
-// Create tenant-isolated namespace
-const tenantCache = createNamespace(batchCache, "tenant:123");
-
-// Add JSON transformation
-const objectCache = new TransformCache(
-  tenantCache,
-  JSON.stringify,
-  JSON.parse
-);
-
-// Monitor and use
-baseCache.on("evict", ({ key }) => logger.warn(`Evicted: ${key}`));
-objectCache.set("config", { setting: "value" });
-console.log(baseCache.getStats());
+taskQueue.push(...tasks);
+while (taskQueue.size > 0) {
+  const task = taskQueue.pop();
+  await task.execute();
+}
 ```
 
 ---
 
 ## Cookbook
 
-### Recipe 1: API Response Cache
+### Pattern 1: Fan-out/Fan-in
+
+Process items in parallel, collect results:
 
 ```ts
-import { LruTtlCache, LoadingCache } from "@fajarnugraha37/cache";
+import { Channel, withDefer } from "@fajarnugraha37/async";
 
-const cache = new LruTtlCache<string, ApiResponse>({
-  maxEntries: 1000,
-  enableStats: true
-});
-
-const apiCache = new LoadingCache(cache, async (endpoint: string) => {
-  const res = await fetch(`https://api.example.com${endpoint}`);
-  return res.json();
-});
-
-// Usage
-const data = await apiCache.get("/users/123", {
-  ttlMs: 60_000,
-  staleWhileRevalidateMs: 120_000
-});
-
-// Monitor performance
-setInterval(() => {
-  const stats = cache.getStats();
-  console.log(`Cache hit rate: ${(stats.hitRate * 100).toFixed(2)}%`);
-}, 60_000);
-```
-
-### Recipe 2: Rate Limiting with Sliding Window
-
-```ts
-import { LruTtlCache } from "@fajarnugraha37/cache";
-
-const rateLimits = new LruTtlCache<string, number[]>({ maxEntries: 10_000 });
-
-function checkRateLimit(userId: string, maxRequests: number, windowMs: number): boolean {
-  const now = Date.now();
-  const timestamps = rateLimits.get(userId) || [];
-  
-  // Filter out old timestamps
-  const recentTimestamps = timestamps.filter(ts => now - ts < windowMs);
-  
-  if (recentTimestamps.length >= maxRequests) {
-    return false; // Rate limit exceeded
-  }
-  
-  recentTimestamps.push(now);
-  rateLimits.set(userId, recentTimestamps, { ttlMs: windowMs });
-  return true;
-}
-
-// Usage: max 100 requests per minute
-if (checkRateLimit("user:123", 100, 60_000)) {
-  // Process request
-} else {
-  throw new Error("Rate limit exceeded");
-}
-```
-
-### Recipe 3: Two-Level Cache (L1/L2)
-
-```ts
-import { LruTtlCache } from "@fajarnugraha37/cache";
-
-class TwoLevelCache<K, V> {
-  private l1: LruTtlCache<K, V>; // Fast, small cache
-  private l2: LruTtlCache<K, V>; // Larger, slower cache
-  
-  constructor() {
-    this.l1 = new LruTtlCache({ maxEntries: 100 }); // Hot data
-    this.l2 = new LruTtlCache({ maxEntries: 10_000 }); // Warm data
-  }
-  
-  get(key: K): V | undefined {
-    // Try L1 first
-    let value = this.l1.get(key);
-    if (value !== undefined) return value;
+async function fanOutFanIn<T, R>(
+  items: T[],
+  process: (item: T) => Promise<R>,
+  workers: number
+): Promise<R[]> {
+  return withDefer(async (scope) => {
+    const input = new Channel<T>(items.length);
+    const output = new Channel<R>(items.length);
     
-    // Try L2
-    value = this.l2.get(key);
-    if (value !== undefined) {
-      this.l1.set(key, value); // Promote to L1
-      return value;
-    }
+    scope.defer(() => { input.close(); output.close(); });
     
-    return undefined;
-  }
-  
-  set(key: K, value: V, opts?: any): void {
-    this.l1.set(key, value, opts);
-    this.l2.set(key, value, opts);
-  }
-}
-```
-
-### Recipe 4: Circuit Breaker with Cache
-
-```ts
-import { LruTtlCache } from "@fajarnugraha37/cache";
-
-class CircuitBreaker {
-  private failures = new LruTtlCache<string, number>({ maxEntries: 1000 });
-  
-  async execute<T>(
-    key: string,
-    fn: () => Promise<T>,
-    threshold: number = 5,
-    timeoutMs: number = 60_000
-  ): Promise<T> {
-    const failureCount = this.failures.get(key) || 0;
-    
-    if (failureCount >= threshold) {
-      throw new Error("Circuit breaker open");
-    }
-    
-    try {
-      const result = await fn();
-      this.failures.del(key); // Reset on success
-      return result;
-    } catch (error) {
-      this.failures.set(key, failureCount + 1, { ttlMs: timeoutMs });
-      throw error;
-    }
-  }
-}
-
-// Usage
-const breaker = new CircuitBreaker();
-await breaker.execute("external-api", async () => {
-  return await fetch("https://flaky-api.com");
-});
-```
-
-### Recipe 5: Distributed Cache Invalidation
-
-```ts
-import { LruTtlCache } from "@fajarnugraha37/cache";
-import { EventEmitter } from "events";
-
-class DistributedCache<K, V> {
-  private cache: LruTtlCache<K, V>;
-  private invalidationBus: EventEmitter;
-  
-  constructor() {
-    this.cache = new LruTtlCache({ maxEntries: 1000 });
-    this.invalidationBus = new EventEmitter();
-    
-    // Listen for invalidation events from other instances
-    this.invalidationBus.on("invalidate", (key: K) => {
-      this.cache.del(key);
+    // Fan-out: spawn workers
+    const workerPromises = Array.from({ length: workers }, async () => {
+      for await (const item of input) {
+        const result = await process(item);
+        await output.send(result);
+      }
     });
-  }
+    
+    // Feed input
+    for (const item of items) await input.send(item);
+    input.close();
+    
+    // Fan-in: collect results
+    const results: R[] = [];
+    for await (const result of output) {
+      results.push(result);
+      if (results.length === items.length) break;
+    }
+    
+    await Promise.all(workerPromises);
+    return results;
+  });
+}
+
+// Usage
+const urls = ["url1", "url2", "url3"];
+const responses = await fanOutFanIn(urls, fetch, 5);
+```
+
+### Pattern 2: Worker Pool with Queue
+
+```ts
+import { ThreadPool } from "@fajarnugraha37/async";
+
+async function workerPool<T, R>(
+  tasks: T[],
+  worker: (task: T) => Promise<R>,
+  poolSize: number
+): Promise<R[]> {
+  const pool = new ThreadPool(poolSize);
+  const results = await Promise.all(
+    tasks.map(task => pool.submit(() => worker(task)))
+  );
+  pool.shutdown();
+  return results;
+}
+
+// Usage
+const processed = await workerPool(data, processItem, 10);
+```
+
+### Pattern 3: Rate-Limited Batch Processor
+
+```ts
+import { TokenBucket, sleep } from "@fajarnugraha37/async";
+
+async function rateLimitedBatch<T>(
+  items: T[],
+  process: (item: T) => Promise<void>,
+  ratePerSecond: number
+) {
+  const bucket = new TokenBucket(ratePerSecond, ratePerSecond);
   
-  set(key: K, value: V, opts?: any): void {
-    this.cache.set(key, value, opts);
-    // Notify other instances
-    this.invalidationBus.emit("invalidate", key);
-  }
-  
-  get(key: K): V | undefined {
-    return this.cache.get(key);
+  for (const item of items) {
+    while (!bucket.tryTake(1)) {
+      await sleep(100); // wait for tokens
+    }
+    await process(item);
   }
 }
+
+// Process 100 items/sec
+await rateLimitedBatch(items, processItem, 100);
+```
+
+### Pattern 4: Retry with Fallback Chain
+
+Try multiple strategies:
+
+```ts
+import { retry } from "@fajarnugraha37/async";
+
+async function resilientFetch(url: string) {
+  // Try primary
+  try {
+    return await retry(
+      () => fetch(url).then(r => r.json()),
+      { maxAttempts: 3, delayMs: 1000 }
+    );
+  } catch (err) {
+    console.warn("Primary failed, trying cache");
+  }
+  
+  // Try cache
+  try {
+    return await cache.get(url);
+  } catch (err) {
+    console.warn("Cache failed, using fallback");
+  }
+  
+  // Fallback
+  return await fetchFromBackup(url);
+}
+```
+
+### Pattern 5: Pub/Sub with Type Safety
+
+```ts
+import { EventBus } from "@fajarnugraha37/async";
+
+type Events = {
+  "user:login": { userId: string; timestamp: number };
+  "user:logout": { userId: string };
+  "data:update": { key: string; value: any };
+};
+
+class PubSub {
+  private bus = new EventBus<Events>();
+  
+  subscribe<K extends keyof Events>(
+    topic: K,
+    handler: (payload: Events[K]) => void
+  ) {
+    return this.bus.on(topic, (evt) => handler(evt.payload));
+  }
+  
+  publish<K extends keyof Events>(topic: K, payload: Events[K]) {
+    this.bus.emit(topic, payload);
+  }
+  
+  async *stream() {
+    for await (const evt of this.bus) {
+      yield evt;
+    }
+  }
+}
+
+// Usage
+const pubsub = new PubSub();
+pubsub.subscribe("user:login", ({ userId }) => {
+  console.log(`User ${userId} logged in`);
+});
+pubsub.publish("user:login", { userId: "123", timestamp: Date.now() });
+```
+
+---
+
+## Benchmark results
+
+Performance characteristics (Bun 1.3.1):
+
+```
+Channel send/recv              33.84ms  (100k ops)
+Channel buffered (100)         44.61ms  (10k ops)
+JobQueue (100 jobs)            36.87ms  
+Mutex lock/unlock              32.72ms  (100k ops)
+Semaphore (5 permits)          33.26ms  (50k ops)
+CountdownLatch (10)            30.19ms  (10k ops)
+PriorityQueue (1000 items)      4.07ms  
+ThreadPool (10 tasks)          72.78ms  
+EventBus (1000 events)         18.42ms  
+EventEmitter (100 events)       1.30ms  
+```
+
+Run benchmarks yourself:
+```bash
+bun run benchmark
 ```
 
 ---
 
 ## API reference
 
-### `LruTtlCache<K, V>`
+Complete type signatures and detailed documentation for all exports.
 
-Main in-memory cache with LRU eviction and TTL support.
+### Concurrency Module
 
-#### Constructor Options
+#### `Channel<T>`
+Go-style buffered/unbuffered channel.
 
 ```ts
-new LruTtlCache<K, V>({
-  maxEntries?: number;         // Max number of entries (default: 1000)
-  maxSize?: number;            // Max total size in units (default: Infinity)
-  sizer?: (value: V) => number; // Size calculator (default: jsonSizer)
-  sweepIntervalMs?: number;    // Background expiry check interval (default: 0)
-  enableStats?: boolean;       // Enable statistics tracking (default: false)
-  enableEvents?: boolean;      // Enable event emission (default: false)
-})
+class Channel<T> {
+  constructor(bufferSize?: number);
+  send(value: T): Promise<void>;
+  recv(): Promise<{ value: T, ok: boolean }>;
+  close(): void;
+  [Symbol.asyncIterator](): AsyncIterator<T>;
+}
 ```
 
-#### Methods
-
+#### `select()`
 ```ts
-get(key: K): V | undefined
-set(key: K, value: V, opts?: { ttlMs?: number; slidingTtlMs?: number; size?: number }): void
-has(key: K): boolean
-del(key: K): void
-clear(): void
-size(): number // Current entry count
-total(): number // Total size in units
-stop(): void // Stop background sweeper
-
-// Statistics (if enableStats: true)
-getStats(): CacheMetrics | undefined
-resetStats(): void
-
-// Events (if enableEvents: true)
-on(event: string, handler: Function): () => void
-once(event: string, handler: Function): () => void
-off(event: string, handler: Function): void
+function select<T>(
+  channels: Channel<T>[],
+  timeoutMs?: number
+): Promise<{ ok: boolean; channel?: number; value?: T }>
 ```
 
-### `LoadingCache<K, V>`
-
-Async cache with automatic loading and stale-while-revalidate.
-
+#### `Mutex`
 ```ts
-const loader = new LoadingCache(
-  store: Cache<K, V>,
-  load: (key: K) => Promise<V>
-);
-
-await loader.get(key: K, opts: {
-  ttlMs?: number;
-  staleWhileRevalidateMs?: number;
-  jitterMs?: number;
-}): Promise<V>
-
-loader.invalidate(key: K): void
+class Mutex {
+  acquire(): Promise<void>;
+  release(): void;
+  runExclusive<T>(fn: () => Promise<T>): Promise<T>;
+}
 ```
 
-### `memoize<Fn>`
-
-Memoize sync or async functions.
-
+#### `Semaphore` / `FairSemaphore`
 ```ts
-const memoized = memoize(fn: Fn, {
-  ttlMs?: number;              // Cache duration
-  slidingTtlMs?: number;       // Sliding window
-  swrMs?: number;              // Stale-while-revalidate
-  jitter?: number;             // Random jitter (0-1)
-  maxEntries?: number;         // Max cached calls
-  maxSize?: number;            // Max size
-  keyFn?: (...args) => string; // Custom key generator
-  cacheErrors?: boolean;       // Cache errors
-  errorTtlMs?: number;         // Error cache duration
-});
-```
-
-### Batch Operations
-
-```ts
-const batchCache = withBatchOperations(cache);
-
-batchCache.getMany(keys: K[]): Map<K, V>
-batchCache.setMany(entries: Array<[K, V]> | Map<K, V>, opts?: { ttlMs?: number }): void
-batchCache.deleteMany(keys: K[]): void
-batchCache.hasMany(keys: K[]): Map<K, boolean>
-```
-
-### Namespaced Cache
-
-```ts
-const nsCache = createNamespace(cache, "namespace", ":");
-
-// Same API as base cache, keys are automatically prefixed
-nsCache.get(key)
-nsCache.set(key, value)
-nsCache.clear() // Only clears this namespace
-```
-
-### Transform Cache
-
-```ts
-const transformCache = new TransformCache(
-  cache: Cache<K, VIn>,
-  serialize: (value: VOut) => VIn,
-  deserialize: (value: VIn) => VOut
-);
-
-// Same API as base cache with automatic transformation
-transformCache.get(key): VOut | undefined
-transformCache.set(key, value: VOut, opts?): void
-```
-
-### Utilities
-
-```ts
-// Cache warming
-await warmCache(
-  cache: Cache<K, V>,
-  loader: () => Promise<Array<[K, V]>> | Array<[K, V]>,
-  opts?: { ttlMs?: number }
-): Promise<number>
-
-// Singleflight (request deduplication)
-const sf = new Singleflight<K, V>();
-await sf.do(key: K, fn: () => Promise<V>): Promise<V>
-
-// Idempotency cache
-const idempotency = new IdempotencyCache<K, V>(windowMs: number);
-await idempotency.execute(key: K, fn: () => Promise<V>): Promise<V>
-
-// Keyed lock
-const lock = new KeyedLock<K>();
-const release = await lock.acquire(key: K);
-try {
-  // Critical section
-} finally {
-  release();
+class Semaphore {
+  constructor(permits: number);
+  acquire(): Promise<void>;
+  release(): void;
+  withPermit<T>(fn: () => Promise<T>): Promise<T>;
 }
 
-// Read-through cache
-const readThrough = createReadThrough(
-  loader: (key: K) => Promise<V>,
-  opts?: { ttlMs?: number; maxEntries?: number }
-);
-await readThrough.get(key: K): Promise<V>
+class FairSemaphore {
+  constructor(permits: number);
+  acquire(): Promise<void>;
+  release(): void;
+  withPermit<T>(fn: () => Promise<T>): Promise<T>;
+}
 ```
+
+#### `CountdownLatch`
+```ts
+class CountdownLatch {
+  constructor(count: number);
+  countDown(): void;
+  wait(): Promise<void>;
+}
+```
+
+#### `JobQueue`
+```ts
+class JobQueue {
+  constructor(concurrency: number);
+  enqueue(job: () => Promise<void>): void;
+  drain(): Promise<void>;
+  close(): void;
+}
+```
+
+#### `ThreadPool`
+```ts
+class ThreadPool {
+  constructor(size: number);
+  submit<T>(task: () => T): Promise<T>;
+  shutdown(): void;
+}
+```
+
+#### `PriorityQueue<T>`
+```ts
+class PriorityQueue<T> {
+  constructor(comparator?: (a: T, b: T) => number);
+  push(...items: T[]): void;
+  pop(): T | undefined;
+  peek(): T | undefined;
+  size: number;
+}
+```
+
+#### Defer & Resource Management
+```ts
+interface Defer {
+  defer(finalizer: () => void | Promise<void>): void;
+}
+
+function withDefer<T>(fn: (scope: Defer) => Promise<T>): Promise<T>;
+function withAbort(scope: Defer): AbortController;
+function timedAbort(scope: Defer, ms: number): AbortController;
+function using<T>(value: T, dispose: (v: T) => void | Promise<void>);
+
+interface Deferred<T> {
+  promise: Promise<T>;
+  resolve(value: T): void;
+  reject(error: any): void;
+}
+function deferred<T>(): Deferred<T>;
+```
+
+#### Flow Control
+```ts
+function debounce<A extends any[], R>(
+  fn: (...args: A) => R,
+  delayMs: number
+): (...args: A) => Promise<R>;
+
+function throttle<A extends any[], R>(
+  fn: (...args: A) => R,
+  intervalMs: number
+): (...args: A) => R;
+```
+
+### Event Systems Module
+
+#### `EventBus<T>`
+```ts
+class EventBus<T extends Record<string, any>> {
+  on(topic: string | RegExp | Predicate, handler: Handler): () => void;
+  emit(topic: string, payload: any): void;
+  close(): void;
+  pipe(transform: Transform): Readable;
+  [Symbol.asyncIterator](): AsyncIterator;
+}
+```
+
+#### `EventEmitter<T>`
+```ts
+class EventEmitter<T extends Record<EventType, any>> {
+  on(event: keyof T, handler: (data: T[event]) => void): () => void;
+  once(event: keyof T, handler: (data: T[event]) => void): () => void;
+  off(event: keyof T, handler: Handler): void;
+  emit(event: keyof T, data: T[event]): void;
+}
+```
+
+### Generator Module
+
+All generator utilities (`mapG`, `filterG`, `take`, `drop`, `chunk`, `zip`, `chain`, etc.) plus creators (`range`, `count`, `repeat`, `cycle`) and collectors (`toArray`, `toSet`, `reduceG`).
+
+### Retry & Resilience Module
+
+#### `retry()` / `retryWith()`
+```ts
+function retry<T>(
+  fn: () => Promise<T>,
+  options?: { maxAttempts?: number; delayMs?: number }
+): Promise<T>;
+
+function retryWith<T>(
+  fn: () => Promise<T>,
+  policy: RetryPolicy | RetryDecisionFn
+): Promise<T>;
+
+interface RetryDecision {
+  shouldRetry: boolean;
+  delayMs?: number;
+}
+```
+
+#### `CircuitBreaker`
+```ts
+class CircuitBreaker {
+  constructor(options: {
+    failureThreshold: number;
+    resetTimeout: number;
+    halfOpenMaxAttempts?: number;
+  });
+  call<T>(fn: () => Promise<T>): Promise<T>;
+  state: "closed" | "open" | "half-open";
+}
+```
+
+#### `TokenBucket`
+```ts
+class TokenBucket {
+  constructor(capacity: number, refillRate: number);
+  tryTake(tokens: number): boolean;
+  take(tokens: number): Promise<void>;
+  availableTokens(): number;
+}
+```
+
+#### Utilities
+- `timeoutPromise<T>(promise, ms, message?)`: Add timeout to promise
+- `withTimeout<T>(fn, ms)`: Wrap function with timeout
+- `parallel<T>(fns)`: Run functions in parallel
+- `parallelLimit<T>(fns, limit)`: Limit concurrency
+- `Result<T, E>` types: `Ok<T>`, `Err<E>`, and collection helpers
 
 ---
 
-## FAQ & troubleshooting
+## FAQ
 
-### Q: What's the difference between TTL and sliding TTL?
+**Q: When should I use Channels vs EventBus?**
 
-**TTL (Time To Live):** Fixed expiration time from when entry was set.
-```ts
-cache.set("key", value, { ttlMs: 60_000 }); // Expires in 60s, regardless of access
-```
+- **Channels**: Point-to-point communication, backpressure, CSP patterns
+- **EventBus**: Pub/sub, multiple subscribers, event filtering
 
-**Sliding TTL:** Expiration resets on each access.
-```ts
-cache.set("key", value, { slidingTtlMs: 60_000 }); // Expires 60s after last access
-```
+**Q: How do I handle cleanup in async workflows?**
 
-### Q: How do I prevent cache stampede?
+Use `withDefer` for automatic resource cleanup in LIFO order.
 
-Use `Singleflight` to deduplicate concurrent requests:
+**Q: What's the difference between Semaphore and FairSemaphore?**
 
-```ts
-import { Singleflight } from "@fajarnugraha37/cache";
+- `Semaphore`: LIFO-like (stack order)
+- `FairSemaphore`: FIFO (queue order) - use when fairness matters
 
-const sf = new Singleflight<string, Data>();
-
-// 1000 concurrent requests → only 1 database call
-const results = await Promise.all(
-  Array.from({ length: 1000 }, () =>
-    sf.do("user:123", () => fetchFromDatabase("user:123"))
-  )
-);
-```
-
-### Q: Memory usage is too high. How can I limit it?
-
-Use `maxSize` with a custom `sizer`:
+**Q: How do I implement request retries with backoff?**
 
 ```ts
-const cache = new LruTtlCache<string, Buffer>({
-  maxSize: 100_000_000, // 100 MB
-  sizer: (buf) => buf.length // Measure actual size
+await retryWith(apiCall, {
+  maxAttempts: 5,
+  baseMs: 100,
+  factor: 2,
+  jitter: 0.1
 });
 ```
 
-### Q: How do I monitor cache performance in production?
+**Q: Can I use this with Node.js streams?**
 
-Enable statistics and export metrics:
+Yes! `EventBus` is built on Node streams and fully compatible.
 
-```ts
-const cache = new LruTtlCache({
-  maxEntries: 10_000,
-  enableStats: true,
-  enableEvents: true
-});
+**Q: How do I prevent memory leaks?**
 
-// Periodic metrics export
-setInterval(() => {
-  const stats = cache.getStats();
-  if (stats) {
-    metrics.gauge("cache.hit_rate", stats.hitRate);
-    metrics.gauge("cache.size", stats.size);
-    metrics.counter("cache.evictions", stats.evictions);
-  }
-}, 10_000);
+Always unsubscribe when done, or use `for await` with `break`.
 
-// Alert on excessive evictions
-cache.on("evict", ({ reason }) => {
-  if (reason === "overflow") {
-    logger.warn("Cache overflow - consider increasing maxEntries");
-  }
-});
-```
+**Q: What's the performance overhead of defer scopes?**
 
-### Q: Can I use this with Redis or other distributed caches?
+Minimal (~1-2% overhead). Defers are stored in an array and called in reverse.
 
-This library is for **in-memory** caching only. For distributed caching, use Redis with similar patterns:
+**Q: Can I nest `withDefer` scopes?**
 
-```ts
-// In-memory for hot data (L1)
-const l1Cache = new LruTtlCache({ maxEntries: 100 });
+Yes! Inner scopes' defers run first (LIFO within each scope).
 
-// Redis for shared data (L2)
-async function get(key: string) {
-  let value = l1Cache.get(key);
-  if (value) return value;
-  
-  value = await redis.get(key);
-  if (value) {
-    l1Cache.set(key, value);
-    return value;
-  }
-  
-  return undefined;
-}
-```
+**Q: How do I debug circuit breaker issues?**
 
-### Q: How do I handle cache errors?
-
-Use error caching with memoize:
-
-```ts
-const fetchUser = memoize(
-  async (id: string) => {
-    const res = await fetch(`/api/users/${id}`);
-    if (!res.ok) throw new Error("Not found");
-    return res.json();
-  },
-  {
-    cacheErrors: true,     // Cache errors to prevent retry storms
-    errorTtlMs: 10_000,   // Cache errors for shorter duration
-    ttlMs: 300_000        // Cache success for longer
-  }
-);
-
-try {
-  await fetchUser("123");
-} catch (error) {
-  // Error is cached, subsequent calls fail fast
-}
-```
-
-### Q: What's the performance overhead of stats and events?
-
-Based on benchmarks:
-
-| Feature | Overhead |
-|---------|----------|
-| No stats/events | Baseline (100%) |
-| With stats | ~0-5% slower |
-| With events (1 listener) | ~5-10% slower |
-| With events (wildcard) | ~10-15% slower |
-
-Enable only in development or when needed for monitoring.
-
-### Q: Can I persist cache to disk?
-
-No, this is an in-memory cache. For persistence, use:
-- **Redis** for distributed persistence
-- **LevelDB/RocksDB** for local persistence
-- **SQLite** with in-memory mode for fast local persistence
-
-### Q: How do I test code that uses the cache?
-
-```ts
-import { LruTtlCache } from "@fajarnugraha37/cache";
-
-// Test with mock
-const mockCache = {
-  get: vi.fn(),
-  set: vi.fn(),
-  has: vi.fn(),
-  del: vi.fn(),
-  clear: vi.fn(),
-  size: vi.fn(() => 0)
-};
-
-// Or use real cache in tests
-beforeEach(() => {
-  cache.clear();
-});
-```
-
-### Troubleshooting: Cache size grows unbounded
-
-**Problem:** Cache uses too much memory.
-
-**Solutions:**
-1. Set `maxEntries` limit
-2. Set `maxSize` with custom `sizer`
-3. Enable background sweeper: `sweepIntervalMs: 60_000`
-4. Use shorter TTLs
-5. Monitor with `enableStats: true`
-
-```ts
-const cache = new LruTtlCache({
-  maxEntries: 10_000,
-  maxSize: 100_000_000, // 100 MB
-  sweepIntervalMs: 60_000,
-  sizer: (v) => JSON.stringify(v).length
-});
-```
-
-### Troubleshooting: High cache miss rate
-
-**Problem:** Most requests miss cache (low hit rate).
-
-**Diagnosis:**
-```ts
-const cache = new LruTtlCache({ enableStats: true });
-// ... use cache ...
-const stats = cache.getStats();
-console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(2)}%`);
-```
-
-**Solutions:**
-1. Increase `maxEntries`
-2. Increase TTL duration
-3. Use `slidingTtlMs` for frequently accessed data
-4. Pre-warm cache with `warmCache()`
-5. Use stale-while-revalidate for better hit rates
-
-### Troubleshooting: Memory leaks
-
-**Problem:** Memory grows over time.
-
-**Check:**
-1. Call `cache.stop()` to stop background sweeper
-2. Remove event listeners: `cache.off(event, handler)`
-3. Clear cache periodically: `cache.clear()`
-4. Check for retained references in event handlers
-
-```ts
-// Proper cleanup
-const unsubscribe = cache.on("set", handler);
-// Later...
-unsubscribe();
-cache.stop();
-cache.clear();
-```
+Check `breaker.state` and add logging on state transitions.
 
 ---
 
@@ -1513,14 +1612,19 @@ Benchmarks run on Bun 1.3.1 (10k operations unless specified):
 
 ---
 
-## License
+## Scripts
 
-MIT © fajarnugraha37
+| Command | Description |
+| --- | --- |
+| `bun run build` | Bundle sources via `tsup`. |
+| `bun run test` | Run the suites under `shareds/async/tests` (concurrency, emitter, generator, try). |
+| `bun run test:watch` | Watch mode. |
+| `bun run coverage:view` | Inspect coverage output. |
 
-## Contributing
-
-Contributions welcome! Please open an issue or PR.
+`@fajarnugraha37/expression` and other packages treat this module as their standard async toolbox—prefer it over ad-hoc helpers so behavior stays consistent throughout the repo.
 
 ---
 
-**Built for** `@fajarnugraha37/validator` and `@fajarnugraha37/expression` – high-performance validation and expression evaluation libraries.
+## License
+
+MIT © fajarnugraha37
