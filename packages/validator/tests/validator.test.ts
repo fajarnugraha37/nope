@@ -53,6 +53,7 @@ describe("Validator enhancements", () => {
       thrown = error;
     }
     expect(thrown).toBeTruthy();
+    console.log(thrown);
     expect((thrown as Error).message).toContain("value");
   });
 

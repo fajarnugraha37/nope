@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/pattern-matching",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Type-safe pattern matching primitives with ergonomic collection guards and recursive helpers.",
     "keywords": [
     "pattern-matching",

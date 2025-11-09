@@ -67,8 +67,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "rm -rf dist && bunx tsc && bunx tsup",
     "test": "bun test",
+    "test:watch": "bun test --watch",
+    "coverage:view": "open coverage/lcov-report/index.html",
     "test:coverage": "bun test --coverage",
     "size": "size-limit",
     "typecheck": "tsc --noEmit",

@@ -16,15 +16,15 @@ export interface AppErrorOptions {
  * AppError - Structured error class with rich metadata
  */
 export class AppError extends Error {
-  readonly code: string;
-  override readonly cause?: unknown;
-  readonly data?: unknown;
-  readonly tags: readonly string[];
-  readonly severity: Severity;
-  readonly status?: number;
-  readonly retryable: boolean;
-  readonly id: string;
-  readonly timestamp: number;
+  public readonly code: string;
+  public override readonly cause?: unknown;
+  public readonly data?: unknown;
+  public readonly status?: number;
+  public readonly tags: readonly string[];
+  public readonly severity: Severity;
+  public readonly retryable: boolean;
+  public readonly id: string;
+  public readonly timestamp: number;
 
   constructor(code: string, message?: string, options: AppErrorOptions = {}) {
     super(message || code);

@@ -1,7 +1,7 @@
 {
   "name": "@fajarnugraha37/validator",
   "private": false,
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A typed façade over [AJV](https://ajv.js.org/) that brings schema builders, caching, and loader pipelines to the `nope` workspace",
   "keywords": [
     "validator",

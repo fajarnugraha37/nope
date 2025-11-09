@@ -18,11 +18,12 @@ export interface ValidationErrorInfo {
 }
 
 export class ValidationError<T> extends HttpError {
-  public readonly validationDetails?: ValidationResult<T>;
-
   constructor(message: string, details?: unknown, validationDetails?: ValidationResult<T>) {
-    super(message, 400, details);
-    this.name = "ValidationError";
-    this.validationDetails = validationDetails;
+    super(message, 400, {
+      details: {
+        ...(details || {}),
+        validationDetails,
+      },
+    });
   }
 }

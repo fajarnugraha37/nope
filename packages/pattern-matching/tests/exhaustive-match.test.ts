@@ -821,7 +821,7 @@ describe("exhaustive()", () => {
         expect(err.message).toEqual(
           'Pattern matching error: no pattern matches value {"color":"orange"}'
         );
-        expect(err.input).toStrictEqual(input);
+        expect(err.data['input']).toStrictEqual(input);
       }
     });
 

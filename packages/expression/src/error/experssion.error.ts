@@ -1,28 +1,25 @@
-import { HttpError } from "@fajarnugraha37/error";
+import { AppError } from "@fajarnugraha37/error";
 
 // Error types
-export class ExpressionError extends HttpError {
+export class ExpressionError extends AppError {
   constructor(
     message: string,
-    public override readonly code: string,
-    public readonly context?: unknown
+    code: string,
+    context?: unknown
   ) {
-    super(`[${code}] ${message}`, 400, context);
-    this.name = "ExpressionError";
+    super(code, `[${code}] ${message}`, { status: 400, data: context});
   }
 }
 
 export class ExpressionValidationError extends ExpressionError {
   constructor(message: string, context?: unknown) {
     super(message, "VALIDATION_ERROR", context);
-    this.name = "ExpressionValidationError";
   }
 }
 
 export class EvaluationError extends ExpressionError {
   constructor(message: string, context?: unknown) {
     super(message, "EVALUATION_ERROR", context);
-    this.name = "EvaluationError";
   }
 }
 
@@ -33,6 +30,5 @@ export class TimeoutError extends ExpressionError {
       "TIMEOUT_ERROR",
       { timeout }
     );
-    this.name = "TimeoutError";
   }
 }

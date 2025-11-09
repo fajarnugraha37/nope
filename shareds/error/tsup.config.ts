@@ -5,11 +5,6 @@ import { tsupConfig } from "../../tsup.config";
 export default defineConfig([
   {
     ...(tsupConfig as any),
-    format: ["esm", "cjs"],
-    dts: true,
-    clean: true,
-    splitting: false,
-    treeshake: true,
     entryPoints: glob
       .sync("./src/**/*.{ts,js,esm,cjs,tsx,jsx,json,yaml,yml,html,css}")
       .map((path) => path.replaceAll("\\", "/")),
