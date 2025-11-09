@@ -83,12 +83,41 @@
 
 ---
 
+### ✅ Optimization #4: JSON Serialization Investigation
+**Status:** Complete (Investigation)  
+**Version:** v0.3.0  
+**Results:** No optimization needed - JSON.stringify already optimal
+
+**Key Metrics:**
+- Fast-path: 1.19x faster (small objects only)
+- Approximate: 0.78-1.18x (marginal or slower)
+- MessagePack: 0.27-0.50x (2-4x SLOWER) ❌
+- No sizing: 78x faster (when maxSize not used)
+
+**Investigation:**
+- Tested 4 alternative sizing strategies
+- JSON.stringify is native C++ - already extremely fast
+- All alternatives provide < 20% improvement (not worth complexity)
+- Real optimization: Skip sizing when not needed (already supported)
+
+**Recommendation:**
+- Keep current `jsonSizer` implementation ✅
+- Document that omitting `maxSize` provides 78x speedup
+- Custom `sizer` function already supported for specific use cases
+
+**Files:**
+- Benchmark: `tests/size-estimation.bench.ts`
+- Documentation: `docs/OPTIMIZATION_RESULTS_4.md`
+- Status: CLOSED (no code changes needed)
+
+---
+
 ## Next Steps
 
 The following optimizations from `PERFORMANCE_OPTIMIZATION.md` remain:
 
 ### High Priority
-- **#3: Size Estimation** - Replace JSON.stringify with faster estimation
+- ~~**#3: Size Estimation**~~ - ✅ INVESTIGATED (no action needed)
 - **#8: Map Entry Access Pattern** - Optimize Map.get() usage
 - **#11: Batch Operations** - Reduce repeated work in batch methods
 
@@ -136,3 +165,4 @@ bun run tests/expiration.bench.ts
   - Doubly-linked list LRU (5-13x faster)
   - Lazy expiration strategy (71x faster)
   - Memoize optimization (1.7-2.8x faster)
+  - JSON serialization investigation (confirmed optimal)
