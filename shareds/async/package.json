@@ -73,6 +73,8 @@
     "build": "rm -rf dist && bunx tsc && bunx tsup",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "benchmark": "bun run tests/async.bench.ts",
     "coverage:view": "open coverage/lcov-report/index.html",
     "version": "changeset version",
     "release": "changeset publish",
