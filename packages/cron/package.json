@@ -1,0 +1,89 @@
+{
+  "name": "@fajarnugraha37/cron",
+  "private": false,
+  "version": "0.1.0",
+  "description": "Cron-like job scheduler for JavaScript and TypeScript, supporting complex recurring schedules with timezone awareness",
+  "keywords": [
+    "cron",
+    "scheduler",
+    "job-scheduler",
+    "recurring-jobs",
+    "timezone",
+    "typescript",
+    "job-queue"
+  ],
+  "module": "index.ts",
+  "author": "Fajar Nugraha <fajarnugraha37@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fajarnugraha37/nope.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.mjs"
+    },
+    "./*": {
+      "import": {
+        "types": "./dist/*.d.ts",
+        "default": "./dist/*.mjs"
+      },
+      "require": {
+        "types": "./dist/*.d.cts",
+        "default": "./dist/*.cjs"
+      },
+      "default": {
+        "import": {
+          "types": "./dist/*/index.d.ts",
+          "default": "./dist/*/index.mjs"
+        },
+        "require": {
+          "types": "./dist/*/index.d.cts",
+          "default": "./dist/*/index.cjs"
+        }
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && bunx tsc && bunx tsup",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "coverage:view": "open coverage/lcov-report/index.html",
+    "version": "changeset version",
+    "release": "changeset publish",
+    "action:validate": "act --action-offline-mode --workflows ./.github/workflows/validate.yml",
+    "action:publish": "act --action-offline-mode --workflows ./.github/workflows/publish.yml --secret-file .secrets"
+  },
+  "dependencies": {
+    "@fajarnugraha37/cache": "workspace:*",
+    "@fajarnugraha37/error": "workspace:*",
+    "ajv": "^8.17.1",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^3.0.1",
+    "ajv-keywords": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "glob": "^11.0.3",
+    "tsup": "^8.5.0",
+    "typescript": "^5"
+  },
+  "peerDependencies": {}
+}
