@@ -62,11 +62,8 @@ export class RedisStore implements Store {
     throw new Error("RedisStore.upsertJob example not implemented");
   }
 
-  // async getJob() {
-  // }
-
-  async listJobs() {
-    return [];
+  async listJobs(): Promise<PersistedJob[]> {
+    throw new Error("RedisStore.listJobs example not implemented");
   }
 
   async setJobPaused(): Promise<void> {}
