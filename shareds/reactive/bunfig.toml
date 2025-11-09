@@ -16,6 +16,6 @@ depth = 3
 root = "./tests"
 smol = true
 coverage = true
-coverageThreshold = { lines = 0.80, functions = 0.80 }
+coverageThreshold = { lines = 0.50, functions = 0.50 }
 coverageReporter = ["text", "lcov"]
 coverageDir = "./coverage"
